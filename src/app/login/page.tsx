@@ -36,6 +36,7 @@ export default async function LoginPage() {
             <ul className="mt-1 space-y-0.5 text-brand-800">
               <li>Admin — 9000000001 / admin@123</li>
               <li>Party — 9000000010 / party@123</li>
+              <li>Lets Start Working/ </li>
             </ul>
           </div>
         </div>
