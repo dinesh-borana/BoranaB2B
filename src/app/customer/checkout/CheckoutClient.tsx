@@ -103,7 +103,7 @@ export function CheckoutClient({
                     </span>
                   </div>
                   <p className="text-xs text-stone-500">
-                    {l.variantName} · {pieces} pcs ·{" "}
+                    {pieces} pcs ·{" "}
                     {Object.entries(l.sizeQuantities)
                       .map(([s, q]) => `${s}×${q}`)
                       .join(", ")}

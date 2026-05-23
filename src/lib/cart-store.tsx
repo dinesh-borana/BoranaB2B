@@ -14,8 +14,6 @@ export type CartLine = {
   productId: string;
   productName: string;
   productImage: string | null;
-  variantId: string;
-  variantName: string;
   unitPrice: number;
   sizeQuantities: Record<string, number>;
 };
@@ -74,7 +72,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addLine = useCallback((line: CartLine) => {
     setState((prev) => {
       const existing = prev.lines.find(
-        (l) => l.productId === line.productId && l.variantId === line.variantId,
+        (l) => l.productId === line.productId,
       );
       if (existing) {
         const merged: Record<string, number> = { ...existing.sizeQuantities };

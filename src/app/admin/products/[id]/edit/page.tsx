@@ -20,7 +20,7 @@ export default async function EditProductPage({
         where: { id },
         include: {
           images: { orderBy: { sortOrder: "asc" } },
-          variants: { include: { sizes: true }, orderBy: { price: "asc" } },
+          sizes: { orderBy: { size: "asc" } },
         },
       })
       .catch(() => null),
@@ -36,17 +36,11 @@ export default async function EditProductPage({
     description: product.description ?? "",
     categoryId: product.categoryId ?? "",
     isActive: product.isActive,
+    price: product.price.toString(),
     imageUrls: product.images.map((i) => i.url),
-    variants: product.variants.map((v) => ({
-      id: v.id,
-      name: v.name,
-      color: v.color ?? "",
-      price: v.price.toString(),
-      sizes: v.sizes.map((s) => ({
-        size: s.size,
-        stock: s.stock,
-        stockStatus: s.stockStatus,
-      })),
+    sizes: product.sizes.map((s) => ({
+      size: s.size,
+      stockStatus: s.stockStatus,
     })),
   };
 

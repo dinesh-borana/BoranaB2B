@@ -122,7 +122,6 @@ export default async function AdminOrderDetailPage({
                         {item.productName}
                       </p>
                       <p className="text-xs text-stone-500">
-                        {item.variantName} ·{" "}
                         {Object.entries(sq)
                           .map(([s, q]) => `${s}×${q}`)
                           .join(", ")}

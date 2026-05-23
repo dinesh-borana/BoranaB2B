@@ -18,23 +18,23 @@ import { cn } from "@/lib/cn";
 
 const NAV = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: ClipboardList },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/parties", label: "Parties", icon: Users },
-  { href: "/admin/categories", label: "Categories", icon: Tags },
-  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/orders",    label: "Orders",    icon: ClipboardList },
+  { href: "/admin/products",  label: "Products",  icon: Package },
+  { href: "/admin/parties",   label: "Parties",   icon: Users },
+  { href: "/admin/categories",label: "Categories",icon: Tags },
+  { href: "/admin/reports",   label: "Reports",   icon: BarChart3 },
+  { href: "/admin/settings",  label: "Settings",  icon: Settings },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname() ?? "";
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-20 md:border-r md:border-stone-200 md:bg-white">
-      <div className="flex h-14 items-center border-b border-stone-200 px-4">
-        <Logo variant="admin" size="sm" />
+    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-20 bg-admin-800">
+      <div className="flex h-14 items-center border-b border-white/10 px-4">
+        <Logo variant="admin" size="sm" light href="/admin/dashboard" />
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-1">
+        <ul className="space-y-0.5">
           {NAV.map((item) => {
             const active = pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -43,13 +43,13 @@ export function AdminSidebar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                     active
-                      ? "bg-admin-800 text-white"
-                      : "text-stone-700 hover:bg-stone-100",
+                      ? "bg-white/15 text-white"
+                      : "text-white/60 hover:bg-white/8 hover:text-white/90",
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   {item.label}
                 </Link>
               </li>
@@ -57,10 +57,10 @@ export function AdminSidebar() {
           })}
         </ul>
       </nav>
-      <div className="border-t border-stone-200 p-3">
+      <div className="border-t border-white/10 p-3">
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/50 hover:bg-white/10 hover:text-white transition-all duration-150"
         >
           <LogOut className="h-4 w-4" />
           Sign out

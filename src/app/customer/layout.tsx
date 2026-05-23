@@ -15,9 +15,9 @@ export default async function CustomerLayout({
 
   return (
     <Providers>
-      <div className="flex min-h-dvh flex-col bg-stone-50">
+      <div className="flex min-h-dvh flex-col" style={{ background: "var(--background)" }}>
         <TopBar />
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-24 pt-4">
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-24 pt-4 animate-fade-up">
           {children}
         </main>
         <BottomTabs />

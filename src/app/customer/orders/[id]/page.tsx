@@ -142,7 +142,6 @@ export default async function CustomerOrderDetailPage({
                     </span>
                   </div>
                   <p className="text-xs text-stone-500">
-                    {item.variantName} ·{" "}
                     {Object.entries(sqObj)
                       .map(([s, q]) => `${s}×${q}`)
                       .join(", ")}{" "}

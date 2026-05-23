@@ -54,7 +54,6 @@ export function CartView({ gstRate }: { gstRate: number }) {
                   <p className="text-sm font-semibold text-stone-900">
                     {line.productName}
                   </p>
-                  <p className="text-xs text-stone-500">{line.variantName}</p>
                   <p className="mt-0.5 text-xs font-medium text-brand-700">
                     {formatINR(line.unitPrice)} / pc
                   </p>

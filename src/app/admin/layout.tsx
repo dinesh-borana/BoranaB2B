@@ -14,11 +14,11 @@ export default async function AdminLayout({
   if (session.user.role !== "ADMIN") redirect("/customer/dashboard");
 
   return (
-    <div className="flex min-h-dvh bg-stone-50">
+    <div className="flex min-h-dvh" style={{ background: "var(--background)" }}>
       <AdminSidebar />
       <div className="flex flex-1 flex-col md:ml-64">
         <AdminTopBar />
-        <main className="flex-1 px-4 pb-24 pt-4 md:px-6 md:pb-6">
+        <main className="flex-1 px-4 pb-24 pt-4 md:px-6 md:pb-6 animate-fade-up">
           {children}
         </main>
         <AdminBottomTabs />

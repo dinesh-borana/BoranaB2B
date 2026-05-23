@@ -1,31 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Borana Jewels — B2B Ordering",
+  title: "Panini Jewels — B2B Ordering",
   description:
-    "Wholesale ordering portal for Borana Jewels imitation jewellery.",
-  applicationName: "Borana B2B",
+    "Wholesale ordering portal for Panini Jewels imitation jewellery.",
+  applicationName: "Panini Jewels B2B",
   appleWebApp: {
     capable: true,
-    title: "Borana B2B",
+    title: "Panini Jewels B2B",
     statusBarStyle: "default",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#854F0B",
+  themeColor: "#8b1a2e",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -39,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} ${cormorant.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         {children}

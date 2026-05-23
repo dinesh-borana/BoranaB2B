@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Search } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -60,15 +61,24 @@ export default async function AdminOrdersPage({
       <PageHeader title="Orders" description={`${orders.length} found`} />
 
       <form className="flex gap-2" action="/admin/orders">
-        <input
-          name="q"
-          defaultValue={params.q ?? ""}
-          placeholder="Search by order # or party…"
-          className="h-10 flex-1 rounded-lg border border-stone-200 bg-white px-3 text-sm outline-none focus:border-admin-800"
-        />
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+          <input
+            name="q"
+            defaultValue={params.q ?? ""}
+            placeholder="Search by order # or party…"
+            className="h-10 w-full rounded-lg border border-stone-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-admin-800"
+          />
+        </div>
         {whereStatus && (
           <input type="hidden" name="status" value={whereStatus} />
         )}
+        <button
+          type="submit"
+          className="h-10 rounded-lg bg-admin-800 px-4 text-sm font-medium text-white hover:bg-admin-700"
+        >
+          Search
+        </button>
       </form>
 
       <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
@@ -101,7 +111,7 @@ export default async function AdminOrdersPage({
         <div className="flex flex-col gap-2">
           {orders.map((o) => (
             <Link key={o.id} href={`/admin/orders/${o.id}`}>
-              <Card className="transition-colors hover:border-stone-300">
+              <Card className="transition-all duration-200 hover:border-brand-200 hover:shadow-sm">
                 <CardBody className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">

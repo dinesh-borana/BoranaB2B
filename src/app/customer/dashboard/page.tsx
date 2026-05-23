@@ -4,12 +4,14 @@ import {
   ClipboardList,
   Sparkles,
   ChevronRight,
+  UserCircle,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatINR, relativeTime } from "@/lib/format";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { SignOutButton } from "@/components/customer/SignOutButton";
 
 export const metadata = { title: "Home · Borana B2B" };
 
@@ -28,7 +30,6 @@ async function loadData(partyId: string | null) {
         where: { isActive: true },
         include: {
           images: { where: { isMain: true }, take: 1 },
-          variants: { orderBy: { price: "asc" }, take: 1 },
         },
         take: 6,
       }),
@@ -55,7 +56,7 @@ export default async function CustomerDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-2xl bg-gradient-to-br from-brand-700 to-brand-900 p-5 text-white">
+      <section className="rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 p-5 text-white shadow-lg shadow-brand-900/20">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-100">
           Hi {session?.user.name?.split(" ")[0] ?? "there"}
         </p>
@@ -167,7 +168,6 @@ export default async function CustomerDashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           {featured.map((p) => {
             const img = p.images[0]?.url;
-            const minPrice = p.variants[0]?.price;
             return (
               <Link key={p.id} href={`/customer/catalog/${p.id}`}>
                 <Card className="overflow-hidden">
@@ -189,17 +189,45 @@ export default async function CustomerDashboardPage() {
                     <p className="line-clamp-2 text-sm font-medium text-stone-900">
                       {p.name}
                     </p>
-                    {minPrice !== undefined && (
-                      <p className="mt-1 text-sm font-semibold text-brand-700">
-                        {formatINR(minPrice)}
-                      </p>
-                    )}
+                    <p className="mt-1 text-sm font-semibold text-brand-700">
+                      {formatINR(p.price)}
+                    </p>
                   </CardBody>
                 </Card>
               </Link>
             );
           })}
         </div>
+      </section>
+
+      {/* Account */}
+      <section>
+        <Card>
+          <CardBody className="flex items-center gap-3">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-100 text-base font-semibold text-brand-800">
+              {session?.user.name?.slice(0, 1).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-stone-900">
+                {session?.user.name}
+              </p>
+              {session?.user.email && (
+                <p className="truncate text-xs text-stone-500">
+                  {session.user.email}
+                </p>
+              )}
+            </div>
+            <Link
+              href="/customer/profile"
+              className="flex shrink-0 items-center gap-1 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+            >
+              <UserCircle className="h-3.5 w-3.5" /> Profile
+            </Link>
+          </CardBody>
+          <div className="border-t border-stone-100 px-4 pb-4 pt-3">
+            <SignOutButton />
+          </div>
+        </Card>
       </section>
     </div>
   );

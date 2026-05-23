@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsx --eval ' *)",
+      "Bash(node --input-type=module)",
+      "Bash(npx prisma *)"
+    ]
+  }
+}

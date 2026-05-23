@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DeleteProductButton } from "./DeleteProductButton";
 
 export default async function AdminProductDetailPage({
   params,
@@ -21,15 +22,18 @@ export default async function AdminProductDetailPage({
       include: {
         category: true,
         images: { orderBy: { sortOrder: "asc" } },
-        variants: {
-          include: { sizes: true },
-          orderBy: { price: "asc" },
-        },
+        sizes: { orderBy: { size: "asc" } },
       },
     })
     .catch(() => null);
 
   if (!product) notFound();
+
+  const stockLabel: Record<string, string> = {
+    IN_STOCK: "In stock",
+    MADE_TO_ORDER: "Made to order",
+    OUT_OF_STOCK: "Out of stock",
+  };
 
   return (
     <div className="flex flex-col gap-4 max-w-2xl">
@@ -43,11 +47,14 @@ export default async function AdminProductDetailPage({
       <PageHeader
         title={product.name}
         actions={
-          <Link href={`/admin/products/${id}/edit`}>
-            <Button variant="admin" size="sm">
-              <Pencil className="h-4 w-4" /> Edit
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <DeleteProductButton productId={id} />
+            <Link href={`/admin/products/${id}/edit`}>
+              <Button variant="admin" size="sm">
+                <Pencil className="h-4 w-4" /> Edit
+              </Button>
+            </Link>
+          </div>
         }
       />
 
@@ -67,6 +74,12 @@ export default async function AdminProductDetailPage({
           <div>
             <p className="text-xs text-stone-500">SKU</p>
             <p className="font-medium text-stone-900">{product.sku}</p>
+          </div>
+          <div>
+            <p className="text-xs text-stone-500">Price</p>
+            <p className="font-semibold text-brand-700">
+              {formatINR(product.price)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-stone-500">Category</p>
@@ -91,39 +104,22 @@ export default async function AdminProductDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Variants & sizes</CardTitle>
+          <CardTitle>Available sizes</CardTitle>
         </CardHeader>
-        <CardBody className="flex flex-col gap-4">
-          {product.variants.map((v) => (
-            <div key={v.id}>
-              <div className="flex items-center justify-between">
-                <p className="font-semibold text-stone-900">{v.name}</p>
-                <p className="font-semibold text-brand-700">
-                  {formatINR(v.price)}
-                </p>
+        <CardBody className="flex flex-wrap gap-2">
+          {product.sizes.length === 0 ? (
+            <p className="text-sm text-stone-400">No sizes configured.</p>
+          ) : (
+            product.sizes.map((s) => (
+              <div
+                key={s.id}
+                className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-center text-xs"
+              >
+                <p className="font-semibold text-stone-900">{s.size}</p>
+                <p className="text-stone-500">{stockLabel[s.stockStatus]}</p>
               </div>
-              {v.color && (
-                <p className="text-xs text-stone-500">{v.color}</p>
-              )}
-              <div className="mt-2 flex flex-wrap gap-2">
-                {v.sizes.map((s) => (
-                  <div
-                    key={s.id}
-                    className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-center text-xs"
-                  >
-                    <p className="font-medium text-stone-900">{s.size}</p>
-                    <p className="text-stone-500">
-                      {s.stockStatus === "IN_STOCK"
-                        ? "In stock"
-                        : s.stockStatus === "MADE_TO_ORDER"
-                        ? "Made to order"
-                        : "Out of stock"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </CardBody>
       </Card>
     </div>
