@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, Phone, Mail, MapPin } from "lucide-react";
+import { Building2, Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -79,18 +79,28 @@ export default async function ProfilePage() {
       <Card>
         <CardBody className="flex flex-col gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-            Support
+            Help & support
           </p>
+          {support && (
+            <a
+              href={`tel:${support}`}
+              className="flex items-center gap-3 text-sm text-stone-700"
+            >
+              <Phone className="h-4 w-4 text-brand-700" />
+              {support}
+            </a>
+          )}
           <a
-            href={`tel:${support}`}
-            className="flex items-center gap-3 text-sm text-stone-700"
+            href="https://wa.me/918860498653"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-xl bg-[#25D366]/10 px-4 py-3 text-sm font-semibold text-[#128C5E] transition-colors hover:bg-[#25D366]/20"
           >
-            <Phone className="h-4 w-4 text-brand-700" />
-            {support || "+91 98765 43210"}
+            <MessageCircle className="h-5 w-5 text-[#25D366]" />
+            Chat with us on WhatsApp
           </a>
-          <p className="text-xs text-stone-500">
-            Payment is handled offline by the Borana team. No online payment
-            required.
+          <p className="text-xs text-stone-400">
+            Payment is handled offline. No online payment required.
           </p>
         </CardBody>
       </Card>

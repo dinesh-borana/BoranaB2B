@@ -32,7 +32,6 @@ async function load(params: SP) {
       },
       include: {
         images: { where: { isMain: true }, take: 1 },
-        variants: { orderBy: { price: "asc" }, take: 1 },
         category: true,
       },
       orderBy: { createdAt: "desc" },
@@ -55,7 +54,13 @@ export default async function CatalogPage({
   return (
     <div className="flex flex-col gap-4">
       <form className="relative" action="/customer/catalog">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+        <button
+          type="submit"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-brand-700"
+          aria-label="Search"
+        >
+          <Search className="h-4 w-4" />
+        </button>
         <input
           name="q"
           defaultValue={params.q ?? ""}
@@ -115,10 +120,9 @@ export default async function CatalogPage({
         <div className="grid grid-cols-2 gap-3">
           {products.map((p) => {
             const img = p.images[0]?.url;
-            const minPrice = p.variants[0]?.price;
             return (
               <Link key={p.id} href={`/customer/catalog/${p.id}`}>
-                <Card className="overflow-hidden transition-colors hover:border-brand-300">
+                <Card className="overflow-hidden transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/8">
                   <div className="aspect-square w-full bg-stone-100">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -141,11 +145,9 @@ export default async function CatalogPage({
                       {p.name}
                     </p>
                     <div className="mt-1 flex items-center justify-between">
-                      {minPrice !== undefined && (
-                        <span className="text-sm font-semibold text-brand-700">
-                          {formatINR(minPrice)}
-                        </span>
-                      )}
+                      <span className="text-sm font-semibold text-brand-700">
+                        {formatINR(p.price)}
+                      </span>
                       <Badge tone="success">In stock</Badge>
                     </div>
                   </CardBody>

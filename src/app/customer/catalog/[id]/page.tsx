@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Package } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { formatINR } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
 import { VariantPicker } from "./VariantPicker";
 
@@ -14,14 +15,11 @@ export default async function ProductDetailPage({
 
   const product = await prisma.product
     .findUnique({
-      where: { id },
+      where: { id, isActive: true },
       include: {
         category: true,
         images: { orderBy: { sortOrder: "asc" } },
-        variants: {
-          orderBy: { price: "asc" },
-          include: { sizes: true },
-        },
+        sizes: { orderBy: { size: "asc" } },
       },
     })
     .catch(() => null);
@@ -35,12 +33,11 @@ export default async function ProductDetailPage({
     id: product.id,
     name: product.name,
     image: mainImage,
-    variants: product.variants.map((v) => ({
-      id: v.id,
-      name: v.name,
-      color: v.color,
-      price: Number(v.price.toString()),
-      sizes: v.sizes.map((s) => ({ id: s.id, size: s.size })),
+    price: Number(product.price.toString()),
+    sizes: product.sizes.map((s) => ({
+      id: s.id,
+      size: s.size,
+      stockStatus: s.stockStatus,
     })),
   };
 
@@ -76,7 +73,10 @@ export default async function ProductDetailPage({
           {product.name}
         </h1>
         <div className="mt-1 flex items-center gap-2">
-          <span className="text-xs text-stone-500">SKU · {product.sku}</span>
+          <span className="text-sm font-semibold text-brand-700">
+            {formatINR(product.price)}
+          </span>
+          <span className="text-xs text-stone-500">· SKU {product.sku}</span>
           <Badge tone="success">In stock</Badge>
         </div>
         {product.description && (
@@ -86,13 +86,7 @@ export default async function ProductDetailPage({
         )}
       </div>
 
-      {product.variants.length > 0 ? (
-        <VariantPicker product={pickerProduct} />
-      ) : (
-        <div className="rounded-xl border border-dashed border-stone-200 bg-white p-4 text-sm text-stone-500">
-          This product has no variants configured yet.
-        </div>
-      )}
+      <VariantPicker product={pickerProduct} />
     </div>
   );
 }

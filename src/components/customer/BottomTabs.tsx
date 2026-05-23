@@ -3,55 +3,43 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, ClipboardList, User } from "lucide-react";
-import { useCart } from "@/lib/cart-store";
 import { cn } from "@/lib/cn";
 
 const TABS = [
-  { href: "/customer/dashboard", label: "Home", icon: Home },
-  { href: "/customer/catalog", label: "Catalog", icon: Search },
-  { href: "/customer/orders", label: "Orders", icon: ClipboardList },
-  { href: "/customer/profile", label: "Profile", icon: User },
+  { href: "/customer/dashboard", label: "Home",    icon: Home },
+  { href: "/customer/catalog",   label: "Catalog",  icon: Search },
+  { href: "/customer/orders",    label: "Orders",   icon: ClipboardList },
+  { href: "/customer/profile",   label: "Profile",  icon: User },
 ];
 
 export function BottomTabs() {
   const pathname = usePathname() ?? "";
-  const { totalPieces } = useCart();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-stone-200 bg-white/95 backdrop-blur md:left-64 md:hidden">
+    <nav
+      className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/97 backdrop-blur"
+      style={{ borderColor: "var(--border)" }}
+    >
       <ul className="mx-auto flex max-w-3xl items-stretch">
         {TABS.map((tab) => {
           const active = pathname.startsWith(tab.href);
           const Icon = tab.icon;
-          const showCount = tab.href === "/customer/orders" ? false : false;
           return (
             <li key={tab.href} className="flex-1">
               <Link
                 href={tab.href}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 text-xs",
-                  active ? "text-brand-700" : "text-stone-500",
-                )}
+                className="flex flex-col items-center justify-center gap-1 py-2.5 text-xs transition-colors"
               >
-                <span className="relative">
-                  <Icon
-                    className={cn(
-                      "h-5 w-5",
-                      active ? "text-brand-700" : "text-stone-500",
-                    )}
-                  />
-                  {showCount && totalPieces > 0 && (
-                    <span className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-brand-700 px-1 text-[10px] font-semibold text-white">
-                      {totalPieces}
-                    </span>
-                  )}
+                <span className={cn(
+                  "grid h-8 w-8 place-items-center rounded-xl transition-all duration-200",
+                  active ? "bg-brand-700 text-white scale-105" : "text-stone-500",
+                )}>
+                  <Icon className="h-4.5 w-4.5" style={{ width: 18, height: 18 }} />
                 </span>
-                <span
-                  className={cn(
-                    "font-medium",
-                    active ? "text-brand-700" : "text-stone-600",
-                  )}
-                >
+                <span className={cn(
+                  "font-medium text-[11px]",
+                  active ? "text-brand-700" : "text-stone-500",
+                )}>
                   {tab.label}
                 </span>
               </Link>

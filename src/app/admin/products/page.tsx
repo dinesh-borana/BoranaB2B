@@ -34,8 +34,7 @@ export default async function AdminProductsPage({
         include: {
           category: true,
           images: { where: { isMain: true }, take: 1 },
-          variants: { orderBy: { price: "asc" }, take: 1 },
-          _count: { select: { variants: true } },
+          _count: { select: { sizes: true } },
         },
         orderBy: { createdAt: "desc" },
       })
@@ -104,10 +103,9 @@ export default async function AdminProductsPage({
         <div className="grid gap-3 sm:grid-cols-2">
           {products.map((p) => {
             const img = p.images[0]?.url;
-            const minPrice = p.variants[0]?.price;
             return (
               <Link key={p.id} href={`/admin/products/${p.id}`}>
-                <Card className="flex h-full flex-row overflow-hidden transition-colors hover:border-stone-300">
+                <Card className="flex h-full flex-row overflow-hidden transition-all duration-200 hover:border-brand-200 hover:shadow-sm">
                   <div className="h-24 w-24 shrink-0 bg-stone-100">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -130,14 +128,11 @@ export default async function AdminProductsPage({
                       {p.name}
                     </p>
                     <div className="flex items-center gap-2">
-                      {minPrice !== undefined && (
-                        <span className="text-sm font-medium text-brand-700">
-                          {formatINR(minPrice)}+
-                        </span>
-                      )}
+                      <span className="text-sm font-medium text-brand-700">
+                        {formatINR(p.price)}
+                      </span>
                       <Badge tone="neutral">
-                        {p._count.variants} variant
-                        {p._count.variants !== 1 ? "s" : ""}
+                        {p._count.sizes} size{p._count.sizes !== 1 ? "s" : ""}
                       </Badge>
                       {!p.isActive && (
                         <Badge tone="danger">Inactive</Badge>

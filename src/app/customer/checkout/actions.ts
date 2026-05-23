@@ -9,8 +9,6 @@ import { getSetting } from "@/lib/settings";
 const lineSchema = z.object({
   productId: z.string(),
   productName: z.string(),
-  variantId: z.string(),
-  variantName: z.string(),
   unitPrice: z.number().nonnegative(),
   sizeQuantities: z.record(z.string(), z.number().int().positive()),
 });
@@ -84,10 +82,8 @@ export async function placeOrderAction(
           );
           return {
             productName: l.productName,
-            variantName: l.variantName,
             unitPrice: l.unitPrice,
             productId: l.productId,
-            variantId: l.variantId,
             sizeQuantities: l.sizeQuantities,
             lineTotal: pieces * l.unitPrice,
             pieces,
