@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #854f0b;
+  --color-brand-50: #fdf7ee;
+  --color-brand-100: #faeeda;
+  --color-brand-200: #f3d9af;
+  --color-brand-300: #e9bd7c;
+  --color-brand-400: #d99a4a;
+  --color-brand-500: #c47e28;
+  --color-brand-600: #a4641a;
+  --color-brand-700: #854f0b;
+  --color-brand-800: #6a3f08;
+  --color-brand-900: #4f2f04;
+
+  --color-admin: #412402;
+  --color-admin-50: #f7f2ec;
+  --color-admin-100: #ecdfd0;
+  --color-admin-200: #d4b893;
+  --color-admin-300: #a87b40;
+  --color-admin-700: #5a3406;
+  --color-admin-800: #412402;
+  --color-admin-900: #2a1701;
+
+  --color-success: #0f6e56;
+  --color-info: #185fa5;
+  --color-pink-brand: #993556;
+  --color-purple-brand: #534ab7;
+  --color-warm: #faeeda;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #fafaf9;
+  --foreground: #1f1a14;
+  --surface: #ffffff;
+  --muted: #6b6357;
+  --border: #ece5d8;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(133, 79, 11, 0.18);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}

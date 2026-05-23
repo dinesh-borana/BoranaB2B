@@ -1,0 +1,71 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Package,
+  Users,
+  Tags,
+  BarChart3,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { signOut } from "next-auth/react";
+import { Logo } from "@/components/ui/Logo";
+import { cn } from "@/lib/cn";
+
+const NAV = [
+  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/orders", label: "Orders", icon: ClipboardList },
+  { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/parties", label: "Parties", icon: Users },
+  { href: "/admin/categories", label: "Categories", icon: Tags },
+  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
+];
+
+export function AdminSidebar() {
+  const pathname = usePathname() ?? "";
+  return (
+    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-20 md:border-r md:border-stone-200 md:bg-white">
+      <div className="flex h-14 items-center border-b border-stone-200 px-4">
+        <Logo variant="admin" size="sm" />
+      </div>
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <ul className="space-y-1">
+          {NAV.map((item) => {
+            const active = pathname.startsWith(item.href);
+            const Icon = item.icon;
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-admin-800 text-white"
+                      : "text-stone-700 hover:bg-stone-100",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      <div className="border-t border-stone-200 p-3">
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </button>
+      </div>
+    </aside>
+  );
+}
