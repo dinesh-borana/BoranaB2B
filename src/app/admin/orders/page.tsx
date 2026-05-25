@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { formatINR, relativeTime } from "@/lib/format";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Card, CardBody } from "@/components/ui/Card";
-import { StatusPill } from "@/components/ui/StatusPill";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ORDER_STATUS_LABEL } from "@/lib/order-status";
+import { OrdersListClient } from "./OrdersListClient";
 import type { OrderStatus } from "@prisma/client";
 
 export const metadata = { title: "Orders · Admin" };
@@ -58,7 +56,18 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Orders" description={`${orders.length} found`} />
+      <PageHeader
+        title="Orders"
+        description={`${orders.length} found`}
+        actions={
+          <Link
+            href="/admin/orders/new"
+            className="flex items-center gap-1.5 rounded-lg bg-admin-800 px-4 py-2 text-sm font-semibold text-white hover:bg-admin-700"
+          >
+            + Place new order
+          </Link>
+        }
+      />
 
       <form className="flex gap-2" action="/admin/orders">
         <div className="relative flex-1">
@@ -108,33 +117,17 @@ export default async function AdminOrdersPage({
       {orders.length === 0 ? (
         <EmptyState title="No orders found" description="Try clearing filters." />
       ) : (
-        <div className="flex flex-col gap-2">
-          {orders.map((o) => (
-            <Link key={o.id} href={`/admin/orders/${o.id}`}>
-              <Card className="transition-all duration-200 hover:border-brand-200 hover:shadow-sm">
-                <CardBody className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-stone-900">
-                        #{o.orderNumber}
-                      </span>
-                      <StatusPill status={o.status} />
-                    </div>
-                    <p className="mt-0.5 truncate text-xs text-stone-500">
-                      {o.party.shopName} · {relativeTime(o.createdAt)}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-semibold text-stone-900">
-                      {formatINR(o.total)}
-                    </p>
-                    <p className="text-xs text-stone-500">{o.totalPieces} pcs</p>
-                  </div>
-                </CardBody>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <OrdersListClient
+          orders={orders.map((o) => ({
+            id: o.id,
+            orderNumber: o.orderNumber,
+            status: o.status,
+            total: o.total.toString(),
+            totalPieces: o.totalPieces,
+            createdAt: o.createdAt,
+            party: o.party,
+          }))}
+        />
       )}
     </div>
   );

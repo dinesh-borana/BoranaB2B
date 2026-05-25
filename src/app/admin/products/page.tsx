@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Package } from "lucide-react";
+import { Plus, Package, Upload } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -48,11 +48,18 @@ export default async function AdminProductsPage({
         title="Products"
         description={`${products.length} products`}
         actions={
-          <Link href="/admin/products/new">
-            <Button variant="admin" size="sm">
-              <Plus className="h-4 w-4" /> Add product
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/admin/products/bulk-upload">
+              <Button variant="secondary" size="sm">
+                <Upload className="h-4 w-4" /> Bulk upload
+              </Button>
+            </Link>
+            <Link href="/admin/products/new">
+              <Button variant="admin" size="sm">
+                <Plus className="h-4 w-4" /> Add product
+              </Button>
+            </Link>
+          </div>
         }
       />
 

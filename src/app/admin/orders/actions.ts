@@ -1,0 +1,29 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const DeleteSchema = z.object({
+  ids: z.array(z.string().cuid()).min(1),
+});
+
+export async function deleteOrders(ids: string[]) {
+  const session = await auth();
+  if (session?.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const parsed = DeleteSchema.safeParse({ ids });
+  if (!parsed.success) {
+    throw new Error("Invalid order IDs");
+  }
+
+  await prisma.order.deleteMany({
+    where: { id: { in: parsed.data.ids } },
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin");
+}

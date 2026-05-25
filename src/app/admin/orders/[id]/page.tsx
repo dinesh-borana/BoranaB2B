@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Building2 } from "lucide-react";
+import { ChevronLeft, Building2, Printer } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR, formatDateTime } from "@/lib/format";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -27,6 +27,20 @@ export default async function AdminOrderDetailPage({
 
   if (!order) notFound();
 
+  // Fetch MTO status for each product's sizes
+  const productIds = order.items.map((i) => i.productId).filter((p): p is string => !!p);
+  const mtoMap: Record<string, Set<string>> = {};
+  if (productIds.length > 0) {
+    const sizes = await prisma.productSize.findMany({
+      where: { productId: { in: productIds }, stockStatus: "MADE_TO_ORDER" },
+      select: { productId: true, size: true },
+    });
+    for (const s of sizes) {
+      if (!mtoMap[s.productId]) mtoMap[s.productId] = new Set();
+      mtoMap[s.productId].add(s.size);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -43,9 +57,20 @@ export default async function AdminOrderDetailPage({
         <h1 className="text-2xl font-semibold text-stone-900">
           #{order.orderNumber}
         </h1>
-        <p className="text-sm text-stone-500">
-          {formatDateTime(order.createdAt)}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-stone-500">
+            {formatDateTime(order.createdAt)}
+          </p>
+          <Link
+            href={`/print/order/${order.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-lg border border-admin-800 px-3 py-1.5 text-xs font-semibold text-admin-800 hover:bg-admin-50"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            Print Order
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -92,9 +117,17 @@ export default async function AdminOrderDetailPage({
         </Card>
       </div>
 
+      {/* Admin-placed badge */}
+      {order.statusHistory[0]?.note === "Order placed by admin" && (
+        <div className="flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          <span className="font-semibold">🛒 Placed by admin</span>
+          <span className="text-blue-500">— {order.statusHistory[0].changedBy}</span>
+        </div>
+      )}
+
       {order.customerNote && (
         <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <span className="font-semibold">Customer note: </span>
+          <span className="font-semibold">Note: </span>
           {order.customerNote}
         </div>
       )}
@@ -115,17 +148,25 @@ export default async function AdminOrderDetailPage({
             <tbody className="divide-y divide-stone-100">
               {order.items.map((item) => {
                 const sq = item.sizeQuantities as Record<string, number>;
+                const mtoSizes = item.productId ? (mtoMap[item.productId] ?? new Set()) : new Set();
                 return (
                   <tr key={item.id}>
                     <td className="px-4 py-3">
                       <p className="font-medium text-stone-900">
                         {item.productName}
                       </p>
-                      <p className="text-xs text-stone-500">
-                        {Object.entries(sq)
-                          .map(([s, q]) => `${s}×${q}`)
-                          .join(", ")}
-                      </p>
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                        {Object.entries(sq).filter(([, q]) => q > 0).map(([s, q]) => (
+                          <span key={s} className="flex items-center gap-1 text-xs text-stone-500">
+                            {s}×{q}
+                            {mtoSizes.has(s) && (
+                              <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold text-amber-700">
+                                MTO
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-stone-700">{item.pieces}</td>
                     <td className="px-4 py-3 text-right font-semibold text-stone-900">

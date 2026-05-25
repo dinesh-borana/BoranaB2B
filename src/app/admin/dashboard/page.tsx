@@ -5,6 +5,7 @@ import {
   Package,
   TrendingUp,
   ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR, relativeTime } from "@/lib/format";
@@ -21,6 +22,7 @@ async function loadStats() {
       pendingOrders,
       totalParties,
       totalProducts,
+      totalAdmins,
       recentOrders,
       revenueResult,
     ] = await Promise.all([
@@ -30,18 +32,20 @@ async function loadStats() {
       }),
       prisma.party.count({ where: { isActive: true } }),
       prisma.product.count({ where: { isActive: true } }),
+      prisma.user.count({ where: { role: "ADMIN" } }),
       prisma.order.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
         include: { party: { select: { shopName: true } } },
       }),
-      prisma.order.aggregate({ _sum: { total: true } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { status: "DELIVERED" } }),
     ]);
     return {
       totalOrders,
       pendingOrders,
       totalParties,
       totalProducts,
+      totalAdmins,
       recentOrders,
       totalRevenue: revenueResult._sum.total ?? 0,
     };
@@ -51,6 +55,7 @@ async function loadStats() {
       pendingOrders: 0,
       totalParties: 0,
       totalProducts: 0,
+      totalAdmins: 0,
       recentOrders: [],
       totalRevenue: 0,
     };
@@ -93,6 +98,14 @@ export default async function AdminDashboardPage() {
       fg: "text-emerald-700",
       href: "/admin/reports",
     },
+    {
+      label: "Admins",
+      value: s.totalAdmins,
+      icon: ShieldCheck,
+      bg: "bg-purple-50",
+      fg: "text-purple-700",
+      href: "/admin/admins",
+    },
   ];
 
   return (
@@ -103,12 +116,12 @@ export default async function AdminDashboardPage() {
         description="Overview of orders, parties and sales."
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 stagger">
         {stats.map((s) => {
           const Icon = s.icon;
           return (
-            <Link key={s.label} href={s.href}>
-              <Card className="transition-colors hover:border-stone-300">
+            <Link key={s.label} href={s.href} className="animate-fade-up">
+              <Card className="card-hover hover:border-stone-300">
                 <CardBody className="flex items-center gap-3">
                   <span
                     className={`grid h-10 w-10 place-items-center rounded-lg ${s.bg} ${s.fg}`}
@@ -140,7 +153,7 @@ export default async function AdminDashboardPage() {
             View all <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 stagger">
           {s.recentOrders.length === 0 ? (
             <Card>
               <CardBody className="text-sm text-stone-500">
@@ -149,8 +162,8 @@ export default async function AdminDashboardPage() {
             </Card>
           ) : (
             s.recentOrders.map((o) => (
-              <Link key={o.id} href={`/admin/orders/${o.id}`}>
-                <Card className="transition-colors hover:border-stone-300">
+              <Link key={o.id} href={`/admin/orders/${o.id}`} className="animate-fade-up">
+                <Card className="card-hover hover:border-stone-300">
                   <CardBody className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">

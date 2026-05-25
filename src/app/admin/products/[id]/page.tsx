@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DeleteProductButton } from "./DeleteProductButton";
+import { ImageCarousel } from "@/components/ImageCarousel";
 
 export default async function AdminProductDetailPage({
   params,
@@ -58,16 +59,7 @@ export default async function AdminProductDetailPage({
         }
       />
 
-      {product.images[0] && (
-        <div className="overflow-hidden rounded-2xl bg-stone-100">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={product.images[0].url}
-            alt={product.name}
-            className="aspect-video w-full object-cover"
-          />
-        </div>
-      )}
+      <ImageCarousel images={product.images} alt={product.name} />
 
       <Card>
         <CardBody className="grid gap-2 text-sm sm:grid-cols-2">

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DeletePartyButton } from "./DeletePartyButton";
 
 export default async function AdminPartyDetailPage({
   params,
@@ -44,11 +45,14 @@ export default async function AdminPartyDetailPage({
       <PageHeader
         title={party.shopName}
         actions={
-          <Link href={`/admin/parties/${id}/edit`}>
-            <Button variant="admin" size="sm">
-              <Pencil className="h-4 w-4" /> Edit
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <DeletePartyButton partyId={id} shopName={party.shopName} />
+            <Link href={`/admin/parties/${id}/edit`}>
+              <Button variant="admin" size="sm">
+                <Pencil className="h-4 w-4" /> Edit
+              </Button>
+            </Link>
+          </div>
         }
       />
 

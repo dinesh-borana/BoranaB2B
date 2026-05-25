@@ -1,9 +1,15 @@
+import Link from "next/link";
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
+import { StatusPill } from "@/components/ui/StatusPill";
+import { PartyPicker } from "./PartyPicker";
 
 export const metadata = { title: "Reports · Admin" };
+
+type SP = { party?: string };
 
 async function loadReports() {
   try {
@@ -16,7 +22,7 @@ async function loadReports() {
       ordersByStatus,
       recentMonthly,
     ] = await Promise.all([
-      prisma.order.aggregate({ _sum: { total: true } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { status: "DELIVERED" } }),
       prisma.order.count(),
       prisma.order.count({ where: { status: "DELIVERED" } }),
       prisma.order.count({
@@ -24,6 +30,7 @@ async function loadReports() {
       }),
       prisma.order.groupBy({
         by: ["partyId"],
+        where: { status: "DELIVERED" },
         _sum: { total: true },
         _count: true,
         orderBy: { _sum: { total: "desc" } },
@@ -42,6 +49,7 @@ async function loadReports() {
           COUNT(*) AS orders
         FROM "Order"
         WHERE "createdAt" >= NOW() - INTERVAL '6 months'
+          AND status = 'DELIVERED'
         GROUP BY month
         ORDER BY month ASC`,
     ]);
@@ -79,8 +87,48 @@ async function loadReports() {
   }
 }
 
-export default async function AdminReportsPage() {
+async function loadPartyReport(partyId: string) {
+  try {
+    const [party, orders] = await Promise.all([
+      prisma.party.findUnique({ where: { id: partyId }, select: { id: true, shopName: true, mobile: true, ownerName: true } }),
+      prisma.order.findMany({
+        where: { partyId },
+        select: { id: true, orderNumber: true, status: true, total: true, totalPieces: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+    if (!party) return null;
+
+    const total = orders.length;
+    const delivered = orders.filter((o) => o.status === "DELIVERED").length;
+    const cancelled = orders.filter((o) => o.status === "CANCELLED" || o.status === "REJECTED").length;
+    const pending = orders.filter((o) => ["PENDING","CONFIRMED","PACKING","SHIPPED"].includes(o.status)).length;
+    const totalRevenue = orders
+      .filter((o) => o.status === "DELIVERED")
+      .reduce((sum, o) => sum + Number(o.total), 0);
+    const totalPieces = orders.reduce((sum, o) => sum + o.totalPieces, 0);
+
+    return { party, orders, total, delivered, cancelled, pending, totalRevenue, totalPieces };
+  } catch {
+    return null;
+  }
+}
+
+export default async function AdminReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}) {
+  const params = await searchParams;
   const r = await loadReports();
+
+  const allParties = await prisma.party.findMany({
+    where: { isActive: true },
+    select: { id: true, shopName: true, mobile: true },
+    orderBy: { shopName: "asc" },
+  }).catch(() => []);
+
+  const partyReport = params.party ? await loadPartyReport(params.party) : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -171,15 +219,9 @@ export default async function AdminReportsPage() {
                 <tbody className="divide-y divide-stone-100">
                   {r.recentMonthly.map((m) => (
                     <tr key={m.month}>
-                      <td className="py-2 font-medium text-stone-900">
-                        {m.month}
-                      </td>
-                      <td className="py-2 text-stone-700">
-                        {Number(m.orders)}
-                      </td>
-                      <td className="py-2 text-right font-semibold text-stone-900">
-                        {formatINR(m.revenue)}
-                      </td>
+                      <td className="py-2 font-medium text-stone-900">{m.month}</td>
+                      <td className="py-2 text-stone-700">{Number(m.orders)}</td>
+                      <td className="py-2 text-right font-semibold text-stone-900">{formatINR(m.revenue)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -188,6 +230,85 @@ export default async function AdminReportsPage() {
           </CardBody>
         </Card>
       )}
+
+      {/* ── Party Report ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Party report</CardTitle>
+        </CardHeader>
+        <CardBody className="flex flex-col gap-4">
+          <Suspense fallback={null}>
+            <PartyPicker parties={allParties} selectedId={params.party} />
+          </Suspense>
+
+          {!partyReport && (
+            <p className="text-sm text-stone-400">Select a party to see their order report.</p>
+          )}
+
+          {partyReport && (
+            <>
+              <div className="rounded-xl bg-stone-50 border border-stone-100 px-4 py-3">
+                <p className="font-semibold text-stone-900">{partyReport.party.shopName}</p>
+                <p className="text-sm text-stone-500">{partyReport.party.ownerName} · {partyReport.party.mobile}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <MiniStat label="Total orders" value={partyReport.total} color="text-stone-900" />
+                <MiniStat label="Delivered" value={partyReport.delivered} color="text-emerald-700" />
+                <MiniStat label="Cancelled / Rejected" value={partyReport.cancelled} color="text-rose-600" />
+                <MiniStat label="In progress" value={partyReport.pending} color="text-amber-700" />
+                <MiniStat label="Total pieces" value={partyReport.totalPieces} color="text-stone-900" />
+                <div className="rounded-xl border border-stone-100 bg-white px-3 py-2.5">
+                  <p className="text-lg font-semibold text-admin-800">{formatINR(partyReport.totalRevenue)}</p>
+                  <p className="text-xs text-stone-500">Total revenue</p>
+                </div>
+              </div>
+
+              {partyReport.orders.length > 0 && (
+                <div className="overflow-x-auto rounded-xl border border-stone-100">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-stone-100 text-left text-xs text-stone-500 bg-stone-50">
+                        <th className="px-4 py-2 font-medium">Order #</th>
+                        <th className="px-4 py-2 font-medium">Status</th>
+                        <th className="px-4 py-2 font-medium">Pieces</th>
+                        <th className="px-4 py-2 font-medium text-right">Amount</th>
+                        <th className="px-4 py-2 font-medium">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {partyReport.orders.map((o) => (
+                        <tr key={o.id} className="hover:bg-stone-50">
+                          <td className="px-4 py-2.5">
+                            <Link href={`/admin/orders/${o.id}`} className="font-medium text-admin-800 hover:underline">
+                              #{o.orderNumber}
+                            </Link>
+                          </td>
+                          <td className="px-4 py-2.5"><StatusPill status={o.status} /></td>
+                          <td className="px-4 py-2.5 text-stone-700">{o.totalPieces}</td>
+                          <td className="px-4 py-2.5 text-right font-semibold text-stone-900">{formatINR(o.total)}</td>
+                          <td className="px-4 py-2.5 text-xs text-stone-500">
+                            {new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
+function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="rounded-xl border border-stone-100 bg-white px-3 py-2.5">
+      <p className={`text-lg font-semibold ${color}`}>{value}</p>
+      <p className="text-xs text-stone-500">{label}</p>
     </div>
   );
 }

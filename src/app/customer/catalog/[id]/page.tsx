@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Package } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
 import { VariantPicker } from "./VariantPicker";
+import { ImageCarousel } from "@/components/ImageCarousel";
 
 export default async function ProductDetailPage({
   params,
@@ -50,20 +51,7 @@ export default async function ProductDetailPage({
         <ChevronLeft className="h-4 w-4" /> Back to catalog
       </Link>
 
-      <div className="overflow-hidden rounded-2xl bg-stone-100">
-        {mainImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={mainImage}
-            alt={product.name}
-            className="aspect-square w-full object-cover"
-          />
-        ) : (
-          <div className="grid aspect-square w-full place-items-center text-stone-300">
-            <Package className="h-16 w-16" />
-          </div>
-        )}
-      </div>
+      <ImageCarousel images={product.images} alt={product.name} />
 
       <div>
         <p className="text-xs uppercase tracking-wider text-brand-700">
