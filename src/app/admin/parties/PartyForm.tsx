@@ -160,12 +160,14 @@ export function PartyForm({ initial }: { initial?: InitialData }) {
             value={form.gstin}
             onChange={(e) => patch("gstin", e.target.value)}
             placeholder="24ABCDE1234F1Z5"
+            autoComplete="off"
           />
           <Input
             label="PAN"
             value={form.pan}
             onChange={(e) => patch("pan", e.target.value)}
             placeholder="ABCDE1234F"
+            autoComplete="off"
           />
           <Input
             label="Credit limit (₹, optional)"
@@ -203,15 +205,35 @@ export function PartyForm({ initial }: { initial?: InitialData }) {
               Create a login account for this party
             </label>
             {createLogin && (
-              <Input
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                hint="Credentials will be logged to console (SMS/WhatsApp stub)"
-                required={createLogin}
-                minLength={8}
-              />
+              <div className="flex flex-col gap-4">
+                <div className="rounded-lg bg-stone-50 border border-stone-200 px-3 py-2.5 text-sm">
+                  <span className="text-stone-500">Username (login ID): </span>
+                  <span className="font-semibold text-stone-900">
+                    {form.mobile || <span className="text-stone-400 italic">enter mobile number above</span>}
+                  </span>
+                </div>
+                {/* Hidden input so browser password manager links mobile (not PAN) as username */}
+                <input
+                  type="text"
+                  name="username"
+                  value={form.mobile}
+                  onChange={() => {}}
+                  autoComplete="username"
+                  style={{ display: "none" }}
+                  aria-hidden="true"
+                />
+                <Input
+                  label="Password"
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  hint="Party will log in using their mobile number as username"
+                  required={createLogin}
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+              </div>
             )}
           </CardBody>
         </Card>

@@ -74,7 +74,11 @@ input[type="number"] { -moz-appearance: textfield; }
    Page animations
 ═══════════════════════════════════════ */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-down {
+  from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fade-in {
@@ -82,21 +86,86 @@ input[type="number"] { -moz-appearance: textfield; }
   to   { opacity: 1; }
 }
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.97); }
+  from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
 
-.animate-fade-up  { animation: fade-up  0.38s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.animate-fade-in  { animation: fade-in  0.25s ease both; }
-.animate-scale-in { animation: scale-in 0.3s  cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fade-up      { animation: fade-up      0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fade-down    { animation: fade-down     0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fade-in      { animation: fade-in       0.25s ease both; }
+.animate-scale-in     { animation: scale-in      0.3s  cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-slide-left   { animation: slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-pop-in       { animation: pop-in        0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* Stagger children */
-.stagger > *:nth-child(1) { animation-delay: 0ms;  }
-.stagger > *:nth-child(2) { animation-delay: 50ms; }
-.stagger > *:nth-child(3) { animation-delay: 90ms; }
-.stagger > *:nth-child(4) { animation-delay: 120ms;}
-.stagger > *:nth-child(5) { animation-delay: 150ms;}
-.stagger > *:nth-child(n+6) { animation-delay: 170ms; }
+/* Stagger children — each child gets animate-fade-up, stagger sets delay */
+.stagger > *:nth-child(1)    { animation-delay: 0ms;   }
+.stagger > *:nth-child(2)    { animation-delay: 55ms;  }
+.stagger > *:nth-child(3)    { animation-delay: 100ms; }
+.stagger > *:nth-child(4)    { animation-delay: 140ms; }
+.stagger > *:nth-child(5)    { animation-delay: 175ms; }
+.stagger > *:nth-child(6)    { animation-delay: 205ms; }
+.stagger > *:nth-child(7)    { animation-delay: 230ms; }
+.stagger > *:nth-child(8)    { animation-delay: 250ms; }
+.stagger > *:nth-child(n+9)  { animation-delay: 265ms; }
+
+/* ── Page transition ── */
+@keyframes page-enter {
+  0%   { opacity: 0; transform: translateY(16px) scale(0.99); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes page-slide-in {
+  0%   { opacity: 0; transform: translateX(18px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.page-enter {
+  animation: page-enter 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Top loading bar */
+@keyframes load-bar {
+  0%   { width: 0%;   opacity: 1; }
+  60%  { width: 80%;  opacity: 1; }
+  100% { width: 100%; opacity: 0; }
+}
+.page-load-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, #ba0000, #e05a74, #ba0000);
+  background-size: 200% auto;
+  animation: load-bar 0.55s cubic-bezier(0.16, 1, 0.3, 1) both, shimmer 1s linear infinite;
+  z-index: 9999;
+  border-radius: 0 2px 2px 0;
+  pointer-events: none;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+}
+
+/* Button press */
+.btn-press { transition: transform 0.12s ease, opacity 0.12s ease; }
+.btn-press:active { transform: scale(0.97); opacity: 0.85; }
 
 @keyframes bell-ring {
   0%  { transform: rotate(0deg); }
@@ -109,7 +178,9 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-up, .animate-fade-in, .animate-scale-in { animation: none; }
+  .animate-fade-up, .animate-fade-down, .animate-fade-in,
+  .animate-scale-in, .animate-slide-left, .animate-pop-in { animation: none; }
+  .card-hover:hover { transform: none; }
 }
 
 /* ═══════════════════════════════════════
@@ -122,6 +193,49 @@ input[type="number"] { -moz-appearance: textfield; }
     radial-gradient(ellipse 60% 40% at 0% 100%, rgba(196, 154, 60, 0.08), transparent 60%),
     #fdfaf6;
   position: relative;
+  overflow: hidden;
+}
+
+/* Floating orbs */
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -40px) scale(1.08); }
+  66%       { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(-35px, 30px) scale(1.1); }
+  70%       { transform: translate(25px, -20px) scale(0.92); }
+}
+@keyframes orb-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, 35px) scale(1.05); }
+}
+
+.login-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+.login-orb-1 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(186,0,0,0.12) 0%, transparent 70%);
+  top: -80px; left: -60px;
+  animation: orb-float-1 9s ease-in-out infinite;
+}
+.login-orb-2 {
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(196,154,60,0.10) 0%, transparent 70%);
+  bottom: -60px; right: -40px;
+  animation: orb-float-2 11s ease-in-out infinite;
+}
+.login-orb-3 {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(92,13,26,0.09) 0%, transparent 70%);
+  top: 50%; left: 60%;
+  animation: orb-float-3 7s ease-in-out infinite;
 }
 
 .login-page-bg::before {
@@ -135,11 +249,102 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 @keyframes login-card-rise {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 .login-card-anim {
-  animation: login-card-rise 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: login-card-rise 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Logo pop */
+@keyframes logo-pop {
+  0%   { opacity: 0; transform: scale(0.65) rotate(-5deg); }
+  65%  { transform: scale(1.08) rotate(1.5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.login-logo-anim {
+  animation: logo-pop 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+/* Pulse ring around logo */
+@keyframes logo-ring {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.login-logo-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 32px;
+  border: 2px solid rgba(186,0,0,0.25);
+  animation: logo-ring 2s ease-out 0.9s infinite;
+  pointer-events: none;
+}
+
+/* Form fields stagger */
+@keyframes field-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.login-field-1 { animation: field-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both; }
+.login-field-2 { animation: field-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.48s both; }
+.login-btn     { animation: field-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.58s both; }
+.login-footer  { animation: field-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.68s both; }
+
+/* WhatsApp button pulse */
+@keyframes wa-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37,211,102,0.35); }
+  50%       { box-shadow: 0 0 0 8px rgba(37,211,102,0); }
+}
+.wa-btn-anim {
+  animation: wa-pulse 2.2s ease-in-out 1.5s infinite;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.wa-btn-anim:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37,211,102,0.25) !important;
+}
+.wa-btn-anim:active {
+  transform: scale(0.97);
+}
+
+/* Shimmer on submit button */
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+}
+@keyframes signin-gradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes signin-glow {
+  0%, 100% { box-shadow: 0 4px 15px rgba(186,0,0,0.4), 0 0 0 0 rgba(186,0,0,0.25); }
+  50%       { box-shadow: 0 4px 25px rgba(186,0,0,0.6), 0 0 0 6px rgba(186,0,0,0); }
+}
+.login-btn {
+  background: linear-gradient(135deg, #ba0000, #8b1a00, #6B3F08, #ba0000) !important;
+  background-size: 300% 300% !important;
+  animation: signin-gradient 3s ease infinite, signin-glow 2.5s ease-in-out 1s infinite;
+  transition: transform 0.18s ease;
+}
+.login-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.015);
+}
+.login-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.login-btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.login-btn-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+  background-size: 200% auto;
+  animation: shimmer 2.5s linear 1s infinite;
+  pointer-events: none;
 }
 
 /* Login inputs */

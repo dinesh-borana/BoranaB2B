@@ -15,13 +15,13 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Panini Jewels — B2B Ordering",
+  title: "Borana B2B — Ordering Portal",
   description:
-    "Wholesale ordering portal for Panini Jewels imitation jewellery.",
-  applicationName: "Panini Jewels B2B",
+    "Wholesale ordering portal for Borana Creation imitation jewellery.",
+  applicationName: "Borana B2B",
   appleWebApp: {
     capable: true,
-    title: "Panini Jewels B2B",
+    title: "Borana B2B",
     statusBarStyle: "default",
   },
 };

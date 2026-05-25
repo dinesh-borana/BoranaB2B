@@ -18,19 +18,13 @@ export function Logo({
 
   const inner = (
     <>
-      <span
-        className={cn(
-          "grid shrink-0 place-items-center rounded-lg font-serif shadow-sm",
-          light
-            ? "bg-white/20 text-white"
-            : variant === "admin"
-            ? "bg-admin-700 text-white"
-            : "bg-brand-700 text-white",
-        )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/borana-logo.png"
+        alt="Borana B2B"
+        className="shrink-0 rounded-lg object-contain"
         style={{ width: dim, height: dim }}
-      >
-        <span style={{ fontSize: dim * 0.52, fontFamily: "Georgia, serif", fontWeight: 600 }}>P</span>
-      </span>
+      />
       <div className="flex flex-col leading-tight">
         <span
           className={cn(
@@ -39,7 +33,7 @@ export function Logo({
             light ? "text-white" : "text-stone-900",
           )}
         >
-          Panini Jewels
+          Borana B2B
         </span>
         <span
           className={cn(

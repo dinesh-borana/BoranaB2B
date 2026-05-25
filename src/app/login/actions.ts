@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 export type LoginState = {
   error?: string;
+  inactive?: boolean;
 };
 
 export async function loginAction(
@@ -18,6 +19,21 @@ export async function loginAction(
 
   if (!identifier || !password) {
     return { error: "Enter your mobile/email and password." };
+  }
+
+  // Check if party is inactive before attempting login
+  const existingUser = await prisma.user.findFirst({
+    where: identifier.includes("@")
+      ? { email: identifier.toLowerCase() }
+      : { mobile: identifier },
+    include: { party: { select: { isActive: true } } },
+  });
+
+  if (existingUser?.role === "CUSTOMER" && existingUser.party && !existingUser.party.isActive) {
+    return {
+      error: "Your account has been deactivated. Please contact Borana Jewels to reactivate your account.",
+      inactive: true,
+    };
   }
 
   try {

@@ -34,6 +34,7 @@ model User {
   email        String?  @unique
   passwordHash String
   role         Role     @default(CUSTOMER)
+  permissions  String[] @default([])
   party        Party?   @relation(fields: [partyId], references: [id])
   partyId      String?
   createdAt    DateTime @default(now())

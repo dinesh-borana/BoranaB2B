@@ -11,6 +11,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { Logo } from "@/components/ui/Logo";
@@ -24,6 +25,7 @@ const NAV = [
   { href: "/admin/categories",label: "Categories",icon: Tags },
   { href: "/admin/reports",   label: "Reports",   icon: BarChart3 },
   { href: "/admin/settings",  label: "Settings",  icon: Settings },
+  { href: "/admin/admins",    label: "Admins",    icon: ShieldCheck },
 ];
 
 export function AdminSidebar() {
@@ -34,19 +36,19 @@ export function AdminSidebar() {
         <Logo variant="admin" size="sm" light href="/admin/dashboard" />
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-0.5">
+        <ul className="space-y-0.5 stagger">
           {NAV.map((item) => {
             const active = pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
-              <li key={item.href}>
+              <li key={item.href} className="animate-slide-left">
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                     active
-                      ? "bg-white/15 text-white"
-                      : "text-white/60 hover:bg-white/8 hover:text-white/90",
+                      ? "bg-white/15 text-white scale-[1.02]"
+                      : "text-white/60 hover:bg-white/8 hover:text-white/90 hover:translate-x-0.5",
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />

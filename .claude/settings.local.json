@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npx tsx --eval ' *)",
       "Bash(node --input-type=module)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(rm \"d:/projects/borana-b2b/src/app/customer/catalog/[id]/ImageCarousel.tsx\")"
+    ],
+    "additionalDirectories": [
+      "d:\\projects\\borana-b2b\\src\\app\\customer\\catalog\\[id]"
     ]
   }
 }

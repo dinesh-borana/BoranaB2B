@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { Providers } from "@/components/Providers";
 import { TopBar } from "@/components/customer/TopBar";
 import { BottomTabs } from "@/components/customer/BottomTabs";
+import { PageTransition } from "@/components/PageTransition";
 
 export default async function CustomerLayout({
   children,
@@ -15,10 +16,12 @@ export default async function CustomerLayout({
 
   return (
     <Providers>
-      <div className="flex min-h-dvh flex-col" style={{ background: "var(--background)" }}>
+      <div className="flex h-dvh flex-col overflow-hidden" style={{ background: "var(--background)" }}>
         <TopBar />
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-24 pt-4 animate-fade-up">
-          {children}
+        <main className="w-full flex-1 overflow-y-auto px-4 pb-20 pt-4">
+          <div className="mx-auto max-w-3xl">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </main>
         <BottomTabs />
       </div>

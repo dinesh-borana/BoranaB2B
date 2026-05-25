@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Search, Package } from "lucide-react";
+import { Package } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CatalogSearch } from "./CatalogSearch";
+import { Suspense } from "react";
 
 export const metadata = { title: "Catalog · Borana B2B" };
 
@@ -53,24 +55,9 @@ export default async function CatalogPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <form className="relative" action="/customer/catalog">
-        <button
-          type="submit"
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-brand-700"
-          aria-label="Search"
-        >
-          <Search className="h-4 w-4" />
-        </button>
-        <input
-          name="q"
-          defaultValue={params.q ?? ""}
-          placeholder="Search products, SKU…"
-          className="h-11 w-full rounded-xl border border-stone-200 bg-white pl-10 pr-3 text-sm text-stone-900 placeholder:text-stone-400 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20"
-        />
-        {params.cat && (
-          <input type="hidden" name="cat" value={params.cat} />
-        )}
-      </form>
+      <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
+        <CatalogSearch initialQ={params.q ?? ""} />
+      </Suspense>
 
       <div className="-mx-4 overflow-x-auto px-4">
         <div className="flex gap-2">

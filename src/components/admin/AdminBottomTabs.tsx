@@ -26,12 +26,12 @@ export function AdminBottomTabs() {
       className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/97 backdrop-blur md:hidden"
       style={{ borderColor: "var(--border)" }}
     >
-      <ul className="mx-auto flex max-w-3xl items-stretch">
+      <ul className="flex items-stretch stagger overflow-x-auto scrollbar-none">
         {TABS.map((tab) => {
           const active = pathname.startsWith(tab.href);
           const Icon = tab.icon;
           return (
-            <li key={tab.href} className="flex-1">
+            <li key={tab.href} className="min-w-[72px] flex-1 animate-fade-up">
               <Link
                 href={tab.href}
                 className="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors"
