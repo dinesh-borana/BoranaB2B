@@ -71,7 +71,7 @@ export async function bulkCreateProducts(rows: BulkRow[]): Promise<BulkResult> {
     }
   }
 
-  revalidateTag("products");
+  revalidateTag("products", {});
   revalidatePath("/admin/products");
   return { created, skipped };
 }
