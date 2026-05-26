@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { Building2, Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,15 +10,17 @@ import { SignOutButton } from "@/components/customer/SignOutButton";
 
 export const metadata = { title: "Profile · Borana B2B" };
 
+const getParty = unstable_cache(
+  (id: string) => prisma.party.findUnique({ where: { id } }).catch(() => null),
+  ["party-detail"],
+  { revalidate: 300, tags: ["parties"] },
+);
+
 export default async function ProfilePage() {
   const session = await auth();
 
   const [party, support] = await Promise.all([
-    session?.user.partyId
-      ? prisma.party
-          .findUnique({ where: { id: session.user.partyId } })
-          .catch(() => null)
-      : null,
+    session?.user.partyId ? getParty(session.user.partyId) : null,
     getSetting("support.phone"),
   ]);
 
@@ -31,9 +34,7 @@ export default async function ProfilePage() {
             {session?.user.name?.slice(0, 1).toUpperCase()}
           </div>
           <div>
-            <p className="font-semibold text-stone-900">
-              {session?.user.name}
-            </p>
+            <p className="font-semibold text-stone-900">{session?.user.name}</p>
             {session?.user.email && (
               <p className="text-sm text-stone-500">{session.user.email}</p>
             )}
@@ -47,26 +48,15 @@ export default async function ProfilePage() {
             <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
               Business details
             </p>
-            <InfoRow
-              icon={<Building2 className="h-4 w-4" />}
-              label={party.shopName}
-            />
-            <InfoRow
-              icon={<Phone className="h-4 w-4" />}
-              label={party.mobile}
-            />
+            <InfoRow icon={<Building2 className="h-4 w-4" />} label={party.shopName} />
+            <InfoRow icon={<Phone className="h-4 w-4" />} label={party.mobile} />
             {party.email && (
-              <InfoRow
-                icon={<Mail className="h-4 w-4" />}
-                label={party.email}
-              />
+              <InfoRow icon={<Mail className="h-4 w-4" />} label={party.email} />
             )}
             {(party.city || party.state) && (
               <InfoRow
                 icon={<MapPin className="h-4 w-4" />}
-                label={[party.city, party.state, party.pincode]
-                  .filter(Boolean)
-                  .join(", ")}
+                label={[party.city, party.state, party.pincode].filter(Boolean).join(", ")}
               />
             )}
             {party.gstin && (
@@ -82,10 +72,7 @@ export default async function ProfilePage() {
             Help & support
           </p>
           {support && (
-            <a
-              href={`tel:${support}`}
-              className="flex items-center gap-3 text-sm text-stone-700"
-            >
+            <a href={`tel:${support}`} className="flex items-center gap-3 text-sm text-stone-700">
               <Phone className="h-4 w-4 text-brand-700" />
               {support}
             </a>
@@ -110,13 +97,7 @@ export default async function ProfilePage() {
   );
 }
 
-function InfoRow({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string | null | undefined;
-}) {
+function InfoRow({ icon, label }: { icon: React.ReactNode; label: string | null | undefined }) {
   if (!label) return null;
   return (
     <div className="flex items-center gap-2 text-sm text-stone-700">

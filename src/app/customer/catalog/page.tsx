@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { Package } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
@@ -12,38 +13,37 @@ export const metadata = { title: "Catalog · Borana B2B" };
 
 type SP = { q?: string; cat?: string };
 
-async function load(params: SP) {
-  try {
-    const categories = await prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-    });
+const getCategories = unstable_cache(
+  () => prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
+  ["catalog-categories"],
+  { revalidate: 300, tags: ["categories"] },
+);
 
-    const products = await prisma.product.findMany({
+const getProducts = unstable_cache(
+  (q: string, cat: string) =>
+    prisma.product.findMany({
       where: {
         isActive: true,
-        ...(params.q
+        ...(q
           ? {
               OR: [
-                { name: { contains: params.q, mode: "insensitive" } },
-                { sku: { contains: params.q, mode: "insensitive" } },
-                { description: { contains: params.q, mode: "insensitive" } },
+                { name: { contains: q, mode: "insensitive" } },
+                { sku: { contains: q, mode: "insensitive" } },
+                { description: { contains: q, mode: "insensitive" } },
               ],
             }
           : {}),
-        ...(params.cat ? { category: { slug: params.cat } } : {}),
+        ...(cat ? { category: { slug: cat } } : {}),
       },
       include: {
         images: { where: { isMain: true }, take: 1 },
         category: true,
       },
       orderBy: { createdAt: "desc" },
-    });
-
-    return { categories, products };
-  } catch {
-    return { categories: [], products: [] };
-  }
-}
+    }),
+  ["catalog-products"],
+  { revalidate: 120, tags: ["products"] },
+);
 
 export default async function CatalogPage({
   searchParams,
@@ -51,12 +51,18 @@ export default async function CatalogPage({
   searchParams: Promise<SP>;
 }) {
   const params = await searchParams;
-  const { categories, products } = await load(params);
+  const q = params.q ?? "";
+  const cat = params.cat ?? "";
+
+  const [categories, products] = await Promise.all([
+    getCategories().catch(() => []),
+    getProducts(q, cat).catch(() => []),
+  ]);
 
   return (
     <div className="flex flex-col gap-4">
       <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
-        <CatalogSearch initialQ={params.q ?? ""} />
+        <CatalogSearch initialQ={q} />
       </Suspense>
 
       <div className="-mx-4 overflow-x-auto px-4">
@@ -98,17 +104,17 @@ export default async function CatalogPage({
           icon={<Package className="h-5 w-5" />}
           title="No products found"
           description={
-            params.q || params.cat
+            q || cat
               ? "Try clearing your filters or searching for something else."
               : "Run `npm run db:seed` to load sample products."
           }
         />
       ) : (
         <div className="grid grid-cols-2 gap-3">
-          {products.map((p) => {
+          {products.map((p, idx) => {
             const img = p.images[0]?.url;
             return (
-              <Link key={p.id} href={`/customer/catalog/${p.id}`}>
+              <Link key={p.id} href={`/customer/catalog/${p.id}`} prefetch={true}>
                 <Card className="overflow-hidden transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/8">
                   <div className="aspect-square w-full bg-stone-100">
                     {img ? (
@@ -117,6 +123,8 @@ export default async function CatalogPage({
                         src={img}
                         alt={p.name}
                         className="h-full w-full object-cover"
+                        loading={idx < 4 ? "eager" : "lazy"}
+                        decoding="async"
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-stone-300">

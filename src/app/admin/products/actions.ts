@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -62,6 +62,7 @@ export async function createProduct(formData: FormData) {
     },
   });
 
+  revalidateTag("products");
   revalidatePath("/admin/products");
   redirect(`/admin/products/${product.id}`);
 }
@@ -104,6 +105,7 @@ export async function updateProduct(productId: string, formData: FormData) {
     });
   });
 
+  revalidateTag("products");
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${productId}`);
   redirect(`/admin/products/${productId}`);
@@ -112,6 +114,7 @@ export async function updateProduct(productId: string, formData: FormData) {
 export async function deleteProduct(productId: string) {
   await checkAdmin();
   await prisma.product.delete({ where: { id: productId } });
+  revalidateTag("products");
   revalidatePath("/admin/products");
   redirect("/admin/products");
 }

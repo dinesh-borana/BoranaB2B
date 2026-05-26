@@ -1,13 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import Image from "next/image";
-import boranaLogo from "../../../public/borana-logo.png";
 import { Smartphone, Lock, Eye, EyeOff } from "lucide-react";
 import { loginAction, type LoginState } from "./actions";
 
 const WA_NUMBER = "918860498653";
-const WA_MSG = "Hi Borana Creation, I want to request a B2B account.";
+const WA_MSG = "Hi Borana Team, I want to request a B2B account.";
 
 const C = {
   goldDeep: "#ba0000",
@@ -68,9 +66,6 @@ export function LoginForm() {
         paddingBottom: "max(24px, env(safe-area-inset-bottom))",
       }}
     >
-      <div className="login-orb login-orb-1" />
-      <div className="login-orb login-orb-2" />
-      <div className="login-orb login-orb-3" />
       <main
         className="login-card-anim relative z-10 w-full max-w-[420px] rounded-[20px] border bg-white p-7 sm:p-10"
         style={{
@@ -81,11 +76,17 @@ export function LoginForm() {
       >
         {/* Brand */}
         <div className="mb-7 flex flex-col items-center text-center">
-          <div className="login-logo-anim" style={{ position: "relative", width: 160, height: 160, marginBottom: 12, flexShrink: 0 }}>
-            <div className="login-logo-ring" />
-            <div style={{ width: 160, height: 160, borderRadius: 24, overflow: "hidden", background: "#000", boxShadow: "0 12px 32px rgba(0,0,0,0.3)" }}>
-              <Image src={boranaLogo} alt="Borana Creation" width={160} height={160} style={{ objectFit: "cover", width: "100%", height: "100%" }} priority />
-            </div>
+          <div className="login-logo-anim" style={{ width: 160, height: 160, marginBottom: 12, flexShrink: 0, borderRadius: 24, overflow: "hidden", background: "#000", boxShadow: "0 12px 32px rgba(0,0,0,0.3)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/borana-logo.png"
+              alt="Borana Creation"
+              width={160}
+              height={160}
+              fetchPriority="high"
+              decoding="async"
+              style={{ objectFit: "cover", width: "100%", height: "100%", display: "block" }}
+            />
           </div>
           <p style={{ fontSize: 11, letterSpacing: 2.5, textTransform: "uppercase", color: C.muted, fontWeight: 500 }}>
             B2B Order portal

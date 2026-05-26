@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import {
   Package,
   ClipboardList,
@@ -15,44 +16,45 @@ import { SignOutButton } from "@/components/customer/SignOutButton";
 
 export const metadata = { title: "Home · Borana B2B" };
 
-async function loadData(partyId: string | null) {
-  if (!partyId) {
-    return { recent: [], featured: [], stats: { total: 0, pending: 0 } };
-  }
-  try {
-    const [recent, featured, total, pending] = await Promise.all([
-      prisma.order.findMany({
-        where: { partyId },
-        orderBy: { createdAt: "desc" },
-        take: 3,
-      }),
-      prisma.product.findMany({
-        where: { isActive: true },
-        include: {
-          images: { where: { isMain: true }, take: 1 },
-        },
-        take: 6,
-      }),
-      prisma.order.count({ where: { partyId } }),
-      prisma.order.count({
-        where: { partyId, status: { in: ["PENDING", "CONFIRMED", "PACKING"] } },
-      }),
-    ]);
-    return {
-      recent,
-      featured,
-      stats: { total, pending },
-    };
-  } catch {
-    return { recent: [], featured: [], stats: { total: 0, pending: 0 } };
-  }
+const getFeaturedProducts = unstable_cache(
+  () =>
+    prisma.product.findMany({
+      where: { isActive: true },
+      include: { images: { where: { isMain: true }, take: 1 } },
+      take: 6,
+      orderBy: { createdAt: "desc" },
+    }),
+  ["dashboard-featured"],
+  { revalidate: 120, tags: ["products"] },
+);
+
+async function getPartyData(partyId: string) {
+  const [recent, total, pending] = await Promise.all([
+    prisma.order.findMany({
+      where: { partyId },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
+    prisma.order.count({ where: { partyId } }),
+    prisma.order.count({
+      where: { partyId, status: { in: ["PENDING", "CONFIRMED", "PACKING"] } },
+    }),
+  ]);
+  return { recent, stats: { total, pending } };
 }
 
 export default async function CustomerDashboardPage() {
   const session = await auth();
-  const { recent, featured, stats } = await loadData(
-    session?.user.partyId ?? null,
-  );
+  const partyId = session?.user.partyId ?? null;
+
+  const [partyData, featured] = await Promise.all([
+    partyId
+      ? getPartyData(partyId).catch(() => ({ recent: [], stats: { total: 0, pending: 0 } }))
+      : Promise.resolve({ recent: [], stats: { total: 0, pending: 0 } }),
+    getFeaturedProducts().catch(() => []),
+  ]);
+
+  const { recent, stats } = partyData;
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,9 +84,7 @@ export default async function CustomerDashboardPage() {
               <ClipboardList className="h-5 w-5" />
             </span>
             <div>
-              <div className="text-2xl font-semibold text-stone-900">
-                {stats.total}
-              </div>
+              <div className="text-2xl font-semibold text-stone-900">{stats.total}</div>
               <div className="text-xs text-stone-500">Total orders</div>
             </div>
           </CardBody>
@@ -95,44 +95,29 @@ export default async function CustomerDashboardPage() {
               <Package className="h-5 w-5" />
             </span>
             <div>
-              <div className="text-2xl font-semibold text-stone-900">
-                {stats.pending}
-              </div>
+              <div className="text-2xl font-semibold text-stone-900">{stats.pending}</div>
               <div className="text-xs text-stone-500">In progress</div>
             </div>
           </CardBody>
         </Card>
       </section>
 
-      <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-stone-900">
-            Recent orders
-          </h2>
-          <Link
-            href="/customer/orders"
-            className="text-xs font-medium text-brand-700"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="flex flex-col gap-2">
-          {recent.length === 0 ? (
-            <Card>
-              <CardBody className="text-sm text-stone-500">
-                You haven&apos;t placed any orders yet.
-              </CardBody>
-            </Card>
-          ) : (
-            recent.map((o) => (
+      {recent.length > 0 && (
+        <section>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-stone-900">Recent orders</h2>
+            <Link href="/customer/orders" className="text-xs font-medium text-brand-700">
+              View all
+            </Link>
+          </div>
+          <div className="flex flex-col gap-2">
+            {recent.map((o) => (
               <Link key={o.id} href={`/customer/orders/${o.id}`}>
                 <Card className="transition-colors hover:border-brand-300">
                   <CardBody className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-stone-900">
-                          #{o.orderNumber}
-                        </span>
+                        <span className="font-semibold text-stone-900">#{o.orderNumber}</span>
                         <StatusPill status={o.status} />
                       </div>
                       <p className="mt-0.5 text-xs text-stone-500">
@@ -140,67 +125,63 @@ export default async function CustomerDashboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-stone-900">
-                        {formatINR(o.total)}
-                      </div>
+                      <div className="font-semibold text-stone-900">{formatINR(o.total)}</div>
                       <div className="text-xs text-stone-500">incl. GST</div>
                     </div>
                   </CardBody>
                 </Card>
               </Link>
-            ))
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="flex items-center gap-1.5 text-base font-semibold text-stone-900">
-            <Sparkles className="h-4 w-4 text-brand-700" /> Featured
-          </h2>
-          <Link
-            href="/customer/catalog"
-            className="text-xs font-medium text-brand-700"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {featured.map((p) => {
-            const img = p.images[0]?.url;
-            return (
-              <Link key={p.id} href={`/customer/catalog/${p.id}`}>
-                <Card className="overflow-hidden">
-                  <div className="aspect-square w-full bg-stone-100">
-                    {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={img}
-                        alt={p.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="grid h-full w-full place-items-center text-stone-300">
-                        <Package className="h-10 w-10" />
-                      </div>
-                    )}
-                  </div>
-                  <CardBody className="!p-3">
-                    <p className="line-clamp-2 text-sm font-medium text-stone-900">
-                      {p.name}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-brand-700">
-                      {formatINR(p.price)}
-                    </p>
-                  </CardBody>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      {featured.length > 0 && (
+        <section>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-base font-semibold text-stone-900">
+              <Sparkles className="h-4 w-4 text-brand-700" /> Featured
+            </h2>
+            <Link href="/customer/catalog" className="text-xs font-medium text-brand-700">
+              View all
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {featured.map((p, idx) => {
+              const img = p.images[0]?.url;
+              return (
+                <Link key={p.id} href={`/customer/catalog/${p.id}`} prefetch={true}>
+                  <Card className="overflow-hidden transition-colors hover:border-brand-300">
+                    <div className="aspect-square w-full bg-stone-100">
+                      {img ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={img}
+                          alt={p.name}
+                          className="h-full w-full object-cover"
+                          loading={idx < 2 ? "eager" : "lazy"}
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="grid h-full w-full place-items-center text-stone-300">
+                          <Package className="h-10 w-10" />
+                        </div>
+                      )}
+                    </div>
+                    <CardBody className="!p-3">
+                      <p className="line-clamp-2 text-sm font-medium text-stone-900">{p.name}</p>
+                      <p className="mt-1 text-sm font-semibold text-brand-700">
+                        {formatINR(p.price)}
+                      </p>
+                    </CardBody>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
-      {/* Account */}
       <section>
         <Card>
           <CardBody className="flex items-center gap-3">
@@ -208,13 +189,9 @@ export default async function CustomerDashboardPage() {
               {session?.user.name?.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-stone-900">
-                {session?.user.name}
-              </p>
+              <p className="truncate text-sm font-semibold text-stone-900">{session?.user.name}</p>
               {session?.user.email && (
-                <p className="truncate text-xs text-stone-500">
-                  {session.user.email}
-                </p>
+                <p className="truncate text-xs text-stone-500">{session.user.email}</p>
               )}
             </div>
             <Link

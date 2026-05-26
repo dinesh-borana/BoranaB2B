@@ -10,7 +10,7 @@ type Props = {
 
 export function ImageCarousel({ images, alt }: Props) {
   const [current, setCurrent] = useState(
-    () => Math.max(0, images.findIndex((i) => i.isMain))
+    () => Math.max(0, images.findIndex((i) => i.isMain)),
   );
   const touchStartX = useRef<number | null>(null);
 
@@ -43,25 +43,31 @@ export function ImageCarousel({ images, alt }: Props) {
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-stone-100">
-      {/* Image */}
       <div
         className="aspect-square w-full"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={current}
-          src={images[current].url}
-          alt={`${alt} ${current + 1}`}
-          className="aspect-square w-full object-cover transition-opacity duration-200"
-        />
+        {images.map((img, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={img.url}
+            src={img.url}
+            alt={`${alt} ${i + 1}`}
+            className={`absolute inset-0 aspect-square w-full object-cover transition-opacity duration-200 ${
+              i === current ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+            loading={i === 0 ? "eager" : "lazy"}
+            decoding="async"
+            fetchPriority={i === 0 ? "high" : "low"}
+          />
+        ))}
+        {/* Placeholder while loading */}
+        <div className="aspect-square w-full" />
       </div>
 
-      {/* Arrows — only when multiple images */}
       {images.length > 1 && (
         <>
-          {/* Left arrow */}
           <button
             onClick={prev}
             aria-label="Previous image"
@@ -70,7 +76,6 @@ export function ImageCarousel({ images, alt }: Props) {
             <ChevronLeft className="h-6 w-6 text-stone-700" />
           </button>
 
-          {/* Right arrow */}
           <button
             onClick={next}
             aria-label="Next image"
@@ -79,21 +84,17 @@ export function ImageCarousel({ images, alt }: Props) {
             <ChevronRight className="h-6 w-6 text-stone-700" />
           </button>
 
-          {/* Image counter badge top-right */}
           <div className="absolute right-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
             {current + 1} / {images.length}
           </div>
 
-          {/* Dot indicators bottom */}
           <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
             {images.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
                 className={`rounded-full transition-all duration-200 ${
-                  i === current
-                    ? "h-2 w-6 bg-white"
-                    : "h-2 w-2 bg-white/60"
+                  i === current ? "h-2 w-6 bg-white" : "h-2 w-2 bg-white/60"
                 }`}
                 aria-label={`Image ${i + 1}`}
               />

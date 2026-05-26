@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -21,6 +22,11 @@ const TABS = [
 
 export function AdminBottomTabs() {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
+
+  useEffect(() => {
+    TABS.forEach((tab) => router.prefetch(tab.href));
+  }, [router]);
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/97 backdrop-blur md:hidden"

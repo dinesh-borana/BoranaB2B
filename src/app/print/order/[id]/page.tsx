@@ -111,186 +111,243 @@ export default async function PrintOrderPage({
   const total = Number(order.total);
   const subtotal = Number(order.subtotal);
 
+  const hasMto = itemRows.some(({ mtoSizes, sq }) =>
+    allSizes.some((s) => mtoSizes.has(s) && (sq[s] ?? 0) > 0)
+  );
+
   return (
     <>
       <style>{`
-        @page { size: A4; margin: 10mm 12mm; }
-        @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-        table { border-collapse: collapse; }
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+        @page { size: A4; margin: 8mm 10mm; }
+        @media print {
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .no-print { display: none !important; }
+        }
+        * { box-sizing: border-box; }
+        table { border-collapse: collapse; width: 100%; }
+        body { margin: 0; background: #fff; }
       `}</style>
       <PrintTrigger />
 
-      <div className="bg-white p-5 text-[13px] text-stone-900" style={{ fontFamily: "Arial, sans-serif" }}>
-        <div className="mx-auto max-w-[700px]">
+      <div style={{ fontFamily: "'EB Garamond', Georgia, serif", background: "#fff", minHeight: "100vh", padding: "0" }}>
+        <div style={{ maxWidth: 740, margin: "0 auto", padding: "20px 24px 28px" }}>
 
-          {/* ── Company Header ── */}
-          <div className="mb-1 flex items-center justify-center gap-4 border-b-2 border-[#412402] pb-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/borana-logo.png" alt="Borana Creation" className="h-16 w-16 object-contain" />
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-[#412402]">Borana Creation</h1>
-              <p className="mt-0.5 text-xs text-stone-500">
-                S-6, ADITYA PLAZA, NEAR BOMBAY TALKIES, DADI SHETH MARG, MALAD (WEST) Mumbai
-              </p>
-              <p className="text-xs text-stone-500">Phone no.: 7506322657</p>
+          {/* ══ HEADER ══ */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 16, borderBottom: "2px solid #8b1a2e", marginBottom: 16 }}>
+            {/* Logo + Brand */}
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/borana-logo.png"
+                alt="Borana Creation"
+                style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1px solid #f0e6e8" }}
+              />
+              <div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "#8b1a2e", letterSpacing: 0.5, lineHeight: 1.1 }}>
+                  Borana Creation
+                </div>
+                <div style={{ fontSize: 10.5, color: "#6b5a5d", marginTop: 4, lineHeight: 1.6, fontStyle: "italic" }}>
+                  S-6, Aditya Plaza, Near Bombay Talkies,<br />
+                  Dadi Sheth Marg, Malad (West), Mumbai
+                </div>
+                <div style={{ fontSize: 10.5, color: "#6b5a5d", marginTop: 1, fontStyle: "italic" }}>
+                  Phone: 7506322657
+                </div>
+              </div>
+            </div>
+
+            {/* Invoice badge */}
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#8b1a2e", letterSpacing: 3, textTransform: "uppercase" }}>
+                Invoice
+              </div>
+              <div style={{ marginTop: 8, background: "#fdf2f4", border: "1px solid #f4c5cf", borderRadius: 8, padding: "8px 14px", textAlign: "right" }}>
+                <div style={{ fontSize: 10, color: "#7a5a5e", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>Invoice No.</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#1a0d10" }}>{order.orderNumber}</div>
+                <div style={{ fontSize: 10, color: "#7a5a5e", textTransform: "uppercase", letterSpacing: 1, marginTop: 6, marginBottom: 2 }}>Date</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#1a0d10" }}>{formatDateTime(order.createdAt)}</div>
+              </div>
             </div>
           </div>
 
-          {/* ── Invoice label ── */}
-          <div className="my-1 text-center text-sm font-bold uppercase tracking-widest text-stone-600">
-            Invoice
+          {/* ══ BILL TO ══ */}
+          <div style={{ display: "flex", gap: 16, marginBottom: 18 }}>
+            <div style={{ flex: 1, background: "#fdf2f4", border: "1px solid #f4c5cf", borderRadius: 10, padding: "12px 16px" }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#8b1a2e", marginBottom: 8 }}>
+                Bill To
+              </div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1a0d10", marginBottom: 3 }}>
+                {order.party.shopName}
+              </div>
+              {order.party.ownerName && (
+                <div style={{ fontSize: 12, color: "#4a3035", marginBottom: 2 }}>{order.party.ownerName}</div>
+              )}
+              {(order.party.address || order.party.city) && (
+                <div style={{ fontSize: 11, color: "#6b5a5d", marginBottom: 2, lineHeight: 1.5 }}>
+                  {[order.party.address, order.party.city, order.party.state, order.party.pincode].filter(Boolean).join(", ")}
+                </div>
+              )}
+              {order.party.mobile && (
+                <div style={{ fontSize: 11, color: "#4a3035", marginBottom: 2 }}>Contact: {order.party.mobile}</div>
+              )}
+              {order.party.gstin && (
+                <div style={{ fontSize: 11, color: "#4a3035" }}>GSTIN: <span style={{ fontWeight: 600 }}>{order.party.gstin}</span></div>
+              )}
+            </div>
+
+            {/* Summary box */}
+            <div style={{ width: 200, background: "#fff9f0", border: "1px solid #e8d4b0", borderRadius: 10, padding: "12px 16px" }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#8b1a2e", marginBottom: 8 }}>
+                Summary
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#6b5a5d", marginBottom: 5 }}>
+                <span>Total Items</span>
+                <span style={{ fontWeight: 600, color: "#1a0d10" }}>{order.items.length}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#6b5a5d", marginBottom: 5 }}>
+                <span>Total Pieces</span>
+                <span style={{ fontWeight: 600, color: "#1a0d10" }}>{order.totalPieces}</span>
+              </div>
+              <div style={{ borderTop: "1px solid #e8d4b0", paddingTop: 7, marginTop: 7, display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 700, color: "#8b1a2e" }}>
+                <span>Grand Total</span>
+                <span>₹{fmt(total)}</span>
+              </div>
+            </div>
           </div>
 
-          {/* ── Bill To + Invoice Details ── */}
-          <table className="w-full border border-stone-300 text-xs">
-            <tbody>
-              <tr>
-                <td className="w-1/2 border-r border-stone-300 align-top">
-                  <div className="bg-[#412402] px-2 py-1 text-[11px] font-bold text-white">Bill To</div>
-                  <div className="px-2 py-2">
-                    <p className="font-bold text-stone-900">{order.party.shopName}</p>
-                    {order.party.ownerName && <p>{order.party.ownerName}</p>}
-                    {(order.party.address || order.party.city) && (
-                      <p className="text-stone-600">
-                        {[order.party.address, order.party.city, order.party.state, order.party.pincode]
-                          .filter(Boolean).join(", ")}
-                      </p>
-                    )}
-                    {order.party.mobile && <p>Contact No.: {order.party.mobile}</p>}
-                    {order.party.gstin && <p>GSTIN: {order.party.gstin}</p>}
-                  </div>
-                </td>
-                <td className="w-1/2 align-top">
-                  <div className="bg-[#412402] px-2 py-1 text-[11px] font-bold text-white">Invoice Details</div>
-                  <div className="px-2 py-2">
-                    <p>Invoice No.: <span className="font-semibold">{order.orderNumber}</span></p>
-                    <p>Date: <span className="font-semibold">{formatDateTime(order.createdAt)}</span></p>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* ── Items Table ── */}
-          <table className="mt-2 w-full border border-stone-300 text-xs">
+          {/* ══ ITEMS TABLE ══ */}
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5, marginBottom: 4 }}>
             <thead>
-              <tr className="bg-[#412402] text-white">
-                <th className="border-r border-[#5a3003] px-2 py-1.5 text-center font-bold whitespace-nowrap">#</th>
-                <th className="border-r border-[#5a3003] px-2 py-1.5 text-left font-bold">Item</th>
-                <th className="border-r border-[#5a3003] px-2 py-1.5 text-right font-bold whitespace-nowrap">Rate</th>
+              <tr style={{ background: "#8b1a2e", color: "#fff" }}>
+                <th style={{ padding: "8px 10px", textAlign: "center", fontWeight: 700, fontSize: 10.5, letterSpacing: 0.5, borderRight: "1px solid rgba(255,255,255,0.15)", width: 28 }}>#</th>
+                <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 700, fontSize: 10.5, letterSpacing: 0.5, borderRight: "1px solid rgba(255,255,255,0.15)" }}>Item / SKU</th>
+                <th style={{ padding: "8px 10px", textAlign: "right", fontWeight: 700, fontSize: 10.5, letterSpacing: 0.5, borderRight: "1px solid rgba(255,255,255,0.15)", whiteSpace: "nowrap" }}>Rate (₹)</th>
                 {allSizes.map((size) => (
-                  <th key={size} className="border-r border-[#5a3003] px-2 py-1.5 text-center font-bold whitespace-nowrap">
+                  <th key={size} style={{ padding: "8px 8px", textAlign: "center", fontWeight: 700, fontSize: 10.5, letterSpacing: 0.5, borderRight: "1px solid rgba(255,255,255,0.15)", whiteSpace: "nowrap" }}>
                     {size}
                   </th>
                 ))}
-                <th className="border-r border-[#5a3003] px-2 py-1.5 text-center font-bold whitespace-nowrap">Pcs</th>
-                <th className="px-2 py-1.5 text-right font-bold whitespace-nowrap">Amount</th>
+                <th style={{ padding: "8px 10px", textAlign: "center", fontWeight: 700, fontSize: 10.5, letterSpacing: 0.5, borderRight: "1px solid rgba(255,255,255,0.15)", whiteSpace: "nowrap" }}>Pcs</th>
+                <th style={{ padding: "8px 10px", textAlign: "right", fontWeight: 700, fontSize: 10.5, letterSpacing: 0.5, whiteSpace: "nowrap" }}>Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
               {itemRows.map(({ item, itemName, sq, mtoSizes, rate, lineTotal }, i) => (
-                <tr key={item.id} className={i % 2 === 0 ? "bg-white" : "bg-stone-50"}>
-                  <td className="border-r border-t border-stone-200 px-2 py-2 text-center align-middle">{i + 1}</td>
-                  <td className="border-r border-t border-stone-200 px-2 py-2 font-semibold align-middle">{itemName}</td>
-                  <td className="border-r border-t border-stone-200 px-2 py-2 text-right align-middle whitespace-nowrap">{fmt(rate)}</td>
+                <tr key={item.id} style={{ background: i % 2 === 0 ? "#fff" : "#fdf8f8", borderBottom: "1px solid #f0e6e8" }}>
+                  <td style={{ padding: "7px 10px", textAlign: "center", color: "#7a5a5e", borderRight: "1px solid #f0e6e8", verticalAlign: "middle" }}>{i + 1}</td>
+                  <td style={{ padding: "7px 10px", fontWeight: 600, color: "#1a0d10", borderRight: "1px solid #f0e6e8", verticalAlign: "middle" }}>{itemName}</td>
+                  <td style={{ padding: "7px 10px", textAlign: "right", color: "#4a3035", borderRight: "1px solid #f0e6e8", verticalAlign: "middle", whiteSpace: "nowrap" }}>{fmt(rate)}</td>
                   {allSizes.map((size) => {
                     const qty = sq[size] ?? 0;
                     const isMto = mtoSizes.has(size) && qty > 0;
                     return (
-                      <td key={size} className="border-r border-t border-stone-200 px-2 py-2 text-center align-middle">
+                      <td key={size} style={{ padding: "7px 8px", textAlign: "center", borderRight: "1px solid #f0e6e8", verticalAlign: "middle" }}>
                         {qty > 0 ? (
-                          <span className="font-semibold">
+                          <span style={{ fontWeight: 700, color: "#1a0d10" }}>
                             {qty}
-                            {isMto && <span className="ml-0.5 text-[8px] font-bold text-amber-600">*</span>}
+                            {isMto && <sup style={{ fontSize: 7, color: "#c49a3c", fontWeight: 700 }}>*</sup>}
                           </span>
                         ) : (
-                          <span className="text-stone-300">—</span>
+                          <span style={{ color: "#d8c8ca" }}>—</span>
                         )}
                       </td>
                     );
                   })}
-                  <td className="border-r border-t border-stone-200 px-2 py-2 text-center align-middle font-semibold">{item.pieces}</td>
-                  <td className="border-t border-stone-200 px-2 py-2 text-right align-middle font-semibold">{fmt(lineTotal)}</td>
+                  <td style={{ padding: "7px 10px", textAlign: "center", fontWeight: 600, color: "#1a0d10", borderRight: "1px solid #f0e6e8", verticalAlign: "middle" }}>{item.pieces}</td>
+                  <td style={{ padding: "7px 10px", textAlign: "right", fontWeight: 700, color: "#8b1a2e", verticalAlign: "middle" }}>{fmt(lineTotal)}</td>
                 </tr>
               ))}
-              {/* Totals row */}
-              <tr className="border-t-2 border-stone-400 bg-stone-50 font-bold">
-                <td className="border-r border-stone-300 px-2 py-1.5" />
-                <td className="border-r border-stone-300 px-2 py-1.5">Total</td>
-                <td className="border-r border-stone-300 px-2 py-1.5" />
+            </tbody>
+            {/* Totals footer row */}
+            <tfoot>
+              <tr style={{ background: "#fdf2f4", borderTop: "2px solid #8b1a2e" }}>
+                <td style={{ padding: "8px 10px", borderRight: "1px solid #f0e6e8" }} />
+                <td style={{ padding: "8px 10px", fontWeight: 700, color: "#8b1a2e", fontSize: 12, borderRight: "1px solid #f0e6e8" }}>Grand Total</td>
+                <td style={{ padding: "8px 10px", borderRight: "1px solid #f0e6e8" }} />
                 {allSizes.map((size) => (
-                  <td key={size} className="border-r border-stone-300 px-2 py-1.5 text-center">
-                    {sizeTotals[size] > 0 ? sizeTotals[size] : <span className="text-stone-300">—</span>}
+                  <td key={size} style={{ padding: "8px 8px", textAlign: "center", fontWeight: 700, color: "#1a0d10", borderRight: "1px solid #f0e6e8" }}>
+                    {sizeTotals[size] > 0 ? sizeTotals[size] : <span style={{ color: "#d8c8ca" }}>—</span>}
                   </td>
                 ))}
-                <td className="border-r border-stone-300 px-2 py-1.5 text-center">{order.totalPieces}</td>
-                <td className="px-2 py-1.5 text-right">{fmt(subtotal)}</td>
+                <td style={{ padding: "8px 10px", textAlign: "center", fontWeight: 700, color: "#1a0d10", borderRight: "1px solid #f0e6e8" }}>{order.totalPieces}</td>
+                <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 700, color: "#8b1a2e", fontSize: 13 }}>₹{fmt(subtotal)}</td>
               </tr>
-            </tbody>
+            </tfoot>
           </table>
-          {/* MTO footnote */}
-          {itemRows.some(({ mtoSizes, sq }) =>
-            allSizes.some((s) => mtoSizes.has(s) && (sq[s] ?? 0) > 0)
-          ) && (
-            <p className="mt-1 text-[10px] text-amber-700">* Made to Order</p>
+          {hasMto && (
+            <div style={{ fontSize: 10, color: "#c49a3c", marginBottom: 12, fontStyle: "italic" }}>
+              <sup>*</sup> Made to Order item
+            </div>
           )}
 
-          {/* ── Amounts ── */}
-          <div className="mt-2 flex justify-end">
-            <table className="w-56 border border-stone-300 text-xs">
-              <thead>
-                <tr>
-                  <th colSpan={2} className="bg-[#412402] px-2 py-1 text-left font-bold text-white">
-                    Amounts
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t border-stone-200">
-                  <td className="border-r border-stone-200 px-2 py-1">SubTotal</td>
-                  <td className="px-2 py-1 text-right">{fmt(subtotal)}</td>
-                </tr>
-                <tr className="border-t-2 border-stone-400 font-bold">
-                  <td className="border-r border-stone-200 px-2 py-1.5">Total</td>
-                  <td className="px-2 py-1.5 text-right">{fmt(total)}</td>
-                </tr>
-                <tr className="border-t border-stone-200">
-                  <td className="border-r border-stone-200 px-2 py-1">Balance</td>
-                  <td className="px-2 py-1 text-right">0.00</td>
-                </tr>
-              </tbody>
-            </table>
+          {/* ══ AMOUNT SUMMARY + WORDS ══ */}
+          <div style={{ display: "flex", gap: 16, marginTop: hasMto ? 0 : 16, marginBottom: 20 }}>
+            {/* Amount in words */}
+            <div style={{ flex: 1, background: "#fdf9f0", border: "1px solid #e8d4b0", borderRadius: 10, padding: "12px 16px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#8b1a2e", marginBottom: 6 }}>
+                Invoice Amount In Words
+              </div>
+              <div style={{ fontSize: 12.5, fontStyle: "italic", color: "#4a3035", lineHeight: 1.5 }}>
+                Rupees {amountInWords(total)}
+              </div>
+            </div>
+
+            {/* Amount box */}
+            <div style={{ width: 220 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #f4c5cf", borderRadius: 10, overflow: "hidden", fontSize: 11.5 }}>
+                <thead>
+                  <tr style={{ background: "#8b1a2e" }}>
+                    <th colSpan={2} style={{ padding: "7px 14px", textAlign: "left", color: "#fff", fontWeight: 700, fontSize: 10.5, letterSpacing: 1, textTransform: "uppercase" }}>
+                      Payment Details
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: "1px solid #f4c5cf" }}>
+                    <td style={{ padding: "7px 14px", color: "#6b5a5d" }}>Sub Total</td>
+                    <td style={{ padding: "7px 14px", textAlign: "right", color: "#1a0d10", fontWeight: 500 }}>₹{fmt(subtotal)}</td>
+                  </tr>
+                  <tr style={{ borderBottom: "1px solid #f4c5cf", background: "#fdf2f4" }}>
+                    <td style={{ padding: "9px 14px", color: "#8b1a2e", fontWeight: 700, fontSize: 13 }}>Grand Total</td>
+                    <td style={{ padding: "9px 14px", textAlign: "right", color: "#8b1a2e", fontWeight: 700, fontSize: 14 }}>₹{fmt(total)}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: "7px 14px", color: "#6b5a5d" }}>Balance Due</td>
+                    <td style={{ padding: "7px 14px", textAlign: "right", color: "#0f6e56", fontWeight: 700 }}>₹0.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          {/* ── Amount in Words ── */}
-          <table className="mt-2 w-full border border-stone-300 text-xs">
-            <tbody>
-              <tr>
-                <td className="bg-[#412402] px-2 py-1 font-bold text-white">Invoice Amount In Words</td>
-              </tr>
-              <tr>
-                <td className="px-2 py-1.5 italic text-stone-700">{amountInWords(total)}</td>
-              </tr>
-            </tbody>
-          </table>
+          {/* ══ FOOTER ══ */}
+          <div style={{ borderTop: "1.5px solid #f4c5cf", paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            {/* Terms */}
+            <div style={{ flex: 1, paddingRight: 40 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#8b1a2e", marginBottom: 6 }}>
+                Terms &amp; Conditions
+              </div>
+              <div style={{ fontSize: 11, color: "#6b5a5d", lineHeight: 1.6 }}>
+                Thank you for your business with us. All disputes subject to Mumbai jurisdiction.
+              </div>
+            </div>
 
-          {/* ── Footer ── */}
-          <table className="mt-2 w-full border border-stone-300 text-xs">
-            <tbody>
-              <tr>
-                <td className="w-1/2 border-r border-stone-300 align-top">
-                  <div className="bg-[#412402] px-2 py-1 font-bold text-white">Terms and Conditions</div>
-                  <div className="px-2 py-2 text-stone-600">Thanks for doing business with us!</div>
-                </td>
-                <td className="w-1/2 px-2 py-2 text-right align-top">
-                  <p>For : Borana Creation</p>
-                  <p className="mt-10 border-t border-stone-300 pt-1 text-center text-stone-500">
-                    Authorized Signatory
-                  </p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            {/* Signatory */}
+            <div style={{ textAlign: "center", minWidth: 160 }}>
+              <div style={{ fontSize: 11, color: "#4a3035", marginBottom: 40 }}>
+                For: <strong>Borana Creation</strong>
+              </div>
+              <div style={{ borderTop: "1px solid #c4a0a8", paddingTop: 6 }}>
+                <div style={{ fontSize: 10, color: "#7a5a5e", letterSpacing: 0.5 }}>Authorized Signatory</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Powered by */}
+          <div style={{ textAlign: "center", marginTop: 20, fontSize: 9.5, color: "#b8a0a5", letterSpacing: 0.5, fontStyle: "italic" }}>
+            Generated by Borana B2B Portal
+          </div>
 
         </div>
       </div>

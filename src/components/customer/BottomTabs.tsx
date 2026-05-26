@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Home, Search, ClipboardList, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -14,6 +15,11 @@ const TABS = [
 
 export function BottomTabs() {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
+
+  useEffect(() => {
+    TABS.forEach((tab) => router.prefetch(tab.href));
+  }, [router]);
 
   return (
     <nav
