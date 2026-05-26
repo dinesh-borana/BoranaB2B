@@ -22,8 +22,11 @@ export function Logo({
       <img
         src="/borana-logo.png"
         alt="Borana B2B"
-        className="shrink-0 rounded-lg object-contain"
+        width={dim}
+        height={dim}
         style={{ width: dim, height: dim }}
+        className="shrink-0 rounded-lg object-contain"
+        loading="eager"
       />
       <div className="flex flex-col leading-tight">
         <span

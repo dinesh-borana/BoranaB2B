@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULTS: Record<string, string> = {
@@ -9,21 +10,37 @@ const DEFAULTS: Record<string, string> = {
   "support.email": "orders@boranajewels.in",
 };
 
-export async function getSetting(key: string): Promise<string> {
-  try {
+const getCachedSetting = unstable_cache(
+  async (key: string) => {
     const row = await prisma.setting.findUnique({ where: { key } });
     return row?.value ?? DEFAULTS[key] ?? "";
+  },
+  ["setting"],
+  { revalidate: 600, tags: ["settings"] },
+);
+
+export async function getSetting(key: string): Promise<string> {
+  try {
+    return await getCachedSetting(key);
   } catch {
     return DEFAULTS[key] ?? "";
   }
 }
 
-export async function getAllSettings(): Promise<Record<string, string>> {
-  try {
+const getCachedAllSettings = unstable_cache(
+  async () => {
     const rows = await prisma.setting.findMany();
     const out: Record<string, string> = { ...DEFAULTS };
     for (const r of rows) out[r.key] = r.value;
     return out;
+  },
+  ["all-settings"],
+  { revalidate: 600, tags: ["settings"] },
+);
+
+export async function getAllSettings(): Promise<Record<string, string>> {
+  try {
+    return await getCachedAllSettings();
   } catch {
     return { ...DEFAULTS };
   }

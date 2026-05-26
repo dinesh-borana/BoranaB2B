@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -30,6 +31,12 @@ const NAV = [
 
 export function AdminSidebar() {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
+
+  useEffect(() => {
+    NAV.forEach((item) => router.prefetch(item.href));
+  }, [router]);
+
   return (
     <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-20 bg-admin-800">
       <div className="flex h-14 items-center border-b border-white/10 px-4">

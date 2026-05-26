@@ -32,9 +32,7 @@ export default async function CustomerOrdersPage() {
           description="Browse the catalog and place your first order."
           action={
             <Link href="/customer/catalog">
-              <span className="text-sm font-medium text-brand-700">
-                Browse catalog →
-              </span>
+              <span className="text-sm font-medium text-brand-700">Browse catalog →</span>
             </Link>
           }
         />
@@ -42,14 +40,12 @@ export default async function CustomerOrdersPage() {
         <ul className="flex flex-col gap-2">
           {orders.map((o) => (
             <li key={o.id}>
-              <Link href={`/customer/orders/${o.id}`}>
+              <Link href={`/customer/orders/${o.id}`} prefetch={true}>
                 <Card className="transition-colors hover:border-brand-300">
                   <CardBody className="flex items-center gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-stone-900">
-                          #{o.orderNumber}
-                        </span>
+                        <span className="font-semibold text-stone-900">#{o.orderNumber}</span>
                         <StatusPill status={o.status} />
                       </div>
                       <p className="mt-0.5 text-xs text-stone-500">
@@ -57,9 +53,7 @@ export default async function CustomerOrdersPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-stone-900">
-                        {formatINR(o.total)}
-                      </p>
+                      <p className="font-semibold text-stone-900">{formatINR(o.total)}</p>
                       <p className="text-xs text-stone-500">incl. GST</p>
                     </div>
                   </CardBody>

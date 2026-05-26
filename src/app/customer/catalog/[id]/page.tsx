@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
@@ -7,23 +8,29 @@ import { Badge } from "@/components/ui/Badge";
 import { VariantPicker } from "./VariantPicker";
 import { ImageCarousel } from "@/components/ImageCarousel";
 
+const getProduct = unstable_cache(
+  async (id: string) =>
+    prisma.product
+      .findUnique({
+        where: { id, isActive: true },
+        include: {
+          category: true,
+          images: { orderBy: { sortOrder: "asc" } },
+          sizes: { orderBy: { size: "asc" } },
+        },
+      })
+      .catch(() => null),
+  ["product-detail"],
+  { revalidate: 120, tags: ["products"] },
+);
+
 export default async function ProductDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
-  const product = await prisma.product
-    .findUnique({
-      where: { id, isActive: true },
-      include: {
-        category: true,
-        images: { orderBy: { sortOrder: "asc" } },
-        sizes: { orderBy: { size: "asc" } },
-      },
-    })
-    .catch(() => null);
+  const product = await getProduct(id);
 
   if (!product) notFound();
 
