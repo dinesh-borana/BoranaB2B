@@ -15,6 +15,7 @@ export type PickerProduct = {
   name: string;
   image: string | null;
   price: number;
+  mrp?: number;
   sizes: PickerSize[];
 };
 
@@ -79,9 +80,16 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
             <h2 className="text-sm font-semibold text-stone-900">
               Size &amp; quantity
             </h2>
-            <span className="text-sm font-semibold text-brand-700">
-              {formatINR(product.price)} / pc
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-brand-700">
+                {formatINR(product.price)} / pc
+              </span>
+              {product.mrp && (
+                <span className="text-xs text-stone-400 line-through">
+                  {formatINR(product.mrp)}
+                </span>
+              )}
+            </div>
           </div>
 
           {product.sizes.length === 0 ? (

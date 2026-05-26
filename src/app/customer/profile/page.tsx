@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { unstable_cache } from "next/cache";
 import { Building2, Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,12 +8,11 @@ import { getSetting } from "@/lib/settings";
 import { SignOutButton } from "@/components/customer/SignOutButton";
 
 export const metadata = { title: "Profile · Borana B2B" };
+export const dynamic = "force-dynamic";
 
-const getParty = unstable_cache(
-  (id: string) => prisma.party.findUnique({ where: { id } }).catch(() => null),
-  ["party-detail"],
-  { revalidate: 300, tags: ["parties"] },
-);
+function getParty(id: string) {
+  return prisma.party.findUnique({ where: { id } }).catch(() => null);
+}
 
 export default async function ProfilePage() {
   const session = await auth();

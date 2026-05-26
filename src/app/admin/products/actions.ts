@@ -13,6 +13,7 @@ const productSchema = z.object({
   categoryId: z.string().optional(),
   isActive: z.boolean().default(true),
   price: z.number().positive(),
+  mrp: z.number().positive().optional(),
   imageUrls: z.array(z.string().url()).max(5).default([]),
   sizes: z.array(
     z.object({
@@ -46,6 +47,7 @@ export async function createProduct(formData: FormData) {
         : {}),
       isActive: data.isActive,
       price: data.price,
+      mrp: data.mrp ?? null,
       images: {
         create: data.imageUrls.map((url, i) => ({
           url,
@@ -88,6 +90,7 @@ export async function updateProduct(productId: string, formData: FormData) {
           : { disconnect: true },
         isActive: data.isActive,
         price: data.price,
+        mrp: data.mrp ?? null,
         images: {
           create: data.imageUrls.map((url, i) => ({
             url,

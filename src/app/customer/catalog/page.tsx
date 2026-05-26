@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { unstable_cache } from "next/cache";
 import { Package } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
@@ -10,40 +9,36 @@ import { CatalogSearch } from "./CatalogSearch";
 import { Suspense } from "react";
 
 export const metadata = { title: "Catalog · Borana B2B" };
+export const dynamic = "force-dynamic";
 
 type SP = { q?: string; cat?: string };
 
-const getCategories = unstable_cache(
-  () => prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
-  ["catalog-categories"],
-  { revalidate: 300, tags: ["categories"] },
-);
+function getCategories() {
+  return prisma.category.findMany({ orderBy: { sortOrder: "asc" } });
+}
 
-const getProducts = unstable_cache(
-  (q: string, cat: string) =>
-    prisma.product.findMany({
-      where: {
-        isActive: true,
-        ...(q
-          ? {
-              OR: [
-                { name: { contains: q, mode: "insensitive" } },
-                { sku: { contains: q, mode: "insensitive" } },
-                { description: { contains: q, mode: "insensitive" } },
-              ],
-            }
-          : {}),
-        ...(cat ? { category: { slug: cat } } : {}),
-      },
-      include: {
-        images: { where: { isMain: true }, take: 1 },
-        category: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-  ["catalog-products"],
-  { revalidate: 120, tags: ["products"] },
-);
+function getProducts(q: string, cat: string) {
+  return prisma.product.findMany({
+    where: {
+      isActive: true,
+      ...(q
+        ? {
+            OR: [
+              { name: { contains: q, mode: "insensitive" } },
+              { sku: { contains: q, mode: "insensitive" } },
+              { description: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(cat ? { category: { slug: cat } } : {}),
+    },
+    include: {
+      images: { where: { isMain: true }, take: 1 },
+      category: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
 
 export default async function CatalogPage({
   searchParams,
@@ -116,7 +111,7 @@ export default async function CatalogPage({
             return (
               <Link key={p.id} href={`/customer/catalog/${p.id}`} prefetch={true}>
                 <Card className="overflow-hidden transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/8">
-                  <div className="aspect-square w-full bg-stone-100">
+                  <div className="relative aspect-square w-full bg-stone-100">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -131,6 +126,11 @@ export default async function CatalogPage({
                         <Package className="h-10 w-10" />
                       </div>
                     )}
+                    {p.mrp && Number(p.mrp) > Number(p.price) && (
+                      <span className="absolute left-2 top-2 rounded-md bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">
+                        -{Math.round(((Number(p.mrp) - Number(p.price)) / Number(p.mrp)) * 100)}%
+                      </span>
+                    )}
                   </div>
                   <CardBody className="!p-3">
                     <p className="text-[10px] uppercase tracking-wider text-stone-400">
@@ -139,10 +139,17 @@ export default async function CatalogPage({
                     <p className="mt-0.5 line-clamp-2 text-sm font-medium text-stone-900">
                       {p.name}
                     </p>
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="text-sm font-semibold text-brand-700">
-                        {formatINR(p.price)}
-                      </span>
+                    <div className="mt-1.5 flex items-center justify-between gap-1">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-brand-700">
+                          {formatINR(p.price)}
+                        </span>
+                        {p.mrp && (
+                          <span className="text-xs text-stone-400 line-through leading-tight">
+                            {formatINR(p.mrp)}
+                          </span>
+                        )}
+                      </div>
                       <Badge tone="success">In stock</Badge>
                     </div>
                   </CardBody>

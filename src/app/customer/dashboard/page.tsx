@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { unstable_cache } from "next/cache";
 import {
   Package,
   ClipboardList,
@@ -15,18 +14,16 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { SignOutButton } from "@/components/customer/SignOutButton";
 
 export const metadata = { title: "Home · Borana B2B" };
+export const dynamic = "force-dynamic";
 
-const getFeaturedProducts = unstable_cache(
-  () =>
-    prisma.product.findMany({
-      where: { isActive: true },
-      include: { images: { where: { isMain: true }, take: 1 } },
-      take: 6,
-      orderBy: { createdAt: "desc" },
-    }),
-  ["dashboard-featured"],
-  { revalidate: 120, tags: ["products"] },
-);
+function getFeaturedProducts() {
+  return prisma.product.findMany({
+    where: { isActive: true },
+    include: { images: { where: { isMain: true }, take: 1 } },
+    take: 6,
+    orderBy: { createdAt: "desc" },
+  });
+}
 
 async function getPartyData(partyId: string) {
   const [recent, total, pending] = await Promise.all([
@@ -51,7 +48,7 @@ export default async function CustomerDashboardPage() {
     partyId
       ? getPartyData(partyId).catch(() => ({ recent: [], stats: { total: 0, pending: 0 } }))
       : Promise.resolve({ recent: [], stats: { total: 0, pending: 0 } }),
-    getFeaturedProducts().catch(() => []),
+    getFeaturedProducts().catch(() => [] as Awaited<ReturnType<typeof getFeaturedProducts>>),
   ]);
 
   const { recent, stats } = partyData;
@@ -149,10 +146,15 @@ export default async function CustomerDashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             {featured.map((p, idx) => {
               const img = p.images[0]?.url;
+              const mrp = p.mrp ? Number(p.mrp.toString()) : null;
+              const discountPct =
+                mrp && mrp > Number(p.price)
+                  ? Math.round(((mrp - Number(p.price)) / mrp) * 100)
+                  : null;
               return (
                 <Link key={p.id} href={`/customer/catalog/${p.id}`} prefetch={true}>
-                  <Card className="overflow-hidden transition-colors hover:border-brand-300">
-                    <div className="aspect-square w-full bg-stone-100">
+                  <Card className="overflow-hidden transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/8">
+                    <div className="relative aspect-square w-full bg-stone-100">
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -167,12 +169,26 @@ export default async function CustomerDashboardPage() {
                           <Package className="h-10 w-10" />
                         </div>
                       )}
+                      {discountPct && (
+                        <span className="absolute left-2 top-2 rounded-md bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">
+                          -{discountPct}%
+                        </span>
+                      )}
                     </div>
                     <CardBody className="!p-3">
-                      <p className="line-clamp-2 text-sm font-medium text-stone-900">{p.name}</p>
-                      <p className="mt-1 text-sm font-semibold text-brand-700">
-                        {formatINR(p.price)}
+                      <p className="line-clamp-2 text-sm font-medium leading-snug text-stone-900">
+                        {p.name}
                       </p>
+                      <div className="mt-1.5 flex items-baseline gap-1.5">
+                        <span className="text-sm font-bold text-brand-700">
+                          {formatINR(p.price)}
+                        </span>
+                        {mrp && (
+                          <span className="text-xs text-stone-400 line-through">
+                            {formatINR(mrp)}
+                          </span>
+                        )}
+                      </div>
                     </CardBody>
                   </Card>
                 </Link>
