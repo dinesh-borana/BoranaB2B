@@ -78,6 +78,7 @@ model Product {
   sku         String         @unique
   description String?
   price       Decimal        @db.Decimal(10, 2)
+  mrp         Decimal?       @db.Decimal(10, 2)
   category    Category?      @relation(fields: [categoryId], references: [id])
   categoryId  String?
   images      ProductImage[]

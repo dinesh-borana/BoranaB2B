@@ -68,10 +68,17 @@ export default async function AdminProductDetailPage({
             <p className="font-medium text-stone-900">{product.sku}</p>
           </div>
           <div>
-            <p className="text-xs text-stone-500">Price</p>
-            <p className="font-semibold text-brand-700">
-              {formatINR(product.price)}
-            </p>
+            <p className="text-xs text-stone-500">Selling price</p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-brand-700">
+                {formatINR(product.price)}
+              </p>
+              {product.mrp && (
+                <p className="text-sm text-stone-400 line-through">
+                  {formatINR(product.mrp)}
+                </p>
+              )}
+            </div>
           </div>
           <div>
             <p className="text-xs text-stone-500">Category</p>

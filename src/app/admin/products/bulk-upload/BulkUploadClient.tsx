@@ -99,11 +99,6 @@ function parseCSV(text: string): ParseResult {
       stockStatus = rawStatus as typeof stockStatus;
     }
 
-    const imageUrl = get(vals, "image_url");
-    if (imageUrl && !imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
-      errors.push({ field: "image_url", message: "Image URL must start with http:// or https://" });
-    }
-
     const rawSizes = get(vals, "sizes");
     const sizes = rawSizes
       ? rawSizes.split("|").map((s) => s.trim()).filter(Boolean)
@@ -126,7 +121,6 @@ function parseCSV(text: string): ParseResult {
       description: get(vals, "description") || undefined,
       sizes,
       stockStatus,
-      imageUrl: imageUrl || undefined,
       isActive,
     };
   });
@@ -157,11 +151,11 @@ function parseCSV(text: string): ParseResult {
 }
 
 // ─── Template download ────────────────────────────────────────
-const HEADERS = ["name", "sku", "price", "category", "description", "sizes", "stock_status", "image_url", "active"];
+const HEADERS = ["name", "sku", "price", "category", "description", "sizes", "stock_status", "active"];
 
 function downloadTemplate() {
-  const example1 = ['"Gold Bangles"', "BNG-001", "450", "Bangles", '"Beautiful gold bangles"', "2.4|2.6|2.8", "IN_STOCK", "", "yes"].join(",");
-  const example2 = ['"Silver Necklace"', "NCK-002", "780", "Necklaces", "", "", "MADE_TO_ORDER", "", "yes"].join(",");
+  const example1 = ['"Gold Bangles"', "BNG-001", "450", "Bangles", '"Beautiful gold bangles"', "2.4|2.6|2.8", "IN_STOCK", "yes"].join(",");
+  const example2 = ['"Silver Necklace"', "NCK-002", "780", "Necklaces", "", "", "MADE_TO_ORDER", "yes"].join(",");
   const csv = [HEADERS.join(","), example1, example2].join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);

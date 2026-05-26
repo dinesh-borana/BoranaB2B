@@ -37,6 +37,7 @@ export default async function EditProductPage({
     categoryId: product.categoryId ?? "",
     isActive: product.isActive,
     price: product.price.toString(),
+    mrp: product.mrp?.toString() ?? "",
     imageUrls: product.images.map((i) => i.url),
     sizes: product.sizes.map((s) => ({
       size: s.size,

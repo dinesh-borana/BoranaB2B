@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import boranaLogo from "@/../public/borana-logo.png";
 import { cn } from "@/lib/cn";
 
 export function Logo({
@@ -18,15 +20,13 @@ export function Logo({
 
   const inner = (
     <>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/borana-logo.png"
+      <Image
+        src={boranaLogo}
         alt="Borana B2B"
         width={dim}
         height={dim}
-        style={{ width: dim, height: dim }}
+        priority
         className="shrink-0 rounded-lg object-contain"
-        loading="eager"
       />
       <div className="flex flex-col leading-tight">
         <span

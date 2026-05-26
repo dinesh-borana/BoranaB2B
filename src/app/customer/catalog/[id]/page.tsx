@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { unstable_cache } from "next/cache";
 import { ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
@@ -8,21 +7,20 @@ import { Badge } from "@/components/ui/Badge";
 import { VariantPicker } from "./VariantPicker";
 import { ImageCarousel } from "@/components/ImageCarousel";
 
-const getProduct = unstable_cache(
-  async (id: string) =>
-    prisma.product
-      .findUnique({
-        where: { id, isActive: true },
-        include: {
-          category: true,
-          images: { orderBy: { sortOrder: "asc" } },
-          sizes: { orderBy: { size: "asc" } },
-        },
-      })
-      .catch(() => null),
-  ["product-detail"],
-  { revalidate: 120, tags: ["products"] },
-);
+export const dynamic = "force-dynamic";
+
+function getProduct(id: string) {
+  return prisma.product
+    .findUnique({
+      where: { id, isActive: true },
+      include: {
+        category: true,
+        images: { orderBy: { sortOrder: "asc" } },
+        sizes: { orderBy: { size: "asc" } },
+      },
+    })
+    .catch(() => null);
+}
 
 export default async function ProductDetailPage({
   params,
@@ -42,6 +40,7 @@ export default async function ProductDetailPage({
     name: product.name,
     image: mainImage,
     price: Number(product.price.toString()),
+    mrp: product.mrp ? Number(product.mrp.toString()) : undefined,
     sizes: product.sizes.map((s) => ({
       id: s.id,
       size: s.size,
@@ -67,10 +66,15 @@ export default async function ProductDetailPage({
         <h1 className="mt-1 text-xl font-semibold text-stone-900">
           {product.name}
         </h1>
-        <div className="mt-1 flex items-center gap-2">
-          <span className="text-sm font-semibold text-brand-700">
+        <div className="mt-1 flex items-center gap-2 flex-wrap">
+          <span className="text-lg font-bold text-brand-700">
             {formatINR(product.price)}
           </span>
+          {product.mrp && (
+            <span className="text-sm text-stone-400 line-through">
+              {formatINR(product.mrp)}
+            </span>
+          )}
           <span className="text-xs text-stone-500">· SKU {product.sku}</span>
           <Badge tone="success">In stock</Badge>
         </div>

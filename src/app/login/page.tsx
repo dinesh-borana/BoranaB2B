@@ -13,14 +13,6 @@ export default async function LoginPage() {
   }
   return (
     <>
-      {/* Preload logo before any JS runs — critical for LCP */}
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <link
-        rel="preload"
-        href="/borana-logo.png"
-        as="image"
-        type="image/png"
-      />
       <LoginForm />
     </>
   );

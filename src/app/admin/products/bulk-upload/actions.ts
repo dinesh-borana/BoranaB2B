@@ -12,7 +12,6 @@ export type BulkRow = {
   description?: string;
   sizes: string[];
   stockStatus: "IN_STOCK" | "MADE_TO_ORDER" | "OUT_OF_STOCK";
-  imageUrl?: string;
   isActive: boolean;
 };
 
@@ -54,9 +53,6 @@ export async function bulkCreateProducts(rows: BulkRow[]): Promise<BulkResult> {
           price: row.price,
           isActive: row.isActive,
           ...(categoryId ? { category: { connect: { id: categoryId } } } : {}),
-          ...(row.imageUrl
-            ? { images: { create: [{ url: row.imageUrl, isMain: true, sortOrder: 0 }] } }
-            : {}),
           sizes: {
             create:
               row.sizes.length > 0

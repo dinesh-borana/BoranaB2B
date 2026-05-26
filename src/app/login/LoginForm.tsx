@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Image from "next/image";
+import boranaLogo from "@/../public/borana-logo.png";
 import { Smartphone, Lock, Eye, EyeOff } from "lucide-react";
 import { loginAction, type LoginState } from "./actions";
 
@@ -76,16 +78,13 @@ export function LoginForm() {
       >
         {/* Brand */}
         <div className="mb-7 flex flex-col items-center text-center">
-          <div className="login-logo-anim" style={{ width: 160, height: 160, marginBottom: 12, flexShrink: 0, borderRadius: 24, overflow: "hidden", background: "#000", boxShadow: "0 12px 32px rgba(0,0,0,0.3)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/borana-logo.png"
+          <div className="login-logo-anim" style={{ width: 160, height: 160, marginBottom: 12, flexShrink: 0, borderRadius: 24, overflow: "hidden", background: "#000", boxShadow: "0 12px 32px rgba(0,0,0,0.3)", position: "relative" }}>
+            <Image
+              src={boranaLogo}
               alt="Borana Creation"
-              width={160}
-              height={160}
-              fetchPriority="high"
-              decoding="async"
-              style={{ objectFit: "cover", width: "100%", height: "100%", display: "block" }}
+              fill
+              priority
+              style={{ objectFit: "cover" }}
             />
           </div>
           <p style={{ fontSize: 11, letterSpacing: 2.5, textTransform: "uppercase", color: C.muted, fontWeight: 500 }}>

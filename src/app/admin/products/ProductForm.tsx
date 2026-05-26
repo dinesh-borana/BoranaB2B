@@ -23,6 +23,7 @@ type InitialData = {
   categoryId: string;
   isActive: boolean;
   price: string;
+  mrp: string;
   imageUrls: string[];
   sizes: SizeEntry[];
 };
@@ -41,6 +42,7 @@ export function ProductForm({
   const [categoryId,  setCategoryId]  = useState(initial?.categoryId ?? "");
   const [isActive,    setIsActive]    = useState(initial?.isActive ?? true);
   const [price,       setPrice]       = useState(initial?.price ?? "");
+  const [mrp,         setMrp]         = useState(initial?.mrp ?? "");
   const [imageUrls,   setImageUrls]   = useState<string[]>(
     initial?.imageUrls.length ? initial.imageUrls : [""],
   );
@@ -78,6 +80,7 @@ export function ProductForm({
         categoryId: categoryId || undefined,
         isActive,
         price: Number(price),
+        mrp: mrp ? Number(mrp) : undefined,
         imageUrls: imageUrls.filter((u) => u.trim()),
         sizes: Object.entries(selectedSizes).map(([size, stockStatus]) => ({
           size,
@@ -108,7 +111,7 @@ export function ProductForm({
           </div>
           <Input label="SKU" value={sku} onChange={(e) => setSku(e.target.value)} placeholder="PJ-001" required />
           <Input
-            label="Price (₹)"
+            label="Selling price (₹)"
             type="number"
             inputMode="decimal"
             min={0}
@@ -116,6 +119,15 @@ export function ProductForm({
             onChange={(e) => setPrice(e.target.value)}
             placeholder="0"
             required
+          />
+          <Input
+            label="MRP / Original price (₹) — optional"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            value={mrp}
+            onChange={(e) => setMrp(e.target.value)}
+            placeholder="Leave blank for no discount display"
           />
           <Select label="Category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             <option value="">— No category —</option>
