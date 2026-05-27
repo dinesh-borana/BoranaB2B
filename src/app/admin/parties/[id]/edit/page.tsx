@@ -30,7 +30,6 @@ export default async function EditPartyPage({
     pincode: party.pincode ?? "",
     gstin: party.gstin ?? "",
     pan: party.pan ?? "",
-    creditLimit: party.creditLimit?.toString() ?? "",
     isActive: party.isActive,
   };
 

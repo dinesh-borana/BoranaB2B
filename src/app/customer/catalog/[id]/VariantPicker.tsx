@@ -84,7 +84,7 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
               <span className="text-sm font-semibold text-brand-700">
                 {formatINR(product.price)} / pc
               </span>
-              {product.mrp && (
+              {product.mrp && product.mrp > product.price && (
                 <span className="text-xs text-stone-400 line-through">
                   {formatINR(product.mrp)}
                 </span>
@@ -125,15 +125,15 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
                         <Minus className="h-4 w-4" />
                       </button>
                       <input
-                        type="number"
+                        type="text"
                         inputMode="numeric"
-                        min={0}
-                        value={value}
+                        value={value === 0 ? "" : value}
                         disabled={unavailable}
                         onChange={(e) =>
                           setExact(s.size, Number(e.target.value))
                         }
-                        className="h-9 w-14 rounded-lg border border-stone-200 bg-white text-center text-sm text-stone-900 outline-none focus:border-brand-600 disabled:opacity-40"
+                        placeholder="0"
+                        className="h-9 w-14 rounded-lg border border-stone-200 bg-white text-center text-[16px] sm:text-sm text-stone-900 outline-none focus:border-brand-600 disabled:opacity-40"
                       />
                       <button
                         type="button"
@@ -153,37 +153,46 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
         </CardBody>
       </Card>
 
-      <div className="sticky bottom-20 z-10 flex flex-col gap-2 rounded-xl border border-stone-200 bg-white p-3 shadow-sm md:bottom-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-stone-500">
-            {totalPieces} pc{totalPieces === 1 ? "" : "s"}
-          </span>
-          <span className="font-semibold text-stone-900">
-            {formatINR(lineTotal)}
-          </span>
+      <div className="fixed inset-x-0 z-20" style={{ bottom: "calc(70px + env(safe-area-inset-bottom))" }}>
+        {/* gradient fade — always creates visual gap between size card and bar */}
+        <div
+          className="h-6 w-full pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, transparent, var(--background))" }}
+        />
+        <div className="px-4" style={{ background: "var(--background)" }}>
+        <div className="mx-auto max-w-3xl flex flex-col gap-2 rounded-xl border border-stone-200 bg-white p-3 shadow-lg">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-stone-500">
+              {totalPieces} pc{totalPieces === 1 ? "" : "s"}
+            </span>
+            <span className="font-semibold text-stone-900">
+              {formatINR(lineTotal)}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              block
+              disabled={totalPieces === 0}
+              onClick={() => handleAdd(false)}
+            >
+              <ShoppingBag className="h-4 w-4" /> Add to cart
+            </Button>
+            <Button
+              type="button"
+              block
+              disabled={totalPieces === 0}
+              onClick={() => handleAdd(true)}
+            >
+              Buy now
+            </Button>
+          </div>
+          {added && totalPieces === 0 && (
+            <p className="text-center text-xs text-emerald-700">Added to cart.</p>
+          )}
         </div>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            block
-            disabled={totalPieces === 0}
-            onClick={() => handleAdd(false)}
-          >
-            <ShoppingBag className="h-4 w-4" /> Add to cart
-          </Button>
-          <Button
-            type="button"
-            block
-            disabled={totalPieces === 0}
-            onClick={() => handleAdd(true)}
-          >
-            Buy now
-          </Button>
         </div>
-        {added && totalPieces === 0 && (
-          <p className="text-center text-xs text-emerald-700">Added to cart.</p>
-        )}
       </div>
     </div>
   );

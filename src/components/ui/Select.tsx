@@ -24,7 +24,7 @@ export const Select = forwardRef<HTMLSelectElement, Props>(function Select(
         id={fieldId}
         {...props}
         className={cn(
-          "h-11 rounded-xl border bg-white px-3 text-sm text-stone-900 outline-none transition-all duration-150",
+          "h-11 rounded-xl border bg-white px-3 text-[16px] sm:text-sm text-stone-900 outline-none transition-all duration-150",
           "focus:border-brand-600 focus:ring-2 focus:ring-brand-500/15",
           error ? "border-rose-400" : "border-[var(--border)]",
           className,

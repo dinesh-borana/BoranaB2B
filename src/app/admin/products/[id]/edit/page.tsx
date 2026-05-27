@@ -19,6 +19,7 @@ export default async function EditProductPage({
       .findUnique({
         where: { id },
         include: {
+          categories: true,
           images: { orderBy: { sortOrder: "asc" } },
           sizes: { orderBy: { size: "asc" } },
         },
@@ -34,7 +35,7 @@ export default async function EditProductPage({
     name: product.name,
     sku: product.sku,
     description: product.description ?? "",
-    categoryId: product.categoryId ?? "",
+    categoryIds: product.categories.map((c) => c.id),
     isActive: product.isActive,
     price: product.price.toString(),
     mrp: product.mrp?.toString() ?? "",

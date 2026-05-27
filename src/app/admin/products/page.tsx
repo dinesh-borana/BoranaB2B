@@ -29,10 +29,10 @@ export default async function AdminProductsPage({
                 ],
               }
             : {}),
-          ...(cat ? { category: { slug: cat } } : {}),
+          ...(cat ? { categories: { some: { slug: cat } } } : {}),
         },
         include: {
-          category: true,
+          categories: true,
           images: { where: { isMain: true }, take: 1 },
           _count: { select: { sizes: true } },
         },
@@ -129,7 +129,7 @@ export default async function AdminProductsPage({
                   </div>
                   <CardBody className="flex flex-col justify-center gap-1 !py-2">
                     <p className="text-[10px] uppercase tracking-wider text-stone-400">
-                      {p.category?.name} · {p.sku}
+                      {p.categories.map((c) => c.name).join(", ") || "—"} · {p.sku}
                     </p>
                     <p className="font-semibold text-stone-900 leading-tight">
                       {p.name}

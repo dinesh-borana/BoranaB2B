@@ -24,7 +24,7 @@ export function BottomTabs() {
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/97 backdrop-blur"
-      style={{ borderColor: "var(--border)" }}
+      style={{ borderColor: "var(--border)", paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="mx-auto flex max-w-3xl items-stretch">
         {TABS.map((tab) => {

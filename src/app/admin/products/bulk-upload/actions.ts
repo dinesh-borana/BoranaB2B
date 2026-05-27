@@ -3,12 +3,13 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyAllParties } from "@/lib/notifications";
 
 export type BulkRow = {
   name: string;
   sku: string;
   price: number;
-  category?: string;
+  categories?: string[];
   description?: string;
   sizes: string[];
   stockStatus: "IN_STOCK" | "MADE_TO_ORDER" | "OUT_OF_STOCK";
@@ -41,9 +42,9 @@ export async function bulkCreateProducts(rows: BulkRow[]): Promise<BulkResult> {
         continue;
       }
 
-      const categoryId = row.category
-        ? catMap.get(row.category.toLowerCase())
-        : undefined;
+      const categoryIds = (row.categories ?? [])
+        .map((name) => catMap.get(name.toLowerCase()))
+        .filter((id): id is string => !!id);
 
       await prisma.product.create({
         data: {
@@ -52,7 +53,7 @@ export async function bulkCreateProducts(rows: BulkRow[]): Promise<BulkResult> {
           description: row.description || undefined,
           price: row.price,
           isActive: row.isActive,
-          ...(categoryId ? { category: { connect: { id: categoryId } } } : {}),
+          ...(categoryIds.length ? { categories: { connect: categoryIds.map((id) => ({ id })) } } : {}),
           sizes: {
             create:
               row.sizes.length > 0
@@ -65,6 +66,15 @@ export async function bulkCreateProducts(rows: BulkRow[]): Promise<BulkResult> {
     } catch {
       skipped.push({ sku: row.sku, reason: "Error creating product" });
     }
+  }
+
+  if (created > 0) {
+    await notifyAllParties(
+      "NEW_PRODUCT",
+      "New products available",
+      `${created} new product${created === 1 ? "" : "s"} added to the catalog — check them out!`,
+      `/customer/catalog`,
+    );
   }
 
   revalidateTag("products", {});

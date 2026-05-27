@@ -9,26 +9,21 @@ import { ImageCarousel } from "@/components/ImageCarousel";
 
 export const dynamic = "force-dynamic";
 
-function getProduct(id: string) {
-  return prisma.product
-    .findUnique({
-      where: { id, isActive: true },
-      include: {
-        category: true,
-        images: { orderBy: { sortOrder: "asc" } },
-        sizes: { orderBy: { size: "asc" } },
-      },
-    })
-    .catch(() => null);
-}
-
 export default async function ProductDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = await getProduct(id);
+  const product = await prisma.product
+    .findUnique({
+      where: { id, isActive: true },
+      include: {
+        images: { orderBy: { sortOrder: "asc" } },
+        sizes: { orderBy: { size: "asc" } },
+      },
+    })
+    .catch(() => null);
 
   if (!product) notFound();
 
@@ -49,7 +44,7 @@ export default async function ProductDetailPage({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" style={{ paddingBottom: "calc(160px + env(safe-area-inset-bottom))" }}>
       <Link
         href="/customer/catalog"
         className="inline-flex w-fit items-center gap-1 text-sm text-stone-600"
@@ -60,9 +55,6 @@ export default async function ProductDetailPage({
       <ImageCarousel images={product.images} alt={product.name} />
 
       <div>
-        <p className="text-xs uppercase tracking-wider text-brand-700">
-          {product.category?.name}
-        </p>
         <h1 className="mt-1 text-xl font-semibold text-stone-900">
           {product.name}
         </h1>
@@ -70,7 +62,7 @@ export default async function ProductDetailPage({
           <span className="text-lg font-bold text-brand-700">
             {formatINR(product.price)}
           </span>
-          {product.mrp && (
+          {product.mrp && Number(product.mrp) > Number(product.price) && (
             <span className="text-sm text-stone-400 line-through">
               {formatINR(product.mrp)}
             </span>

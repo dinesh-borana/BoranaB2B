@@ -21,7 +21,6 @@ type InitialData = {
   pincode: string;
   gstin: string;
   pan: string;
-  creditLimit: string;
   isActive: boolean;
 };
 
@@ -39,10 +38,17 @@ export function PartyForm({ initial }: { initial?: InitialData }) {
     pincode: "",
     gstin: "",
     pan: "",
-    creditLimit: "",
     isActive: true,
     ...initial,
   });
+
+  const isValid =
+    form.shopName.trim() !== "" &&
+    form.ownerName.trim() !== "" &&
+    form.mobile.trim() !== "" &&
+    form.address.trim() !== "" &&
+    form.pincode.trim() !== "";
+
   const [createLogin, setCreateLogin] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -59,7 +65,6 @@ export function PartyForm({ initial }: { initial?: InitialData }) {
     try {
       const payload = {
         ...form,
-        creditLimit: form.creditLimit ? Number(form.creditLimit) : undefined,
         createLogin: !initial?.id && createLogin,
         loginPassword: !initial?.id && createLogin ? password : undefined,
       };
@@ -130,15 +135,16 @@ export function PartyForm({ initial }: { initial?: InitialData }) {
               value={form.address}
               onChange={(e) => patch("address", e.target.value)}
               placeholder="Street, area…"
+              required
             />
           </div>
           <Input
-            label="City"
+            label="City (optional)"
             value={form.city}
             onChange={(e) => patch("city", e.target.value)}
           />
           <Input
-            label="State"
+            label="State (optional)"
             value={form.state}
             onChange={(e) => patch("state", e.target.value)}
           />
@@ -146,38 +152,31 @@ export function PartyForm({ initial }: { initial?: InitialData }) {
             label="Pincode"
             value={form.pincode}
             onChange={(e) => patch("pincode", e.target.value)}
+            required
           />
         </CardBody>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Tax & credit</CardTitle>
+          <CardTitle>Tax details</CardTitle>
         </CardHeader>
         <CardBody className="grid gap-4 sm:grid-cols-2">
           <Input
-            label="GSTIN"
+            label="GSTIN (optional)"
             value={form.gstin}
             onChange={(e) => patch("gstin", e.target.value)}
             placeholder="24ABCDE1234F1Z5"
             autoComplete="off"
           />
           <Input
-            label="PAN"
+            label="PAN (optional)"
             value={form.pan}
             onChange={(e) => patch("pan", e.target.value)}
             placeholder="ABCDE1234F"
             autoComplete="off"
           />
-          <Input
-            label="Credit limit (₹, optional)"
-            type="number"
-            inputMode="decimal"
-            min={0}
-            value={form.creditLimit}
-            onChange={(e) => patch("creditLimit", e.target.value)}
-          />
-          <label className="flex items-center gap-2 text-sm font-medium text-stone-700 self-end pb-3">
+          <label className="flex items-center gap-2 text-sm font-medium text-stone-700 sm:col-span-2">
             <input
               type="checkbox"
               checked={form.isActive}
@@ -246,7 +245,7 @@ export function PartyForm({ initial }: { initial?: InitialData }) {
       )}
 
       <div className="flex gap-2">
-        <Button variant="admin" size="lg" block type="submit" disabled={loading}>
+        <Button variant="admin" size="lg" block type="submit" disabled={loading || !isValid}>
           {loading ? "Saving…" : initial?.id ? "Save changes" : "Create party"}
         </Button>
         <Button type="button" variant="ghost" size="lg" onClick={() => router.back()}>

@@ -19,7 +19,6 @@ const partySchema = z.object({
   pincode: z.string().max(10).optional(),
   gstin: z.string().max(20).optional(),
   pan: z.string().max(10).optional(),
-  creditLimit: z.number().nonnegative().optional(),
   isActive: z.boolean().default(true),
   createLogin: z.boolean().default(false),
   loginPassword: z.string().min(8).optional(),
@@ -56,7 +55,6 @@ export async function createParty(formData: FormData) {
         pincode: data.pincode || null,
         gstin: data.gstin || null,
         pan: data.pan || null,
-        creditLimit: data.creditLimit ?? null,
         isActive: data.isActive,
       },
     });
@@ -111,7 +109,6 @@ export async function updateParty(partyId: string, formData: FormData) {
       pincode: data.pincode || null,
       gstin: data.gstin || null,
       pan: data.pan || null,
-      creditLimit: data.creditLimit ?? null,
       isActive: data.isActive,
     },
   });

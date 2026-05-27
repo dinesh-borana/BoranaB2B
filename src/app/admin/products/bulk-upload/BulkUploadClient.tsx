@@ -108,6 +108,12 @@ function parseCSV(text: string): ParseResult {
       if (emptyParts) errors.push({ field: "sizes", message: `Sizes has an empty entry — check for extra "|" characters` });
     }
 
+    // Support both "categories" (new, multi) and "category" (old, single) columns
+    const rawCategories = get(vals, "categories") || get(vals, "category");
+    const categories = rawCategories
+      ? rawCategories.split("|").map((s) => s.trim()).filter(Boolean)
+      : undefined;
+
     const activeRaw = get(vals, "active").toLowerCase();
     const isActive = activeRaw !== "no" && activeRaw !== "false" && activeRaw !== "0";
 
@@ -117,7 +123,7 @@ function parseCSV(text: string): ParseResult {
       name,
       sku,
       price: isNaN(price) ? 0 : price,
-      category: get(vals, "category") || undefined,
+      categories,
       description: get(vals, "description") || undefined,
       sizes,
       stockStatus,
@@ -151,10 +157,10 @@ function parseCSV(text: string): ParseResult {
 }
 
 // ─── Template download ────────────────────────────────────────
-const HEADERS = ["name", "sku", "price", "category", "description", "sizes", "stock_status", "active"];
+const HEADERS = ["name", "sku", "price", "categories", "description", "sizes", "stock_status", "active"];
 
 function downloadTemplate() {
-  const example1 = ['"Gold Bangles"', "BNG-001", "450", "Bangles", '"Beautiful gold bangles"', "2.4|2.6|2.8", "IN_STOCK", "yes"].join(",");
+  const example1 = ['"Gold Bangles"', "BNG-001", "450", "Bangles|New Arrival", '"Beautiful gold bangles"', "2.4|2.6|2.8", "IN_STOCK", "yes"].join(",");
   const example2 = ['"Silver Necklace"', "NCK-002", "780", "Necklaces", "", "", "MADE_TO_ORDER", "yes"].join(",");
   const csv = [HEADERS.join(","), example1, example2].join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
@@ -272,11 +278,11 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
           <div>
             <p className="font-medium text-stone-900">Download CSV template</p>
             <p className="text-sm text-stone-500 mt-0.5">
-              Fill in Excel or Google Sheets. Columns: <span className="font-medium text-stone-700">name</span>, <span className="font-medium text-stone-700">sku</span>, <span className="font-medium text-stone-700">price</span> are required. Sizes use <code className="bg-stone-100 px-1 rounded text-xs">|</code> separator e.g. <code className="bg-stone-100 px-1 rounded text-xs">2.4|2.6|2.8</code>
+              Fill in Excel or Google Sheets. <span className="font-medium text-stone-700">name</span>, <span className="font-medium text-stone-700">sku</span>, <span className="font-medium text-stone-700">price</span> are required. Sizes &amp; categories both use <code className="bg-stone-100 px-1 rounded text-xs">|</code> separator e.g. <code className="bg-stone-100 px-1 rounded text-xs">Bangles|New Arrival</code>
             </p>
             {categories.length > 0 && (
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-stone-400">Categories:</span>
+                <span className="text-xs text-stone-400">Available categories:</span>
                 {categories.map((c) => (
                   <span key={c} className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{c}</span>
                 ))}
@@ -394,7 +400,7 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
                   <th className="px-3 py-2 font-medium">Name</th>
                   <th className="px-3 py-2 font-medium">SKU</th>
                   <th className="px-3 py-2 font-medium">Price</th>
-                  <th className="px-3 py-2 font-medium">Category</th>
+                  <th className="px-3 py-2 font-medium">Categories</th>
                   <th className="px-3 py-2 font-medium">Sizes</th>
                   <th className="px-3 py-2 font-medium">Stock</th>
                   <th className="px-3 py-2 font-medium w-6"></th>
@@ -415,7 +421,9 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
                       <td className="px-3 py-2 text-stone-600">
                         {r.price > 0 ? `₹${r.price}` : <span className="text-red-400 italic">invalid</span>}
                       </td>
-                      <td className="px-3 py-2 text-stone-500">{r.category ?? <span className="text-stone-300">—</span>}</td>
+                      <td className="px-3 py-2 text-stone-500">
+                        {r.categories?.length ? r.categories.join(", ") : <span className="text-stone-300">—</span>}
+                      </td>
                       <td className="px-3 py-2 text-stone-500">
                         {r.sizes.length > 0 ? r.sizes.join(", ") : <span className="text-stone-300">Standard</span>}
                       </td>

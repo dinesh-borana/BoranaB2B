@@ -10,15 +10,13 @@ import { SignOutButton } from "@/components/customer/SignOutButton";
 export const metadata = { title: "Profile · Borana B2B" };
 export const dynamic = "force-dynamic";
 
-function getParty(id: string) {
-  return prisma.party.findUnique({ where: { id } }).catch(() => null);
-}
-
 export default async function ProfilePage() {
   const session = await auth();
 
   const [party, support] = await Promise.all([
-    session?.user.partyId ? getParty(session.user.partyId) : null,
+    session?.user.partyId
+      ? prisma.party.findUnique({ where: { id: session.user.partyId } }).catch(() => null)
+      : null,
     getSetting("support.phone"),
   ]);
 
