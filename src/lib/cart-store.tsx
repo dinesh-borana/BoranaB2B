@@ -15,6 +15,7 @@ export type CartLine = {
   productName: string;
   productImage: string | null;
   unitPrice: number;
+  mrp?: number;
   sizeQuantities: Record<string, number>;
 };
 

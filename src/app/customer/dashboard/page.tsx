@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Package,
   ClipboardList,
@@ -67,24 +68,43 @@ export default async function CustomerDashboardPage() {
     <div className="flex flex-col gap-0">
 
       {/* ── Hero Banner ── */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a0a0e] via-[#3d0f1e] to-[#6d1424] p-5 pb-6 shadow-xl">
-        {/* decorative gold circles */}
-        <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-gold/10" />
-        <div className="pointer-events-none absolute -bottom-4 left-4 h-20 w-20 rounded-full bg-gold/8" />
+      <section className="hero-banner-bg relative overflow-hidden rounded-2xl p-5 pb-7 shadow-2xl">
+        {/* gold top accent line */}
+        <div className="hero-gold-line absolute left-0 right-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold to-transparent" />
+
+        {/* sweeping gold shimmer */}
+        <div className="hero-shimmer pointer-events-none absolute inset-0" />
+
+        {/* large pulsing orb — top right */}
+        <div className="hero-orb-1 pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-gold/15 blur-2xl" />
+        {/* small pulsing orb — bottom left */}
+        <div className="hero-orb-2 pointer-events-none absolute -bottom-8 left-0 h-28 w-28 rounded-full bg-brand-600/25 blur-xl" />
+        {/* faint center glow */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_60%_30%,rgba(196,154,60,0.07),transparent_70%)]" />
 
         <div className="relative">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-200">
+          {/* eyebrow */}
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.26em] text-gold/60">
+            Borana Jewels · B2B
+          </p>
+          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-200/90">
             Welcome back
           </p>
-          <h1 className="mt-0.5 text-[22px] font-bold leading-tight text-white">
-            {firstName} 👋
+          <h1 className="mt-0.5 text-[24px] font-extrabold leading-tight text-white drop-shadow-sm">
+            {firstName} <span className="not-italic">👋</span>
           </h1>
-          <p className="mt-1 text-sm leading-relaxed text-brand-200/80">
+          <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">
             Explore our latest collection &amp; place your wholesale order.
           </p>
+
+          {/* CTA button */}
           <Link
             href="/customer/catalog"
-            className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-gold to-[#a8802c] px-5 text-sm font-bold text-white shadow-lg shadow-gold/30"
+            className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl px-5 text-sm font-bold text-[#1a0a0e] shadow-lg transition-opacity hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, #e8c97a 0%, #c49a3c 50%, #a8802c 100%)",
+              boxShadow: "0 4px 18px rgba(196,154,60,0.40), inset 0 1px 0 rgba(255,255,255,0.25)",
+            }}
           >
             Browse catalog
             <ChevronRight className="h-4 w-4" />
@@ -150,11 +170,12 @@ export default async function CustomerDashboardPage() {
                   style={{ width: 120, height: 148, scrollSnapAlign: "start" }}
                 >
                   {cat.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={cat.imageUrl}
                       alt={cat.name}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      unoptimized
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <div className={`h-full w-full bg-gradient-to-br ${grad}`} />
@@ -185,60 +206,78 @@ export default async function CustomerDashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           {([
             {
-              label: "Under",
-              price: "₹100",
+              title: "Under ₹100",
               sub: "Budget picks",
               href: "/customer/catalog?maxPrice=100",
-              from: "#1a4a1a", to: "#0d2e0d",
+              bg: "linear-gradient(-45deg, #061c0c, #0f4020, #1a5c2e, #0b3518, #16502a, #061c0c)",
               accent: "#4ade80",
+              glow: "#16a34a",
+              delay: "0s",
             },
             {
-              label: "₹101",
-              price: "– ₹300",
+              title: "₹101–₹300",
               sub: "Great value",
               href: "/customer/catalog?minPrice=101&maxPrice=300",
-              from: "#1a3c6b", to: "#0d2245",
-              accent: "#60a5fa",
+              bg: "linear-gradient(-45deg, #030b1a, #0a1e4a, #112d6b, #060f2a, #0d2450, #030b1a)",
+              accent: "#93c5fd",
+              glow: "#2563eb",
+              delay: "1.5s",
             },
             {
-              label: "₹301",
-              price: "– ₹500",
+              title: "₹301–₹500",
               sub: "Mid range",
               href: "/customer/catalog?minPrice=301&maxPrice=500",
-              from: "#6d1424", to: "#3d0f1e",
-              accent: "#f87171",
+              bg: "linear-gradient(-45deg, #150306, #3d0a10, #6b1224, #200507, #501020, #150306)",
+              accent: "#fca5a5",
+              glow: "#dc2626",
+              delay: "3s",
             },
             {
-              label: "Above",
-              price: "₹500",
+              title: "Above ₹500",
               sub: "Premium",
               href: "/customer/catalog?minPrice=501",
-              from: "#4a1a6b", to: "#280d3d",
-              accent: "#c084fc",
+              bg: "linear-gradient(-45deg, #0a0316, #1e0a3d, #3b0f6b, #100520, #2d0a55, #0a0316)",
+              accent: "#c4b5fd",
+              glow: "#7c3aed",
+              delay: "4.5s",
             },
           ] as const).map((b) => (
             <Link
               key={b.href}
               href={b.href}
-              className="group relative overflow-hidden rounded-2xl p-4 shadow-md"
-              style={{ background: `linear-gradient(135deg, ${b.from}, ${b.to})` }}
+              className="budget-card-anim group relative overflow-hidden rounded-2xl shadow-lg"
+              style={{ background: b.bg, minHeight: 90, animationDelay: b.delay }}
             >
-              {/* shimmer dot */}
+              {/* gold top accent line */}
+              <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+              {/* sweeping shimmer */}
+              <div className="hero-shimmer pointer-events-none absolute inset-0" />
+
+              {/* large orb top-right */}
               <div
-                className="absolute -right-3 -top-3 h-16 w-16 rounded-full opacity-20"
-                style={{ background: b.accent }}
+                className="budget-orb pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-xl"
+                style={{ background: b.glow, animationDelay: b.delay }}
               />
-              <div className="relative">
-                <p className="text-[11px] font-semibold tracking-wide" style={{ color: b.accent }}>
-                  {b.label}
-                </p>
-                <p className="text-[22px] font-extrabold leading-none text-white">
-                  {b.price}
-                </p>
-                <p className="mt-1 text-[10px] font-medium text-white/60">{b.sub}</p>
+              {/* small orb bottom-left */}
+              <div
+                className="budget-orb-slow pointer-events-none absolute -bottom-5 -left-5 h-16 w-16 rounded-full blur-lg"
+                style={{ background: b.glow, animationDelay: b.delay }}
+              />
+
+              {/* content */}
+              <div className="relative flex h-full flex-col justify-between p-4">
+                <div>
+                  <p className="text-[16px] font-extrabold leading-tight tracking-tight text-white whitespace-nowrap">
+                    {b.title}
+                  </p>
+                  <p className="mt-1 text-[11px] font-semibold" style={{ color: b.accent }}>
+                    {b.sub}
+                  </p>
+                </div>
               </div>
               <ChevronRight
-                className="absolute bottom-3 right-3 h-4 w-4 opacity-40 text-white transition-opacity group-hover:opacity-80"
+                className="absolute bottom-3 right-3 h-4 w-4 text-white opacity-40 transition-opacity group-hover:opacity-90"
               />
             </Link>
           ))}
@@ -306,14 +345,13 @@ export default async function CustomerDashboardPage() {
                 >
                   <div className="relative aspect-square w-full bg-stone-50">
                     {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={img}
                         alt={p.name}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading={idx < 2 ? "eager" : "lazy"}
-                        decoding="async"
-                        fetchPriority={idx < 2 ? "high" : "low"}
+                        fill
+                        unoptimized
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        priority={idx < 2}
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-stone-300">

@@ -7,7 +7,8 @@
       "Bash(rm \"d:/projects/borana-b2b/src/app/customer/catalog/[id]/ImageCarousel.tsx\")",
       "Bash(npx tsc *)",
       "Bash(Remove-Item -Recurse -Force \"d:\\\\projects\\\\borana-b2b\\\\.next\" -ErrorAction SilentlyContinue)",
-      "Bash(Write-Output \"done\")"
+      "Bash(Write-Output \"done\")",
+      "Bash(npx next *)"
     ],
     "additionalDirectories": [
       "d:\\projects\\borana-b2b\\src\\app\\customer\\catalog\\[id]"

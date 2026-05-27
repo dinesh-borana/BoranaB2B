@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 
 type Props = {
@@ -44,25 +45,23 @@ export function ImageCarousel({ images, alt }: Props) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-stone-100">
       <div
-        className="aspect-square w-full"
+        className="relative aspect-square w-full"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
         {images.map((img, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             key={img.url}
             src={img.url}
             alt={`${alt} ${i + 1}`}
-            className={`absolute inset-0 aspect-square w-full object-cover transition-opacity duration-200 ${
+            fill
+            unoptimized
+            className={`object-cover transition-opacity duration-200 ${
               i === current ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
-            loading={i === 0 ? "eager" : "lazy"}
-            decoding="async"
-            fetchPriority={i === 0 ? "high" : "low"}
+            priority={i === 0}
           />
         ))}
-        <div className="aspect-square w-full" />
       </div>
 
       {images.length > 1 && (

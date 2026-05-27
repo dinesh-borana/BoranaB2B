@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Package } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
@@ -108,14 +109,13 @@ export default async function CatalogPage({
                 <Card className="overflow-hidden transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/8">
                   <div className="relative aspect-square w-full bg-stone-100">
                     {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={img}
                         alt={p.name}
-                        className="h-full w-full object-cover"
-                        loading={idx < 4 ? "eager" : "lazy"}
-                        decoding="async"
-                        fetchPriority={idx < 4 ? "high" : "low"}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                        priority={idx < 4}
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-stone-300">
