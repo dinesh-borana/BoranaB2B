@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { NavigationProgress } from "@/components/NavigationProgress";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 const jakartaSans = Plus_Jakarta_Sans({
@@ -13,13 +14,16 @@ const jakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Borana B2B — Ordering Portal",
-  description:
-    "Wholesale ordering portal for Borana Creation imitation jewellery.",
+  description: "Wholesale ordering portal for Borana Creation imitation jewellery.",
   applicationName: "Borana B2B",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     title: "Borana B2B",
     statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
   },
 };
 
@@ -37,12 +41,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${jakartaSans.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${jakartaSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <NavigationProgress />
+        <ServiceWorkerRegister />
         {children}
       </body>
     </html>

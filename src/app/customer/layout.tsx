@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { Providers } from "@/components/Providers";
 import { TopBar } from "@/components/customer/TopBar";
 import { BottomTabs } from "@/components/customer/BottomTabs";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 export default async function CustomerLayout({
   children,
@@ -23,6 +24,7 @@ export default async function CustomerLayout({
           </div>
         </main>
         <BottomTabs />
+        <InstallPrompt />
       </div>
     </Providers>
   );
