@@ -62,7 +62,6 @@ export function ImageCarousel({ images, alt }: Props) {
             fetchPriority={i === 0 ? "high" : "low"}
           />
         ))}
-        {/* Placeholder while loading */}
         <div className="aspect-square w-full" />
       </div>
 

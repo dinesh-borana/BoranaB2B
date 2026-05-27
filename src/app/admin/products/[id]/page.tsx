@@ -21,7 +21,7 @@ export default async function AdminProductDetailPage({
     .findUnique({
       where: { id },
       include: {
-        category: true,
+        categories: true,
         images: { orderBy: { sortOrder: "asc" } },
         sizes: { orderBy: { size: "asc" } },
       },
@@ -68,22 +68,29 @@ export default async function AdminProductDetailPage({
             <p className="font-medium text-stone-900">{product.sku}</p>
           </div>
           <div>
-            <p className="text-xs text-stone-500">Selling price</p>
+            <p className="text-xs text-stone-500">Price</p>
             <div className="flex items-center gap-2">
               <p className="font-semibold text-brand-700">
                 {formatINR(product.price)}
               </p>
-              {product.mrp && (
-                <p className="text-sm text-stone-400 line-through">
-                  {formatINR(product.mrp)}
-                </p>
+              {product.mrp && Number(product.mrp) > Number(product.price) && (
+                <>
+                  <p className="text-sm text-stone-400 line-through">
+                    {formatINR(product.mrp)}
+                  </p>
+                  <p className="text-xs text-emerald-700 font-medium">
+                    {Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100)}% off
+                  </p>
+                </>
               )}
             </div>
           </div>
           <div>
             <p className="text-xs text-stone-500">Category</p>
             <p className="font-medium text-stone-900">
-              {product.category?.name ?? "—"}
+              {product.categories.length > 0
+                ? product.categories.map((c) => c.name).join(", ")
+                : "—"}
             </p>
           </div>
           <div>

@@ -6,39 +6,20 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CatalogSearch } from "./CatalogSearch";
+import { CatalogFilter } from "./CatalogFilter";
 import { Suspense } from "react";
 
 export const metadata = { title: "Catalog · Borana B2B" };
 export const dynamic = "force-dynamic";
 
-type SP = { q?: string; cat?: string };
+type SP = { q?: string; cat?: string; minPrice?: string; maxPrice?: string };
 
-function getCategories() {
-  return prisma.category.findMany({ orderBy: { sortOrder: "asc" } });
-}
-
-function getProducts(q: string, cat: string) {
-  return prisma.product.findMany({
-    where: {
-      isActive: true,
-      ...(q
-        ? {
-            OR: [
-              { name: { contains: q, mode: "insensitive" } },
-              { sku: { contains: q, mode: "insensitive" } },
-              { description: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-      ...(cat ? { category: { slug: cat } } : {}),
-    },
-    include: {
-      images: { where: { isMain: true }, take: 1 },
-      category: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-}
+const BUDGET_LABELS: Record<string, string> = {
+  "0-100":   "Under ₹100",
+  "101-300": "₹101 – ₹300",
+  "301-500": "₹301 – ₹500",
+  "501-":    "Above ₹500",
+};
 
 export default async function CatalogPage({
   searchParams,
@@ -46,13 +27,45 @@ export default async function CatalogPage({
   searchParams: Promise<SP>;
 }) {
   const params = await searchParams;
-  const q = params.q ?? "";
-  const cat = params.cat ?? "";
+  const q          = params.q        ?? "";
+  const cat        = params.cat      ?? "";
+  const minPrice   = params.minPrice ? Number(params.minPrice) : undefined;
+  const maxPrice   = params.maxPrice ? Number(params.maxPrice) : undefined;
+
+  const budgetKey = minPrice === undefined && maxPrice !== undefined
+    ? `0-${maxPrice}`
+    : minPrice !== undefined && maxPrice !== undefined
+    ? `${minPrice}-${maxPrice}`
+    : minPrice !== undefined && maxPrice === undefined
+    ? `${minPrice}-`
+    : undefined;
 
   const [categories, products] = await Promise.all([
-    getCategories().catch(() => []),
-    getProducts(q, cat).catch(() => []),
+    prisma.category.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+    prisma.product.findMany({
+      where: {
+        isActive: true,
+        ...(q ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { sku:  { contains: q, mode: "insensitive" } },
+            { description: { contains: q, mode: "insensitive" } },
+          ],
+        } : {}),
+        ...(cat ? { categories: { some: { slug: cat } } } : {}),
+        ...(minPrice !== undefined || maxPrice !== undefined ? {
+          price: {
+            ...(minPrice !== undefined ? { gte: minPrice } : {}),
+            ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+          },
+        } : {}),
+      },
+      include: { images: { where: { isMain: true }, take: 1 } },
+      orderBy: { createdAt: "desc" },
+    }).catch(() => []),
   ]);
+
+  const hasFilter = !!(q || cat || budgetKey);
 
   return (
     <div className="flex flex-col gap-4">
@@ -60,56 +73,38 @@ export default async function CatalogPage({
         <CatalogSearch initialQ={q} />
       </Suspense>
 
-      <div className="-mx-4 overflow-x-auto px-4">
-        <div className="flex gap-2">
-          <Link
-            href={{ pathname: "/customer/catalog", query: { q: params.q } }}
-            className={`h-9 shrink-0 rounded-full px-3.5 text-sm font-medium leading-9 ${
-              !params.cat
-                ? "bg-brand-700 text-white"
-                : "border border-stone-200 bg-white text-stone-700"
-            }`}
-          >
-            All
-          </Link>
-          {categories.map((c) => {
-            const active = params.cat === c.slug;
-            return (
-              <Link
-                key={c.id}
-                href={{
-                  pathname: "/customer/catalog",
-                  query: { q: params.q, cat: c.slug },
-                }}
-                className={`h-9 shrink-0 rounded-full px-3.5 text-sm font-medium leading-9 ${
-                  active
-                    ? "bg-brand-700 text-white"
-                    : "border border-stone-200 bg-white text-stone-700"
-                }`}
-              >
-                {c.name}
-              </Link>
-            );
-          })}
+      <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
+        <CatalogFilter categories={categories} initialCat={cat} />
+      </Suspense>
+
+      {/* Active budget badge */}
+      {budgetKey && BUDGET_LABELS[budgetKey] && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 px-3 py-1 text-xs font-semibold text-brand-700">
+            Budget: {BUDGET_LABELS[budgetKey]}
+          </span>
+          <a href="/customer/catalog" className="text-xs text-stone-500 underline underline-offset-2">
+            Clear
+          </a>
         </div>
-      </div>
+      )}
 
       {products.length === 0 ? (
         <EmptyState
           icon={<Package className="h-5 w-5" />}
           title="No products found"
           description={
-            q || cat
+            hasFilter
               ? "Try clearing your filters or searching for something else."
               : "Run `npm run db:seed` to load sample products."
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 stagger">
           {products.map((p, idx) => {
             const img = p.images[0]?.url;
             return (
-              <Link key={p.id} href={`/customer/catalog/${p.id}`} prefetch={true}>
+              <Link key={p.id} href={`/customer/catalog/${p.id}`} prefetch={true} className="animate-fade-up">
                 <Card className="overflow-hidden transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/8">
                   <div className="relative aspect-square w-full bg-stone-100">
                     {img ? (
@@ -120,6 +115,7 @@ export default async function CatalogPage({
                         className="h-full w-full object-cover"
                         loading={idx < 4 ? "eager" : "lazy"}
                         decoding="async"
+                        fetchPriority={idx < 4 ? "high" : "low"}
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-stone-300">
@@ -133,9 +129,6 @@ export default async function CatalogPage({
                     )}
                   </div>
                   <CardBody className="!p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-stone-400">
-                      {p.category?.name}
-                    </p>
                     <p className="mt-0.5 line-clamp-2 text-sm font-medium text-stone-900">
                       {p.name}
                     </p>
@@ -144,7 +137,7 @@ export default async function CatalogPage({
                         <span className="text-sm font-bold text-brand-700">
                           {formatINR(p.price)}
                         </span>
-                        {p.mrp && (
+                        {p.mrp && Number(p.mrp) > Number(p.price) && (
                           <span className="text-xs text-stone-400 line-through leading-tight">
                             {formatINR(p.mrp)}
                           </span>

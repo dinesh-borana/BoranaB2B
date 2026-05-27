@@ -42,31 +42,33 @@ model User {
 }
 
 model Party {
-  id          String   @id @default(cuid())
-  shopName    String
-  ownerName   String
-  mobile      String   @unique
-  altMobile   String?
-  email       String?
-  address     String?
-  city        String?
-  state       String?
-  pincode     String?
-  gstin       String?
-  pan         String?
-  creditLimit Decimal? @db.Decimal(12, 2)
-  logoUrl     String?
-  isActive    Boolean  @default(true)
-  users       User[]
-  orders      Order[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String         @id @default(cuid())
+  shopName      String
+  ownerName     String
+  mobile        String         @unique
+  altMobile     String?
+  email         String?
+  address       String?
+  city          String?
+  state         String?
+  pincode       String?
+  gstin         String?
+  pan           String?
+  creditLimit   Decimal?       @db.Decimal(12, 2)
+  logoUrl       String?
+  isActive      Boolean        @default(true)
+  users         User[]
+  orders        Order[]
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Category {
   id        String    @id @default(cuid())
   name      String    @unique
   slug      String    @unique
+  imageUrl  String?
   sortOrder Int       @default(0)
   products  Product[]
   createdAt DateTime  @default(now())
@@ -79,8 +81,7 @@ model Product {
   description String?
   price       Decimal        @db.Decimal(10, 2)
   mrp         Decimal?       @db.Decimal(10, 2)
-  category    Category?      @relation(fields: [categoryId], references: [id])
-  categoryId  String?
+  categories  Category[]
   images      ProductImage[]
   sizes       ProductSize[]
   isActive    Boolean        @default(true)
@@ -152,4 +153,26 @@ model Setting {
   id    String @id @default(cuid())
   key   String @unique
   value String
+}
+
+enum NotificationType {
+  NEW_PRODUCT
+  ORDER_STATUS
+  DISCOUNT
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  partyId   String
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  party     Party            @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@index([partyId, isRead])
+  @@index([partyId, createdAt(sort: Desc)])
 }

@@ -30,7 +30,7 @@ export function AdminBottomTabs() {
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/97 backdrop-blur md:hidden"
-      style={{ borderColor: "var(--border)" }}
+      style={{ borderColor: "var(--border)", paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="flex items-stretch stagger overflow-x-auto scrollbar-none">
         {TABS.map((tab) => {

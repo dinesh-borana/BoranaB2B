@@ -5,12 +5,14 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatINR } from "@/lib/format";
+import { notifyAllParties } from "@/lib/notifications";
 
 const productSchema = z.object({
   name: z.string().min(1).max(200),
   sku: z.string().min(1).max(80),
   description: z.string().max(2000).optional(),
-  categoryId: z.string().optional(),
+  categoryIds: z.array(z.string()).default([]),
   isActive: z.boolean().default(true),
   price: z.number().positive(),
   mrp: z.number().positive().optional(),
@@ -42,9 +44,9 @@ export async function createProduct(formData: FormData) {
       name: data.name,
       sku: data.sku,
       description: data.description,
-      ...(data.categoryId
-        ? { category: { connect: { id: data.categoryId } } }
-        : {}),
+      categories: data.categoryIds.length
+        ? { connect: data.categoryIds.map((id) => ({ id })) }
+        : undefined,
       isActive: data.isActive,
       price: data.price,
       mrp: data.mrp ?? null,
@@ -64,6 +66,15 @@ export async function createProduct(formData: FormData) {
     },
   });
 
+  if (data.isActive) {
+    await notifyAllParties(
+      "NEW_PRODUCT",
+      "New product added",
+      `Check out ${data.name} — just added to the catalog.`,
+      `/customer/catalog/${product.id}`,
+    );
+  }
+
   revalidateTag("products", {});
   revalidatePath("/admin/products");
   redirect(`/admin/products/${product.id}`);
@@ -75,6 +86,12 @@ export async function updateProduct(productId: string, formData: FormData) {
   const raw = JSON.parse(formData.get("payload")?.toString() ?? "{}");
   const data = productSchema.parse(raw);
 
+  // Fetch old state before updating to detect discount changes
+  const oldProduct = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { mrp: true, price: true },
+  });
+
   await prisma.$transaction(async (tx) => {
     await tx.productImage.deleteMany({ where: { productId } });
     await tx.productSize.deleteMany({ where: { productId } });
@@ -85,9 +102,7 @@ export async function updateProduct(productId: string, formData: FormData) {
         name: data.name,
         sku: data.sku,
         description: data.description,
-        category: data.categoryId
-          ? { connect: { id: data.categoryId } }
-          : { disconnect: true },
+        categories: { set: data.categoryIds.map((id) => ({ id })) },
         isActive: data.isActive,
         price: data.price,
         mrp: data.mrp ?? null,
@@ -107,6 +122,22 @@ export async function updateProduct(productId: string, formData: FormData) {
       },
     });
   });
+
+  // Notify whenever the discount price changes
+  const oldPrice = oldProduct?.price ? Number(oldProduct.price.toString()) : null;
+
+  if (oldPrice !== null && data.price !== oldPrice) {
+    const body = data.mrp && data.mrp > data.price
+      ? `Discount price: ${formatINR(data.price)} | Original MRP: ${formatINR(data.mrp)}`
+      : `New price: ${formatINR(data.price)}`;
+
+    await notifyAllParties(
+      "DISCOUNT",
+      `Price update: ${data.name}`,
+      body,
+      `/customer/catalog/${productId}`,
+    );
+  }
 
   revalidateTag("products", {});
   revalidatePath("/admin/products");

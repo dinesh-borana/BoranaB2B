@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
+import { cn } from "@/lib/cn";
 import { createProduct, updateProduct } from "./actions";
 
 const ALL_SIZES = ["2.2", "2.4", "2.6", "2.8", "2.10", "2.12"];
@@ -20,7 +21,7 @@ type InitialData = {
   name: string;
   sku: string;
   description: string;
-  categoryId: string;
+  categoryIds: string[];
   isActive: boolean;
   price: string;
   mrp: string;
@@ -39,7 +40,7 @@ export function ProductForm({
   const [name,        setName]        = useState(initial?.name ?? "");
   const [sku,         setSku]         = useState(initial?.sku ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [categoryId,  setCategoryId]  = useState(initial?.categoryId ?? "");
+  const [categoryIds, setCategoryIds] = useState<string[]>(initial?.categoryIds ?? []);
   const [isActive,    setIsActive]    = useState(initial?.isActive ?? true);
   const [price,       setPrice]       = useState(initial?.price ?? "");
   const [mrp,         setMrp]         = useState(initial?.mrp ?? "");
@@ -50,8 +51,14 @@ export function ProductForm({
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>(
     () => Object.fromEntries((initial?.sizes ?? []).map((s) => [s.size, s.stockStatus])),
   );
-  const [error,   setError]   = useState("");
-  const [loading, setLoading] = useState(false);
+  // Sizes added beyond the predefined ALL_SIZES list
+  const [extraSizes, setExtraSizes] = useState<string[]>(() =>
+    (initial?.sizes ?? []).map((s) => s.size).filter((s) => !ALL_SIZES.includes(s)),
+  );
+  const [newSize,      setNewSize]      = useState("");
+  const [sizeError,    setSizeError]    = useState("");
+  const [error,        setError]        = useState("");
+  const [loading,  setLoading]  = useState(false);
 
   function toggleSize(size: string) {
     setSelectedSizes((prev) => {
@@ -68,6 +75,28 @@ export function ProductForm({
     setSelectedSizes((prev) => ({ ...prev, [size]: status }));
   }
 
+  function addCustomSize() {
+    const trimmed = newSize.trim();
+    if (!trimmed) return;
+    if ([...ALL_SIZES, ...extraSizes].includes(trimmed)) {
+      setSizeError(`Size "${trimmed}" is already in the list.`);
+      return;
+    }
+    setSizeError("");
+    setExtraSizes((prev) => [...prev, trimmed]);
+    setSelectedSizes((prev) => ({ ...prev, [trimmed]: "IN_STOCK" }));
+    setNewSize("");
+  }
+
+  function removeCustomSize(size: string) {
+    setExtraSizes((prev) => prev.filter((s) => s !== size));
+    setSelectedSizes((prev) => {
+      const next = { ...prev };
+      delete next[size];
+      return next;
+    });
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -77,10 +106,10 @@ export function ProductForm({
         name,
         sku,
         description,
-        categoryId: categoryId || undefined,
+        categoryIds,
         isActive,
-        price: Number(price),
-        mrp: mrp ? Number(mrp) : undefined,
+        price: Number(price) || 0,
+        mrp: mrp.trim() ? Number(mrp) : undefined,
         imageUrls: imageUrls.filter((u) => u.trim()),
         sizes: Object.entries(selectedSizes).map(([size, stockStatus]) => ({
           size,
@@ -111,30 +140,56 @@ export function ProductForm({
           </div>
           <Input label="SKU" value={sku} onChange={(e) => setSku(e.target.value)} placeholder="PJ-001" required />
           <Input
-            label="Selling price (₹)"
-            type="number"
+            label="Price (₹) — what customer pays"
+            type="text"
             inputMode="decimal"
-            min={0}
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            placeholder="0"
+            placeholder="e.g. 264"
             required
           />
           <Input
-            label="MRP / Original price (₹) — optional"
-            type="number"
+            label="MRP / original price (₹) — shown with strikethrough (optional)"
+            type="text"
             inputMode="decimal"
-            min={0}
             value={mrp}
             onChange={(e) => setMrp(e.target.value)}
-            placeholder="Leave blank for no discount display"
+            placeholder="e.g. 400"
           />
-          <Select label="Category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-            <option value="">— No category —</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </Select>
+          <div className="sm:col-span-2">
+            <p className="mb-2 text-sm font-medium text-stone-700">
+              Categories <span className="font-normal text-stone-400">(select one or more)</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((c) => {
+                const checked = categoryIds.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() =>
+                      setCategoryIds((prev) =>
+                        prev.includes(c.id)
+                          ? prev.filter((id) => id !== c.id)
+                          : [...prev, c.id],
+                      )
+                    }
+                    className={cn(
+                      "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                      checked
+                        ? "border-admin-800 bg-admin-800 text-white"
+                        : "border-stone-200 bg-white text-stone-700 hover:border-admin-400",
+                    )}
+                  >
+                    {c.name}
+                  </button>
+                );
+              })}
+              {categories.length === 0 && (
+                <p className="text-sm text-stone-400">No categories yet — add them in Settings.</p>
+              )}
+            </div>
+          </div>
           <div className="sm:col-span-2">
             <Textarea
               label="Description (optional)"
@@ -194,10 +249,11 @@ export function ProductForm({
         <CardHeader><CardTitle>Available sizes</CardTitle></CardHeader>
         <CardBody className="flex flex-col gap-3">
           <p className="text-xs text-stone-500">
-            Select the sizes available for this product.
+            Select the sizes available for this product. Add custom sizes below if needed.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
-            {ALL_SIZES.map((size) => {
+            {[...ALL_SIZES, ...extraSizes].map((size) => {
+              const isCustom = !ALL_SIZES.includes(size);
               const checked = size in selectedSizes;
               return (
                 <div
@@ -218,6 +274,11 @@ export function ProductForm({
                     className="flex-1 cursor-pointer text-sm font-semibold text-stone-800"
                   >
                     {size}
+                    {isCustom && (
+                      <span className="ml-1.5 rounded bg-stone-200 px-1 py-0.5 text-[10px] font-medium text-stone-500">
+                        custom
+                      </span>
+                    )}
                   </label>
                   {checked && (
                     <Select
@@ -230,9 +291,49 @@ export function ProductForm({
                       <option value="OUT_OF_STOCK">Out of stock</option>
                     </Select>
                   )}
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={() => removeCustomSize(size)}
+                      className="grid h-6 w-6 shrink-0 place-items-center rounded text-stone-400 hover:bg-rose-50 hover:text-rose-600"
+                      title="Remove this size"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               );
             })}
+          </div>
+
+          {/* Add custom size */}
+          <div className="flex flex-col gap-1 pt-1">
+            <div className="flex gap-2">
+              <Input
+                placeholder="e.g. 2.14 or 3.0"
+                value={newSize}
+                onChange={(e) => { setNewSize(e.target.value); setSizeError(""); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCustomSize();
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="admin"
+                size="sm"
+                onClick={addCustomSize}
+                disabled={!newSize.trim()}
+                className="shrink-0"
+              >
+                + Add size
+              </Button>
+            </div>
+            {sizeError && (
+              <p className="text-xs text-rose-600">{sizeError}</p>
+            )}
           </div>
         </CardBody>
       </Card>
