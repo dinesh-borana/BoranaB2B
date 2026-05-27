@@ -123,13 +123,18 @@ export async function updateProduct(productId: string, formData: FormData) {
     });
   });
 
-  // Notify whenever the discount price changes
+  // Notify when price or MRP changes
   const oldPrice = oldProduct?.price ? Number(oldProduct.price.toString()) : null;
+  const oldMrp = oldProduct?.mrp ? Number(oldProduct.mrp.toString()) : null;
+  const newMrp = data.mrp ?? null;
+  const priceChanged = oldPrice !== null && data.price !== oldPrice;
+  const mrpChanged = oldMrp !== newMrp;
 
-  if (oldPrice !== null && data.price !== oldPrice) {
-    const body = data.mrp && data.mrp > data.price
-      ? `Discount price: ${formatINR(data.price)} | Original MRP: ${formatINR(data.mrp)}`
-      : `New price: ${formatINR(data.price)}`;
+  if (priceChanged || mrpChanged) {
+    const hasDiscount = data.mrp && data.mrp > data.price;
+    const body = hasDiscount
+      ? `Now at ${formatINR(data.price)} (was ${formatINR(data.mrp!)} MRP) — ${Math.round(((data.mrp! - data.price) / data.mrp!) * 100)}% off`
+      : `Price updated: ${formatINR(data.price)}`;
 
     await notifyAllParties(
       "DISCOUNT",

@@ -63,9 +63,14 @@ export default async function ProductDetailPage({
             {formatINR(product.price)}
           </span>
           {product.mrp && Number(product.mrp) > Number(product.price) && (
-            <span className="text-sm text-stone-400 line-through">
-              {formatINR(product.mrp)}
-            </span>
+            <>
+              <span className="text-sm text-stone-400 line-through">
+                {formatINR(product.mrp)}
+              </span>
+              <span className="rounded-md bg-rose-600 px-1.5 py-0.5 text-xs font-bold text-white">
+                -{Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100)}% off
+              </span>
+            </>
           )}
           <span className="text-xs text-stone-500">· SKU {product.sku}</span>
           <Badge tone="success">In stock</Badge>

@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.vercel-blob.com" },
       // Generic https fallback for any other CDN
       { protocol: "https", hostname: "**.amazonaws.com" },
+      // Catch-all: admins control which URLs are entered, so allow any HTTPS host
+      { protocol: "https", hostname: "**" },
     ],
   },
   experimental: {

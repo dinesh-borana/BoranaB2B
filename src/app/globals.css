@@ -230,11 +230,99 @@ input[type="number"] { -moz-appearance: textfield; }
   100%{ transform: rotate(0deg); }
 }
 
+/* ── Hero Banner live animations ── */
+@keyframes hero-gradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes hero-shimmer-sweep {
+  0%          { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  4%          { opacity: 1; }
+  48%         { transform: translateX(220%) skewX(-18deg); opacity: 0.7; }
+  49%, 100%   { opacity: 0; transform: translateX(220%) skewX(-18deg); }
+}
+@keyframes hero-orb-pulse {
+  0%, 100%    { opacity: 0.13; transform: scale(1); }
+  50%         { opacity: 0.30; transform: scale(1.15); }
+}
+@keyframes hero-orb-pulse-slow {
+  0%, 100%    { opacity: 0.07; transform: scale(1); }
+  50%         { opacity: 0.20; transform: scale(1.22); }
+}
+@keyframes hero-gold-line {
+  0%, 100%    { opacity: 0.4; }
+  50%         { opacity: 1; }
+}
+
+.hero-banner-bg {
+  background: linear-gradient(-45deg,
+    #0d0306 0%,
+    #3d0f1e 22%,
+    #6b1322 42%,
+    #1a0a0e 60%,
+    #4a0e20 80%,
+    #2a060e 100%);
+  background-size: 400% 400%;
+  animation: hero-gradient 10s ease infinite;
+}
+.hero-shimmer {
+  background: linear-gradient(
+    108deg,
+    transparent 28%,
+    rgba(196, 154, 60, 0.14) 50%,
+    rgba(255, 220, 120, 0.07) 55%,
+    transparent 72%
+  );
+  animation: hero-shimmer-sweep 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.hero-orb-1 {
+  animation: hero-orb-pulse 4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.hero-orb-2 {
+  animation: hero-orb-pulse-slow 5.5s ease-in-out infinite 1.2s;
+  will-change: transform, opacity;
+}
+.hero-gold-line {
+  animation: hero-gold-line 3s ease-in-out infinite;
+}
+
+/* ── Budget Cards live animations ── */
+@keyframes budget-gradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes budget-orb-pulse {
+  0%, 100% { opacity: 0.22; transform: scale(1); }
+  50%      { opacity: 0.50; transform: scale(1.20); }
+}
+.budget-card-anim {
+  background-size: 300% 300%;
+  animation: budget-gradient 9s ease infinite;
+}
+.budget-orb {
+  animation: budget-orb-pulse 3.5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.budget-orb-slow {
+  animation: budget-orb-pulse 5s ease-in-out infinite 1s;
+  will-change: transform, opacity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up, .animate-fade-down, .animate-fade-in,
   .animate-scale-in, .animate-slide-left, .animate-pop-in,
   .page-enter { animation: none; }
   .card-hover:hover { transform: none; }
+  .hero-banner-bg   { animation: none; background-position: 0% 50%; }
+  .hero-shimmer     { animation: none; opacity: 0; }
+  .hero-orb-1, .hero-orb-2 { animation: none; }
+  .hero-gold-line   { animation: none; }
+  .budget-card-anim { animation: none; background-position: 0% 50%; }
+  .budget-orb, .budget-orb-slow { animation: none; }
 }
 
 /* ═══════════════════════════════════════

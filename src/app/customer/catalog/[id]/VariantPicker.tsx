@@ -58,6 +58,7 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
       productName: product.name,
       productImage: product.image,
       unitPrice: product.price,
+      mrp: product.mrp && product.mrp > product.price ? product.mrp : undefined,
       sizeQuantities: { ...qty },
     };
     addLine(line);
