@@ -275,7 +275,6 @@ input[type="number"] { -moz-appearance: textfield; }
     transparent 72%
   );
   animation: hero-shimmer-sweep 6s ease-in-out infinite;
-  will-change: transform, opacity;
 }
 .hero-orb-1 {
   animation: hero-orb-pulse 4s ease-in-out infinite;
@@ -304,12 +303,10 @@ input[type="number"] { -moz-appearance: textfield; }
   animation: budget-gradient 9s ease infinite;
 }
 .budget-orb {
-  animation: budget-orb-pulse 3.5s ease-in-out infinite;
-  will-change: transform, opacity;
+  /* removed — orbs are now static, no animation */
 }
 .budget-orb-slow {
-  animation: budget-orb-pulse 5s ease-in-out infinite 1s;
-  will-change: transform, opacity;
+  /* removed — orbs are now static, no animation */
 }
 
 @media (prefers-reduced-motion: reduce) {

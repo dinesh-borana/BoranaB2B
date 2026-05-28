@@ -76,9 +76,9 @@ export default async function CustomerDashboardPage() {
         <div className="hero-shimmer pointer-events-none absolute inset-0" />
 
         {/* large pulsing orb — top right */}
-        <div className="hero-orb-1 pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-gold/15 blur-2xl" />
+        <div className="hero-orb-1 pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-gold/10" />
         {/* small pulsing orb — bottom left */}
-        <div className="hero-orb-2 pointer-events-none absolute -bottom-8 left-0 h-28 w-28 rounded-full bg-brand-600/25 blur-xl" />
+        <div className="hero-orb-2 pointer-events-none absolute -bottom-8 left-0 h-28 w-28 rounded-full bg-brand-600/15" />
         {/* faint center glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_60%_30%,rgba(196,154,60,0.07),transparent_70%)]" />
 
@@ -251,18 +251,15 @@ export default async function CustomerDashboardPage() {
               {/* gold top accent line */}
               <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-              {/* sweeping shimmer */}
-              <div className="hero-shimmer pointer-events-none absolute inset-0" />
-
-              {/* large orb top-right */}
+              {/* orb top-right — no blur, opacity only */}
               <div
-                className="budget-orb pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-xl"
-                style={{ background: b.glow, animationDelay: b.delay }}
+                className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full opacity-20"
+                style={{ background: b.glow }}
               />
-              {/* small orb bottom-left */}
+              {/* orb bottom-left */}
               <div
-                className="budget-orb-slow pointer-events-none absolute -bottom-5 -left-5 h-16 w-16 rounded-full blur-lg"
-                style={{ background: b.glow, animationDelay: b.delay }}
+                className="pointer-events-none absolute -bottom-4 -left-4 h-14 w-14 rounded-full opacity-15"
+                style={{ background: b.glow }}
               />
 
               {/* content */}
@@ -340,8 +337,7 @@ export default async function CustomerDashboardPage() {
                 <Link
                   key={p.id}
                   href={`/customer/catalog/${p.id}`}
-                  prefetch={true}
-                  className="group overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm transition-all duration-200 hover:border-brand-200 hover:shadow-lg hover:shadow-brand-900/10"
+                  className="group overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm"
                 >
                   <div className="relative aspect-square w-full bg-stone-50">
                     {img ? (
@@ -350,7 +346,7 @@ export default async function CustomerDashboardPage() {
                         alt={p.name}
                         fill
                         unoptimized
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover"
                         priority={idx < 2}
                       />
                     ) : (
@@ -363,8 +359,6 @@ export default async function CustomerDashboardPage() {
                         -{discountPct}%
                       </span>
                     )}
-                    {/* gold shimmer on hover */}
-                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
                   <div className="p-3">
                     <p className="line-clamp-2 text-[13px] font-medium leading-snug text-stone-800">
