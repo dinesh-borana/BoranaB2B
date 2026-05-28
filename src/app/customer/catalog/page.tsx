@@ -105,8 +105,8 @@ export default async function CatalogPage({
           {products.map((p, idx) => {
             const img = p.images[0]?.url;
             return (
-              <Link key={p.id} href={`/customer/catalog/${p.id}`} prefetch={true} className="animate-fade-up">
-                <Card className="overflow-hidden transition-all duration-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-900/8">
+              <Link key={p.id} href={`/customer/catalog/${p.id}`} className="animate-fade-up">
+                <Card className="overflow-hidden">
                   <div className="relative aspect-square w-full bg-stone-100">
                     {img ? (
                       <Image
