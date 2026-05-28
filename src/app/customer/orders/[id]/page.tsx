@@ -4,6 +4,7 @@ import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatINR, formatDateTime } from "@/lib/format";
+import { compareSize } from "@/lib/size";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ORDER_STATUS_FLOW, ORDER_STATUS_LABEL } from "@/lib/order-status";
@@ -143,6 +144,7 @@ export default async function CustomerOrderDetailPage({
                   </div>
                   <p className="text-xs text-stone-500">
                     {Object.entries(sqObj)
+                      .sort(([a], [b]) => compareSize(a, b))
                       .map(([s, q]) => `${s}×${q}`)
                       .join(", ")}{" "}
                     · {item.pieces} pcs @{formatINR(item.unitPrice)}

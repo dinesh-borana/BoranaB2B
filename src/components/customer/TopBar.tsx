@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ShoppingBag, Bell } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useCart } from "@/lib/cart-store";
 import { Logo } from "@/components/ui/Logo";
 
-function useNotificationCount() {
+function useNotificationCount(pathname: string) {
   const [count, setCount] = useState(0);
-  const pathname = usePathname();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   async function fetchCount() {
+    // Don't fetch if tab is hidden — saves battery and network on mobile
+    if (document.visibilityState === "hidden") return;
     try {
       const res = await fetch("/api/notifications/count", { cache: "no-store" });
       if (res.ok) {
@@ -29,32 +30,40 @@ function useNotificationCount() {
     if (pathname === "/customer/notifications") {
       setCount(0);
     } else {
-      // Refetch when navigating away from notifications page
       fetchCount();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Initial fetch + poll every 30 seconds
+  // Poll every 120s (was 30s) — also resume when tab becomes visible
   useEffect(() => {
     fetchCount();
-    const id = setInterval(fetchCount, 30_000);
-    return () => clearInterval(id);
+    intervalRef.current = setInterval(fetchCount, 120_000);
+
+    function onVisibilityChange() {
+      if (document.visibilityState === "visible") fetchCount();
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return count;
 }
 
-export function TopBar({ title }: { title?: string }) {
+export function TopBar({ title, userName }: { title?: string; userName?: string | null }) {
   const { totalPieces } = useCart();
-  const { data: session } = useSession();
-  const initial = session?.user?.name?.slice(0, 1).toUpperCase() ?? "?";
-  const unreadCount = useNotificationCount();
+  const pathname = usePathname() ?? "";
+  const initial = userName?.slice(0, 1).toUpperCase() ?? "?";
+  const unreadCount = useNotificationCount(pathname);
 
   return (
     <header
-      className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur"
+      className="sticky top-0 z-20 border-b bg-white"
       style={{ borderColor: "var(--border)" }}
     >
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">

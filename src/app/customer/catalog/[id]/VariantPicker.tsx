@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -19,11 +19,28 @@ export type PickerProduct = {
   sizes: PickerSize[];
 };
 
+// "2.10" → [2,10], "2.2" → [2,2] so 2.2 < 2.8 < 2.10 < 2.12
+function parseSize(s: string): [number, number] {
+  const dot = s.indexOf(".");
+  if (dot === -1) return [parseInt(s, 10) || 0, 0];
+  return [parseInt(s.slice(0, dot), 10) || 0, parseInt(s.slice(dot + 1), 10) || 0];
+}
+function cmpSize(a: string, b: string): number {
+  const [am, an] = parseSize(a);
+  const [bm, bn] = parseSize(b);
+  return am !== bm ? am - bm : an - bn;
+}
+
 export function VariantPicker({ product }: { product: PickerProduct }) {
   const router = useRouter();
   const { addLine } = useCart();
   const [qty, setQty] = useState<Record<string, number>>({});
   const [added, setAdded] = useState(false);
+
+  const sortedSizes = useMemo(
+    () => [...product.sizes].sort((a, b) => cmpSize(a.size, b.size)),
+    [product.sizes],
+  );
 
   const totalPieces = Object.values(qty).reduce((a, b) => a + b, 0);
   const lineTotal = totalPieces * product.price;
@@ -93,11 +110,11 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
             </div>
           </div>
 
-          {product.sizes.length === 0 ? (
+          {sortedSizes.length === 0 ? (
             <p className="text-sm text-stone-400">No sizes available.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-stone-100">
-              {product.sizes.map((s) => {
+              {sortedSizes.map((s) => {
                 const value = qty[s.size] ?? 0;
                 const unavailable = s.stockStatus === "OUT_OF_STOCK";
                 return (

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense, cache } from "react";
+import { cdnImg } from "@/lib/cdn";
 import { unstable_cache } from "next/cache";
 import {
   Package,
@@ -227,12 +228,15 @@ export default async function CustomerDashboardPage() {
                   style={{ width: 120, height: 148, scrollSnapAlign: "start" }}
                 >
                   {cat.imageUrl ? (
-                    <Image
-                      src={cat.imageUrl}
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={cdnImg(cat.imageUrl, 360)}
                       alt={cat.name}
-                      fill
-                      unoptimized
-                      className="object-cover"
+                      width={240}
+                      height={296}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <div className={`h-full w-full bg-gradient-to-br ${grad}`} />
@@ -314,13 +318,16 @@ export default async function CustomerDashboardPage() {
                 >
                   <div className="relative aspect-square w-full bg-stone-50">
                     {img ? (
-                      <Image
-                        src={img}
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={cdnImg(img, 600)}
                         alt={p.name}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                        priority={idx < 2}
+                        width={400}
+                        height={400}
+                        loading={idx < 2 ? "eager" : "lazy"}
+                        decoding="async"
+                        fetchPriority={idx < 2 ? "high" : "low"}
+                        className="h-full w-full object-cover"
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-stone-300">

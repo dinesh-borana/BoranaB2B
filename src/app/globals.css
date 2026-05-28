@@ -90,8 +90,8 @@ input[type="number"] { -moz-appearance: textfield; }
    Page animations
 ═══════════════════════════════════════ */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(18px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0)    scale(1); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fade-down {
   from { opacity: 0; transform: translateY(-8px); }
@@ -114,7 +114,7 @@ input[type="number"] { -moz-appearance: textfield; }
   to   { opacity: 1; transform: scale(1)    translateY(0); }
 }
 
-.animate-fade-up      { animation: fade-up      0.52s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+.animate-fade-up      { animation: fade-up      0.24s ease both; }
 .animate-fade-down    { animation: fade-down     0.3s  cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
 .animate-fade-in      { animation: fade-in       0.22s ease both; will-change: opacity; }
 .animate-scale-in     { animation: scale-in      0.4s  cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
@@ -124,18 +124,14 @@ input[type="number"] { -moz-appearance: textfield; }
 /* Stagger children — each child needs animate-fade-up; stagger sets the delay.
    Grid/list cards: tight delays so items feel snappy, not slow. */
 .stagger > *:nth-child(1)    { animation-delay: 0ms;  }
-.stagger > *:nth-child(2)    { animation-delay: 40ms; }
-.stagger > *:nth-child(3)    { animation-delay: 75ms; }
-.stagger > *:nth-child(4)    { animation-delay: 105ms;}
-.stagger > *:nth-child(5)    { animation-delay: 130ms;}
-.stagger > *:nth-child(6)    { animation-delay: 152ms;}
-.stagger > *:nth-child(7)    { animation-delay: 170ms;}
-.stagger > *:nth-child(8)    { animation-delay: 186ms;}
-.stagger > *:nth-child(9)    { animation-delay: 200ms;}
-.stagger > *:nth-child(10)   { animation-delay: 212ms;}
-.stagger > *:nth-child(11)   { animation-delay: 222ms;}
-.stagger > *:nth-child(12)   { animation-delay: 230ms;}
-.stagger > *:nth-child(n+13) { animation-delay: 236ms;}
+.stagger > *:nth-child(2)    { animation-delay: 20ms; }
+.stagger > *:nth-child(3)    { animation-delay: 38ms; }
+.stagger > *:nth-child(4)    { animation-delay: 54ms; }
+.stagger > *:nth-child(5)    { animation-delay: 68ms; }
+.stagger > *:nth-child(6)    { animation-delay: 80ms; }
+.stagger > *:nth-child(7)    { animation-delay: 90ms; }
+.stagger > *:nth-child(8)    { animation-delay: 98ms; }
+.stagger > *:nth-child(n+9)  { animation-delay: 104ms;}
 
 /* Page-section stagger — wider items cascade with more breathing room */
 .stagger-sections > *:nth-child(1)   { animation-delay: 0ms;  }
@@ -168,17 +164,11 @@ input[type="number"] { -moz-appearance: textfield; }
 
 /* ── Page transition ── */
 @keyframes page-enter {
-  from {
-    opacity: 0;
-    transform: translateY(32px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .page-enter {
-  animation: page-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: page-enter 0.22s ease both;
   will-change: opacity, transform;
 }
 
@@ -263,29 +253,27 @@ input[type="number"] { -moz-appearance: textfield; }
     #1a0a0e 60%,
     #4a0e20 80%,
     #2a060e 100%);
-  background-size: 400% 400%;
-  animation: hero-gradient 10s ease infinite;
 }
 .hero-shimmer {
+  /* static overlay — removed sweep animation (caused full repaint every frame) */
   background: linear-gradient(
     108deg,
     transparent 28%,
-    rgba(196, 154, 60, 0.14) 50%,
-    rgba(255, 220, 120, 0.07) 55%,
+    rgba(196, 154, 60, 0.08) 50%,
     transparent 72%
   );
-  animation: hero-shimmer-sweep 6s ease-in-out infinite;
 }
 .hero-orb-1 {
+  /* transform+opacity only — GPU composited, safe to animate */
   animation: hero-orb-pulse 4s ease-in-out infinite;
-  will-change: transform, opacity;
+  will-change: opacity;
 }
 .hero-orb-2 {
   animation: hero-orb-pulse-slow 5.5s ease-in-out infinite 1.2s;
-  will-change: transform, opacity;
+  will-change: opacity;
 }
 .hero-gold-line {
-  animation: hero-gold-line 3s ease-in-out infinite;
+  opacity: 0.6;
 }
 
 /* ── Budget Cards live animations ── */
@@ -299,8 +287,7 @@ input[type="number"] { -moz-appearance: textfield; }
   50%      { opacity: 0.50; transform: scale(1.20); }
 }
 .budget-card-anim {
-  background-size: 300% 300%;
-  animation: budget-gradient 9s ease infinite;
+  /* static gradient — removed background-position animation (caused repaint every frame) */
 }
 .budget-orb {
   /* removed — orbs are now static, no animation */

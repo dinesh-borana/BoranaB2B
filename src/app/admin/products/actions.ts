@@ -75,7 +75,7 @@ export async function createProduct(formData: FormData) {
     );
   }
 
-  revalidateTag("products", {});
+  revalidateTag("products", "max");
   revalidatePath("/admin/products");
   redirect(`/admin/products/${product.id}`);
 }
@@ -123,28 +123,33 @@ export async function updateProduct(productId: string, formData: FormData) {
     });
   });
 
-  // Notify when price or MRP changes
+  // Send DISCOUNT notification only when a genuine discount is newly added or increased.
   const oldPrice = oldProduct?.price ? Number(oldProduct.price.toString()) : null;
-  const oldMrp = oldProduct?.mrp ? Number(oldProduct.mrp.toString()) : null;
-  const newMrp = data.mrp ?? null;
-  const priceChanged = oldPrice !== null && data.price !== oldPrice;
-  const mrpChanged = oldMrp !== newMrp;
+  const oldMrp   = oldProduct?.mrp  ? Number(oldProduct.mrp.toString())   : null;
 
-  if (priceChanged || mrpChanged) {
-    const hasDiscount = data.mrp && data.mrp > data.price;
-    const body = hasDiscount
-      ? `Now at ${formatINR(data.price)} (was ${formatINR(data.mrp!)} MRP) — ${Math.round(((data.mrp! - data.price) / data.mrp!) * 100)}% off`
-      : `Price updated: ${formatINR(data.price)}`;
+  const oldHasDiscount = oldMrp !== null && oldPrice !== null && oldMrp > oldPrice;
+  const newHasDiscount = data.mrp !== undefined && data.mrp > data.price;
 
-    await notifyAllParties(
-      "DISCOUNT",
-      `Price update: ${data.name}`,
-      body,
-      `/customer/catalog/${productId}`,
-    );
+  if (newHasDiscount) {
+    const newPct = Math.round(((data.mrp! - data.price) / data.mrp!) * 100);
+    const oldPct = oldHasDiscount && oldMrp && oldPrice
+      ? Math.round(((oldMrp - oldPrice) / oldMrp) * 100)
+      : 0;
+
+    const discountJustAdded  = !oldHasDiscount;
+    const discountIncreased  = oldHasDiscount && newPct > oldPct;
+
+    if (discountJustAdded || discountIncreased) {
+      await notifyAllParties(
+        "DISCOUNT",
+        `🎉 ${newPct}% off on ${data.name}!`,
+        `Now only ${formatINR(data.price)} — was ${formatINR(data.mrp!)}. Tap to order.`,
+        `/customer/catalog/${productId}`,
+      );
+    }
   }
 
-  revalidateTag("products", {});
+  revalidateTag("products", "max");
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${productId}`);
   redirect(`/admin/products/${productId}`);
