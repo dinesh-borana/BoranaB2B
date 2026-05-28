@@ -140,7 +140,7 @@ async function ProductsGrid({
           return (
             <Link key={p.id} href={`/customer/catalog/${p.id}`}>
               <Card className="overflow-hidden">
-                <div className="aspect-square w-full bg-stone-100 overflow-hidden">
+                <div className="relative aspect-square w-full bg-stone-100 overflow-hidden">
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
