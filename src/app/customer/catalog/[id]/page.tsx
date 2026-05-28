@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
+import { sortSizes } from "@/lib/size";
 import { Badge } from "@/components/ui/Badge";
 import { VariantPicker } from "./VariantPicker";
 import { ImageCarousel } from "@/components/ImageCarousel";
@@ -36,11 +37,9 @@ export default async function ProductDetailPage({
     image: mainImage,
     price: Number(product.price.toString()),
     mrp: product.mrp ? Number(product.mrp.toString()) : undefined,
-    sizes: product.sizes.map((s) => ({
-      id: s.id,
-      size: s.size,
-      stockStatus: s.stockStatus,
-    })),
+    sizes: sortSizes(
+      product.sizes.map((s) => ({ id: s.id, size: s.size, stockStatus: s.stockStatus }))
+    ),
   };
 
   return (

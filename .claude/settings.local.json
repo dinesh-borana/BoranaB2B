@@ -8,7 +8,10 @@
       "Bash(npx tsc *)",
       "Bash(Remove-Item -Recurse -Force \"d:\\\\projects\\\\borana-b2b\\\\.next\" -ErrorAction SilentlyContinue)",
       "Bash(Write-Output \"done\")",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(cd /d \"d:\\\\projects\\\\borana-b2b\")",
+      "Bash(Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue)",
+      "Bash(Write-Host \"Cache cleared\")"
     ],
     "additionalDirectories": [
       "d:\\projects\\borana-b2b\\src\\app\\customer\\catalog\\[id]"

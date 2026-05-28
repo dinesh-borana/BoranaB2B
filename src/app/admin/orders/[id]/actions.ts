@@ -22,12 +22,12 @@ const schema = z.object({
 });
 
 const statusMessages: Partial<Record<OrderStatus, { title: string; body: (num: string) => string }>> = {
-  CONFIRMED:  { title: "Order confirmed",    body: (n) => `Your order #${n} has been confirmed.` },
-  PACKING:    { title: "Order being packed", body: (n) => `Your order #${n} is being packed and will ship soon.` },
-  SHIPPED:    { title: "Order shipped",      body: (n) => `Your order #${n} is on its way!` },
-  DELIVERED:  { title: "Order delivered",    body: (n) => `Your order #${n} has been delivered. Thank you!` },
-  REJECTED:   { title: "Order rejected",     body: (n) => `Your order #${n} was rejected. Please contact us.` },
-  CANCELLED:  { title: "Order cancelled",    body: (n) => `Your order #${n} has been cancelled.` },
+  CONFIRMED:  { title: "✅ Order confirmed!",   body: (n) => `Great news! Your order #${n} has been confirmed by Borana Jewels. We'll start processing it shortly.` },
+  PACKING:    { title: "📦 Order being packed", body: (n) => `Your order #${n} is being packed and will be shipped soon.` },
+  SHIPPED:    { title: "🚚 Order shipped!",      body: (n) => `Your order #${n} is on its way! You'll receive it soon.` },
+  DELIVERED:  { title: "🎉 Order delivered!",   body: (n) => `Your order #${n} has been delivered successfully. Thank you for ordering from Borana Jewels!` },
+  REJECTED:   { title: "Order rejected",        body: (n) => `Your order #${n} was rejected. Please contact us for more details.` },
+  CANCELLED:  { title: "Order cancelled",       body: (n) => `Your order #${n} has been cancelled.` },
 };
 
 export async function updateOrderStatus(formData: FormData) {

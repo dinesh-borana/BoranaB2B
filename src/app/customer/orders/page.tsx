@@ -18,6 +18,15 @@ export default async function CustomerOrdersPage() {
         .findMany({
           where: { partyId: session.user.partyId },
           orderBy: { createdAt: "desc" },
+          take: 50,
+          select: {
+            id: true,
+            orderNumber: true,
+            status: true,
+            totalPieces: true,
+            total: true,
+            createdAt: true,
+          },
         })
         .catch(() => [])
     : [];
@@ -40,7 +49,7 @@ export default async function CustomerOrdersPage() {
         <ul className="flex flex-col gap-2">
           {orders.map((o) => (
             <li key={o.id}>
-              <Link href={`/customer/orders/${o.id}`} prefetch={true}>
+              <Link href={`/customer/orders/${o.id}`} prefetch={false}>
                 <Card className="transition-colors hover:border-brand-300">
                   <CardBody className="flex items-center gap-3">
                     <div className="flex-1">

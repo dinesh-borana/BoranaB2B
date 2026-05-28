@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
@@ -46,13 +46,15 @@ export function CheckoutClient({
     );
   }
 
-  const gstAmount = (subtotal * gstRate) / 100;
-  const total = subtotal + gstAmount;
-  const totalSaved = lines.reduce((sum, l) => {
-    if (!l.mrp || l.mrp <= l.unitPrice) return sum;
-    const pieces = Object.values(l.sizeQuantities).reduce((a, b) => a + b, 0);
-    return sum + pieces * (l.mrp - l.unitPrice);
-  }, 0);
+  const { gstAmount, total, totalSaved } = useMemo(() => {
+    const gst = (subtotal * gstRate) / 100;
+    const saved = lines.reduce((sum, l) => {
+      if (!l.mrp || l.mrp <= l.unitPrice) return sum;
+      const pieces = Object.values(l.sizeQuantities).reduce((a, b) => a + b, 0);
+      return sum + pieces * (l.mrp - l.unitPrice);
+    }, 0);
+    return { gstAmount: gst, total: subtotal + gst, totalSaved: saved };
+  }, [subtotal, gstRate, lines]);
 
   return (
     <form

@@ -39,7 +39,7 @@ export default async function NotificationsPage() {
     ? await prisma.notification.findMany({
         where: { partyId },
         orderBy: { createdAt: "desc" },
-        take: 100,
+        take: 30,
       })
     : [];
 
