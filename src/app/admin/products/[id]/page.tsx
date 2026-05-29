@@ -122,7 +122,9 @@ export default async function AdminProductDetailPage({
                 className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-center text-xs"
               >
                 <p className="font-semibold text-stone-900">{s.size}</p>
-                <p className="text-stone-500">{stockLabel[s.stockStatus]}</p>
+                {s.stockStatus !== "IN_STOCK" && (
+                  <p className="text-stone-500">{stockLabel[s.stockStatus]}</p>
+                )}
               </div>
             ))
           )}

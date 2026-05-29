@@ -402,7 +402,6 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
                   <th className="px-3 py-2 font-medium">Price</th>
                   <th className="px-3 py-2 font-medium">Categories</th>
                   <th className="px-3 py-2 font-medium">Sizes</th>
-                  <th className="px-3 py-2 font-medium">Stock</th>
                   <th className="px-3 py-2 font-medium w-6"></th>
                 </tr>
               </thead>
@@ -427,7 +426,6 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
                       <td className="px-3 py-2 text-stone-500">
                         {r.sizes.length > 0 ? r.sizes.join(", ") : <span className="text-stone-300">Standard</span>}
                       </td>
-                      <td className="px-3 py-2 text-stone-500">{r.stockStatus.replace(/_/g, " ")}</td>
                       <td className="px-3 py-2 text-center">
                         {hasError
                           ? <XCircle className="h-4 w-4 text-red-400 inline" />

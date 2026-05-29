@@ -71,7 +71,6 @@ export default async function AdminPartyDetailPage({
             />
           )}
           {party.gstin && <Info label="GSTIN" value={party.gstin} />}
-          {party.pan && <Info label="PAN" value={party.pan} />}
           {party.creditLimit && (
             <Info label="Credit limit" value={formatINR(party.creditLimit)} />
           )}
