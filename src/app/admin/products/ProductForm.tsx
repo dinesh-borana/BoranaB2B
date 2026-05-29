@@ -395,7 +395,7 @@ export function ProductForm({
                       onChange={(e) => setStockStatus(size, e.target.value)}
                       className="!h-8 !text-xs !py-0"
                     >
-                      <option value="IN_STOCK">In stock</option>
+                      <option value="IN_STOCK">—</option>
                       <option value="MADE_TO_ORDER">Made to order</option>
                       <option value="OUT_OF_STOCK">Out of stock</option>
                     </Select>

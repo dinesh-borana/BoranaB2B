@@ -179,7 +179,6 @@ async function ProductsGrid({
                         </span>
                       )}
                     </div>
-                    <Badge tone="success">In stock</Badge>
                   </div>
                 </CardBody>
               </Card>

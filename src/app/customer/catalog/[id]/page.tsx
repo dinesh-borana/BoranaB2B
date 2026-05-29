@@ -72,7 +72,6 @@ export default async function ProductDetailPage({
             </>
           )}
           <span className="text-xs text-stone-500">· SKU {product.sku}</span>
-          <Badge tone="success">In stock</Badge>
         </div>
         {product.description && (
           <p className="mt-3 text-sm leading-6 text-stone-600">

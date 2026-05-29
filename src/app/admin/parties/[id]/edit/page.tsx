@@ -14,8 +14,13 @@ export default async function EditPartyPage({
 }) {
   const { id } = await params;
 
-  const party = await prisma.party.findUnique({ where: { id } }).catch(() => null);
+  const party = await prisma.party
+    .findUnique({ where: { id }, include: { users: { take: 1, select: { id: true, passwordText: true } } } })
+    .catch(() => null);
   if (!party) notFound();
+
+  const hasLogin = party.users.length > 0;
+  const currentPassword = party.users[0]?.passwordText ?? null;
 
   const initial = {
     id: party.id,
@@ -29,7 +34,6 @@ export default async function EditPartyPage({
     state: party.state ?? "",
     pincode: party.pincode ?? "",
     gstin: party.gstin ?? "",
-    pan: party.pan ?? "",
     isActive: party.isActive,
   };
 
@@ -42,7 +46,7 @@ export default async function EditPartyPage({
         <ChevronLeft className="h-4 w-4" /> Back
       </Link>
       <PageHeader title={`Edit: ${party.shopName}`} />
-      <PartyForm initial={initial} />
+      <PartyForm initial={initial} hasLogin={hasLogin} currentPassword={currentPassword} />
     </div>
   );
 }

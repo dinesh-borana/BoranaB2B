@@ -86,9 +86,9 @@ export function AdminForm({ initial }: { initial?: InitialData }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required={!initial?.id}
-              minLength={8}
+              minLength={6}
               autoComplete="new-password"
-              hint="Min 8 characters"
+              hint="Min 6 caracters"
             />
           </div>
         </CardBody>
