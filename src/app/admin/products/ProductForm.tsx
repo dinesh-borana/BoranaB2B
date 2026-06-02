@@ -161,10 +161,15 @@ export function ProductForm({
       };
       const fd = new FormData();
       fd.set("payload", JSON.stringify(payload));
+      let result: { error: string } | void;
       if (initial?.id) {
-        await updateProduct(initial.id, fd);
+        result = await updateProduct(initial.id, fd);
       } else {
-        await createProduct(fd);
+        result = await createProduct(fd);
+      }
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
