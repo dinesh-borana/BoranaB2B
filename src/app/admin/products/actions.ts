@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
@@ -83,16 +84,14 @@ export async function createProduct(formData: FormData): Promise<{ error: string
   }
 
   if (data.isActive) {
-    try {
-      await notifyAllParties(
+    after(() =>
+      notifyAllParties(
         "NEW_PRODUCT",
         "New product added",
         `Check out ${data.name} — just added to the catalog.`,
         `/customer/catalog/${product.id}`,
-      );
-    } catch {
-      // notifications are best-effort — don't fail the create
-    }
+      ).catch(() => {}),
+    );
   }
 
   revalidateTag("products", "max");
@@ -174,16 +173,14 @@ export async function updateProduct(productId: string, formData: FormData): Prom
     const discountIncreased  = oldHasDiscount && newPct > oldPct;
 
     if (discountJustAdded || discountIncreased) {
-      try {
-        await notifyAllParties(
+      after(() =>
+        notifyAllParties(
           "DISCOUNT",
           `🎉 ${newPct}% off on ${data.name}!`,
           `Now only ${formatINR(data.price)} — was ${formatINR(data.mrp!)}. Tap to order.`,
           `/customer/catalog/${productId}`,
-        );
-      } catch {
-        // notifications are best-effort — don't fail the update
-      }
+        ).catch(() => {}),
+      );
     }
   }
 
