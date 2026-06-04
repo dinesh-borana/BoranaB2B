@@ -18,7 +18,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.unsplash.com" },
       // Supabase storage
       { protocol: "https", hostname: "**.supabase.co" },
-      // Google / Firebase storage
+      // Google Drive thumbnails + Firebase/GCS storage
+      { protocol: "https", hostname: "drive.google.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "storage.googleapis.com" },
       // Vercel blob storage
@@ -31,6 +32,12 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "react-hook-form"],
+    // Client-side router cache for dynamic pages (default = 0 in Next 15+)
+    // 30 s means navigating back to a visited page is instant within that window
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
   },
   async headers() {
     return [

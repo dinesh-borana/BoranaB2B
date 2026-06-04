@@ -16,7 +16,7 @@ type Order = {
   status: OrderStatus;
   total: string;
   totalPieces: number;
-  createdAt: Date;
+  createdAt: Date | string;
   party: { shopName: string };
 };
 

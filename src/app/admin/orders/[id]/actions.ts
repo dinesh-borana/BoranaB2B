@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -73,6 +73,8 @@ export async function updateOrderStatus(formData: FormData) {
     );
   }
 
+  revalidateTag("admin-stats", {});
+  revalidateTag("orders", {});
   revalidatePath(`/admin/orders/${parsed.orderId}`);
   revalidatePath("/admin/orders");
   revalidatePath("/admin/dashboard");

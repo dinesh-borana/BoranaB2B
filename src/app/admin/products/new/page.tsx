@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ProductForm } from "../ProductForm";
+import { getCachedCategories } from "@/lib/data-cache";
 
 export const metadata = { title: "Add product · Admin" };
 
 export default async function NewProductPage() {
-  const categories = await prisma.category
-    .findMany({ orderBy: { sortOrder: "asc" } })
-    .catch(() => []);
+  const categories = await getCachedCategories().catch(() => []);
 
   return (
     <div className="flex flex-col gap-4 max-w-2xl">

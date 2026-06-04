@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Plus, Package, Upload } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { formatINR } from "@/lib/format";
+import { getCachedCategories, getCachedProductsList } from "@/lib/data-cache";
+import { cdnImg } from "@/lib/cdn";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -18,28 +19,8 @@ export default async function AdminProductsPage({
   const { q, cat } = await searchParams;
 
   const [products, categories] = await Promise.all([
-    prisma.product
-      .findMany({
-        where: {
-          ...(q
-            ? {
-                OR: [
-                  { name: { contains: q, mode: "insensitive" } },
-                  { sku: { contains: q, mode: "insensitive" } },
-                ],
-              }
-            : {}),
-          ...(cat ? { categories: { some: { slug: cat } } } : {}),
-        },
-        include: {
-          categories: true,
-          images: { where: { isMain: true }, take: 1 },
-          _count: { select: { sizes: true } },
-        },
-        orderBy: { createdAt: "desc" },
-      })
-      .catch(() => []),
-    prisma.category.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+    getCachedProductsList(q, cat).catch(() => []),
+    getCachedCategories().catch(() => []),
   ]);
 
   return (
@@ -117,8 +98,9 @@ export default async function AdminProductsPage({
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={img}
+                        src={cdnImg(img, 192)}
                         alt={p.name}
+                        loading="lazy"
                         className="h-full w-full object-cover"
                       />
                     ) : (

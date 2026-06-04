@@ -7,63 +7,24 @@ import {
   ChevronRight,
   ShieldCheck,
 } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { formatINR, relativeTime } from "@/lib/format";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getCachedDashboardStats } from "@/lib/data-cache";
 
 export const metadata = { title: "Dashboard · Admin" };
 
-async function loadStats() {
-  try {
-    const [
-      totalOrders,
-      pendingOrders,
-      totalParties,
-      totalProducts,
-      totalAdmins,
-      recentOrders,
-      revenueResult,
-    ] = await Promise.all([
-      prisma.order.count(),
-      prisma.order.count({
-        where: { status: { in: ["PENDING", "CONFIRMED", "PACKING"] } },
-      }),
-      prisma.party.count({ where: { isActive: true } }),
-      prisma.product.count({ where: { isActive: true } }),
-      prisma.user.count({ where: { role: "ADMIN" } }),
-      prisma.order.findMany({
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        include: { party: { select: { shopName: true } } },
-      }),
-      prisma.order.aggregate({ _sum: { total: true }, where: { status: "DELIVERED" } }),
-    ]);
-    return {
-      totalOrders,
-      pendingOrders,
-      totalParties,
-      totalProducts,
-      totalAdmins,
-      recentOrders,
-      totalRevenue: revenueResult._sum.total ?? 0,
-    };
-  } catch {
-    return {
-      totalOrders: 0,
-      pendingOrders: 0,
-      totalParties: 0,
-      totalProducts: 0,
-      totalAdmins: 0,
-      recentOrders: [],
-      totalRevenue: 0,
-    };
-  }
-}
-
 export default async function AdminDashboardPage() {
-  const s = await loadStats();
+  const s = await getCachedDashboardStats().catch(() => ({
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalParties: 0,
+    totalProducts: 0,
+    totalAdmins: 0,
+    recentOrders: [],
+    totalRevenue: "0",
+  }));
 
   const stats = [
     {

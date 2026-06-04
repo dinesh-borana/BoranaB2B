@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Pencil } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { formatINR, relativeTime } from "@/lib/format";
+import { getCachedPartyDetail } from "@/lib/data-cache";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -17,20 +17,7 @@ export default async function AdminPartyDetailPage({
 }) {
   const { id } = await params;
 
-  const party = await prisma.party
-    .findUnique({
-      where: { id },
-      include: {
-        orders: {
-          orderBy: { createdAt: "desc" },
-          take: 5,
-        },
-        users: { select: { id: true, name: true, mobile: true } },
-        _count: { select: { orders: true } },
-      },
-    })
-    .catch(() => null);
-
+  const party = await getCachedPartyDetail(id).catch(() => null);
   if (!party) notFound();
 
   return (

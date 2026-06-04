@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ProductForm } from "../../ProductForm";
+import { getCachedCategories } from "@/lib/data-cache";
 
 export const metadata = { title: "Edit product · Admin" };
 
@@ -25,7 +26,7 @@ export default async function EditProductPage({
         },
       })
       .catch(() => null),
-    prisma.category.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+    getCachedCategories().catch(() => []),
   ]);
 
   if (!product) notFound();

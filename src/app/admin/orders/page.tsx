@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ORDER_STATUS_LABEL } from "@/lib/order-status";
 import { OrdersListClient } from "./OrdersListClient";
+import { getCachedOrders } from "@/lib/data-cache";
 import type { OrderStatus } from "@prisma/client";
 
 export const metadata = { title: "Orders · Admin" };
@@ -24,27 +24,7 @@ export default async function AdminOrdersPage({
       ? (params.status as OrderStatus)
       : undefined;
 
-  const orders = await prisma.order
-    .findMany({
-      where: {
-        ...(whereStatus ? { status: whereStatus } : {}),
-        ...(params.q
-          ? {
-              OR: [
-                { orderNumber: { contains: params.q, mode: "insensitive" } },
-                {
-                  party: {
-                    shopName: { contains: params.q, mode: "insensitive" },
-                  },
-                },
-              ],
-            }
-          : {}),
-      },
-      include: { party: { select: { shopName: true } } },
-      orderBy: { createdAt: "desc" },
-    })
-    .catch(() => []);
+  const orders = await getCachedOrders(whereStatus ?? "", params.q).catch(() => []);
 
   const allStatuses: Array<{ label: string; value: string }> = [
     { label: "All", value: "" },
