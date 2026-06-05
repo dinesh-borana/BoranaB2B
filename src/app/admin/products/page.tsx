@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Package, Upload } from "lucide-react";
+import { Plus, Package, Upload, Tag } from "lucide-react";
 import { formatINR } from "@/lib/format";
 import { getCachedCategories, getCachedProductsList } from "@/lib/data-cache";
 import { cdnImg } from "@/lib/cdn";
@@ -30,6 +30,11 @@ export default async function AdminProductsPage({
         description={`${products.length} products`}
         actions={
           <div className="flex gap-2">
+            <Link href="/admin/products/bulk-assign">
+              <Button variant="secondary" size="sm">
+                <Tag className="h-4 w-4" /> Bulk assign
+              </Button>
+            </Link>
             <Link href="/admin/products/bulk-upload">
               <Button variant="secondary" size="sm">
                 <Upload className="h-4 w-4" /> Bulk upload
@@ -49,7 +54,7 @@ export default async function AdminProductsPage({
           <input
             name="q"
             defaultValue={q ?? ""}
-            placeholder="Search by name or SKU…"
+            placeholder="Search by SKU…"
             className="h-10 w-full rounded-lg border border-stone-200 bg-white px-3 text-sm outline-none focus:border-admin-800"
           />
           {cat && <input type="hidden" name="cat" value={cat} />}
@@ -99,7 +104,7 @@ export default async function AdminProductsPage({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={cdnImg(img, 192)}
-                        alt={p.name}
+                        alt={p.sku}
                         loading="lazy"
                         className="h-full w-full object-cover"
                       />

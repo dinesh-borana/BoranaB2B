@@ -197,3 +197,24 @@ export async function deleteProduct(productId: string) {
   revalidatePath("/admin/products");
   redirect("/admin/products");
 }
+
+export async function bulkAssignCategories(
+  productIds: string[],
+  categoryIds: string[],
+): Promise<{ error?: string }> {
+  await checkAdmin();
+  if (!productIds.length || !categoryIds.length) return {};
+
+  await prisma.$transaction(
+    productIds.map((id) =>
+      prisma.product.update({
+        where: { id },
+        data: { categories: { connect: categoryIds.map((catId) => ({ id: catId })) } },
+      }),
+    ),
+  );
+
+  revalidateTag("products", "max");
+  revalidatePath("/admin/products");
+  return {};
+}
