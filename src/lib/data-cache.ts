@@ -182,13 +182,19 @@ export function getCachedOrderDetail(id: string) {
         .map((i) => i.productId)
         .filter((p): p is string => !!p);
 
-      const mtoSizes =
+      const [mtoSizes, skuRows] =
         productIds.length > 0
-          ? await prisma.productSize.findMany({
-              where: { productId: { in: productIds }, stockStatus: "MADE_TO_ORDER" },
-              select: { productId: true, size: true },
-            })
-          : [];
+          ? await Promise.all([
+              prisma.productSize.findMany({
+                where: { productId: { in: productIds }, stockStatus: "MADE_TO_ORDER" },
+                select: { productId: true, size: true },
+              }),
+              prisma.product.findMany({
+                where: { id: { in: productIds } },
+                select: { id: true, sku: true },
+              }),
+            ])
+          : [[], []];
 
       // Build mtoMap as plain object (serializable)
       const mtoMap: Record<string, string[]> = {};
@@ -196,6 +202,9 @@ export function getCachedOrderDetail(id: string) {
         if (!mtoMap[s.productId]) mtoMap[s.productId] = [];
         mtoMap[s.productId].push(s.size);
       }
+
+      const skuMap: Record<string, string> = {};
+      for (const p of skuRows) skuMap[p.id] = p.sku;
 
       return {
         order: {
@@ -222,6 +231,7 @@ export function getCachedOrderDetail(id: string) {
           },
         },
         mtoMap,
+        skuMap,
       };
     },
     ["order-detail", id],

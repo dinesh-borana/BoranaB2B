@@ -111,10 +111,10 @@ export default async function AdminProductsPage({
                   </div>
                   <CardBody className="flex flex-col justify-center gap-1 !py-2">
                     <p className="text-[10px] uppercase tracking-wider text-stone-400">
-                      {p.categories.map((c) => c.name).join(", ") || "—"} · {p.sku}
+                      {p.categories.map((c) => c.name).join(", ") || "—"}
                     </p>
-                    <p className="font-semibold text-stone-900 leading-tight">
-                      {p.name}
+                    <p className="font-semibold text-stone-900 leading-tight tracking-wide">
+                      {p.sku}
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-brand-700">

@@ -341,8 +341,8 @@ export default async function CustomerDashboardPage() {
                     )}
                   </div>
                   <div className="p-3">
-                    <p className="line-clamp-2 text-[13px] font-medium leading-snug text-stone-800">
-                      {p.name}
+                    <p className="text-[13px] font-semibold tracking-wide text-stone-800">
+                      {p.sku}
                     </p>
                     <div className="mt-1.5 flex items-baseline gap-1.5">
                       <span className="text-[14px] font-extrabold text-brand-700">

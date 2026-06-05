@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, X, Tag } from "lucide-react";
+import { X, Tag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/cn";
@@ -38,9 +37,7 @@ export function ProductForm({
   initial?: InitialData;
 }) {
   const router = useRouter();
-  const [name,        setName]        = useState(initial?.name ?? "");
   const [sku,         setSku]         = useState(initial?.sku ?? "");
-  const [description, setDescription] = useState(initial?.description ?? "");
   const [categoryIds, setCategoryIds] = useState<string[]>(initial?.categoryIds ?? []);
   const [isActive,    setIsActive]    = useState(initial?.isActive ?? true);
 
@@ -144,9 +141,8 @@ export function ProductForm({
     setLoading(true);
     try {
       const payload = {
-        name,
+        name: sku,
         sku,
-        description,
         categoryIds,
         isActive,
         // price = the actual selling price (what customer pays)
@@ -183,14 +179,6 @@ export function ProductForm({
       <Card>
         <CardHeader><CardTitle>Basic info</CardTitle></CardHeader>
         <CardBody className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Input
-              label="Product name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
           <Input
             label="SKU"
             value={sku}
@@ -291,16 +279,6 @@ export function ProductForm({
             </div>
           </div>
 
-          {/* Description */}
-          <div className="sm:col-span-2">
-            <Textarea
-              label="Description (optional)"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Short product description…"
-            />
-          </div>
-
           {/* Active toggle */}
           <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
             <input
@@ -318,40 +296,20 @@ export function ProductForm({
       <Card>
         <CardHeader><CardTitle>Images</CardTitle></CardHeader>
         <CardBody className="flex flex-col gap-2">
-          {imageUrls.map((url, i) => (
-            <div key={i} className="flex gap-2">
-              <Input
-                placeholder="https://… image URL"
-                value={url}
-                onChange={(e) => {
-                  const next = [...imageUrls];
-                  next[i] = e.target.value;
-                  setImageUrls(next);
-                }}
-              />
-              {imageUrls.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setImageUrls(imageUrls.filter((_, idx) => idx !== i))
-                  }
-                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-stone-200 text-stone-400 hover:bg-rose-50 hover:text-rose-600"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+          {[0, 1, 2].map((i) => (
+            <Input
+              key={i}
+              label={`Image ${i + 1}${i === 0 ? " (main)" : " (optional)"}`}
+              placeholder="https://… image URL"
+              value={imageUrls[i] ?? ""}
+              onChange={(e) => {
+                const next = [...imageUrls];
+                while (next.length <= i) next.push("");
+                next[i] = e.target.value;
+                setImageUrls(next);
+              }}
+            />
           ))}
-          {imageUrls.length < 5 && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setImageUrls([...imageUrls, ""])}
-            >
-              + Add image URL
-            </Button>
-          )}
         </CardBody>
       </Card>
 

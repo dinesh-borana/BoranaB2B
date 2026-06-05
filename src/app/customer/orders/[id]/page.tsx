@@ -29,6 +29,13 @@ export default async function CustomerOrderDetailPage({
 
   if (!order || order.partyId !== session?.user.partyId) notFound();
 
+  const productIds = order.items.map((i) => i.productId).filter((x): x is string => !!x);
+  const skuRows = productIds.length > 0
+    ? await prisma.product.findMany({ where: { id: { in: productIds } }, select: { id: true, sku: true } })
+    : [];
+  const skuMap: Record<string, string> = {};
+  for (const p of skuRows) skuMap[p.id] = p.sku;
+
   const flowIdx = ORDER_STATUS_FLOW.indexOf(order.status);
   const isTerminal =
     order.status === "REJECTED" || order.status === "CANCELLED";
@@ -135,8 +142,8 @@ export default async function CustomerOrderDetailPage({
               return (
                 <li key={item.id} className="py-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-stone-900">
-                      {item.productName}
+                    <span className="text-sm font-medium tracking-wide text-stone-900">
+                      {item.productId ? (skuMap[item.productId] ?? item.productName) : item.productName}
                     </span>
                     <span className="text-sm font-semibold text-stone-900">
                       {formatINR(item.lineTotal)}

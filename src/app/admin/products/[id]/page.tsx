@@ -46,7 +46,7 @@ export default async function AdminProductDetailPage({
       </Link>
 
       <PageHeader
-        title={product.name}
+        title={product.sku}
         actions={
           <div className="flex items-center gap-2">
             <DeleteProductButton productId={id} />
@@ -99,12 +99,6 @@ export default async function AdminProductDetailPage({
               {product.isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
-          {product.description && (
-            <div className="sm:col-span-2">
-              <p className="text-xs text-stone-500">Description</p>
-              <p className="text-stone-700">{product.description}</p>
-            </div>
-          )}
         </CardBody>
       </Card>
 

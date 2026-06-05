@@ -138,16 +138,17 @@ async function loadTopProducts(period: string): Promise<ProductRow[]> {
   return prisma
     .$queryRaw<ProductRow[]>`
       SELECT
-        oi."productName"           AS product_name,
-        oi."productId"             AS product_id,
-        SUM(oi.pieces)             AS total_pieces,
-        SUM(oi."lineTotal"::float) AS total_revenue,
-        COUNT(DISTINCT o.id)       AS order_count
+        COALESCE(p."sku", oi."productName") AS product_name,
+        oi."productId"                       AS product_id,
+        SUM(oi.pieces)                       AS total_pieces,
+        SUM(oi."lineTotal"::float)           AS total_revenue,
+        COUNT(DISTINCT o.id)                 AS order_count
       FROM "OrderItem" oi
       JOIN "Order" o ON o.id = oi."orderId"
+      LEFT JOIN "Product" p ON p.id = oi."productId"
       WHERE o.status = 'DELIVERED'
         AND o."createdAt" >= ${cutoff}
-      GROUP BY oi."productName", oi."productId"
+      GROUP BY COALESCE(p."sku", oi."productName"), oi."productId"
       ORDER BY total_pieces DESC
       LIMIT 10
     `

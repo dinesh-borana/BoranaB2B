@@ -17,7 +17,7 @@ export default async function AdminOrderDetailPage({
   const result = await getCachedOrderDetail(id).catch(() => null);
   if (!result) notFound();
 
-  const { order, mtoMap } = result;
+  const { order, mtoMap, skuMap } = result;
 
   return (
     <div className="flex flex-col gap-4">
@@ -129,8 +129,8 @@ export default async function AdminOrderDetailPage({
                 return (
                   <tr key={item.id}>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-stone-900">
-                        {item.productName}
+                      <p className="font-medium tracking-wide text-stone-900">
+                        {item.productId ? (skuMap[item.productId] ?? item.productName) : item.productName}
                       </p>
                       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
                         {Object.entries(sq).filter(([, q]) => q > 0).map(([s, q]) => (

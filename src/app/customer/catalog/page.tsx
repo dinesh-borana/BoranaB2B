@@ -165,8 +165,8 @@ async function ProductsGrid({
                   )}
                 </div>
                 <CardBody className="!p-3">
-                  <p className="mt-0.5 line-clamp-2 text-sm font-medium text-stone-900">
-                    {p.name}
+                  <p className="mt-0.5 text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                    {p.sku}
                   </p>
                   <div className="mt-1.5 flex items-center justify-between gap-1">
                     <div className="flex flex-col">

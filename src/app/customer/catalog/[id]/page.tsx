@@ -33,7 +33,7 @@ export default async function ProductDetailPage({
 
   const pickerProduct = {
     id: product.id,
-    name: product.name,
+    name: product.sku,
     image: mainImage,
     price: Number(product.price.toString()),
     mrp: product.mrp ? Number(product.mrp.toString()) : undefined,
@@ -54,8 +54,8 @@ export default async function ProductDetailPage({
       <ImageCarousel images={product.images} alt={product.name} />
 
       <div>
-        <h1 className="mt-1 text-xl font-semibold text-stone-900">
-          {product.name}
+        <h1 className="mt-1 text-xl font-semibold tracking-wide text-stone-900">
+          {product.sku}
         </h1>
         <div className="mt-1 flex items-center gap-2 flex-wrap">
           <span className="text-lg font-bold text-brand-700">
@@ -71,13 +71,7 @@ export default async function ProductDetailPage({
               </span>
             </>
           )}
-          <span className="text-xs text-stone-500">· SKU {product.sku}</span>
         </div>
-        {product.description && (
-          <p className="mt-3 text-sm leading-6 text-stone-600">
-            {product.description}
-          </p>
-        )}
       </div>
 
       <VariantPicker product={pickerProduct} />
