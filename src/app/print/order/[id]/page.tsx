@@ -178,20 +178,22 @@ export default async function PrintOrderPage({
                 Bill To
               </div>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1a0d10", marginBottom: 3 }}>
-                {order.party.shopName}
+                {order.party?.shopName ?? order.guestName ?? "Guest"}
               </div>
-              {order.party.ownerName && (
+              {order.party?.ownerName && (
                 <div style={{ fontSize: 12, color: "#4a3035", marginBottom: 2 }}>{order.party.ownerName}</div>
               )}
-              {(order.party.address || order.party.city) && (
+              {(order.party?.address || order.party?.city || order.guestAddress) && (
                 <div style={{ fontSize: 11, color: "#6b5a5d", marginBottom: 2, lineHeight: 1.5 }}>
-                  {[order.party.address, order.party.city, order.party.state, order.party.pincode].filter(Boolean).join(", ")}
+                  {order.party
+                    ? [order.party.address, order.party.city, order.party.state, order.party.pincode].filter(Boolean).join(", ")
+                    : [order.guestAddress, order.guestPincode].filter(Boolean).join(", ")}
                 </div>
               )}
-              {order.party.mobile && (
-                <div style={{ fontSize: 11, color: "#4a3035", marginBottom: 2 }}>Contact: {order.party.mobile}</div>
+              {(order.party?.mobile ?? order.guestMobile) && (
+                <div style={{ fontSize: 11, color: "#4a3035", marginBottom: 2 }}>Contact: {order.party?.mobile ?? order.guestMobile}</div>
               )}
-              {order.party.gstin && (
+              {order.party?.gstin && (
                 <div style={{ fontSize: 11, color: "#4a3035" }}>GSTIN: <span style={{ fontWeight: 600 }}>{order.party.gstin}</span></div>
               )}
             </div>

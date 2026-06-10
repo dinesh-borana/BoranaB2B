@@ -88,7 +88,8 @@ export function getCachedOrders(status?: OrderStatus | "", q?: string) {
         total: o.total.toString(),
         totalPieces: o.totalPieces,
         createdAt: o.createdAt.toISOString(),
-        party: o.party,
+        party: o.party ?? null,
+        guestName: o.guestName ?? null,
       }));
     },
     ["orders-list", status ?? "", q ?? ""],
@@ -224,11 +225,13 @@ export function getCachedOrderDetail(id: string) {
             ...h,
             createdAt: h.createdAt.toISOString(),
           })),
-          party: {
-            ...order.party,
-            createdAt: order.party.createdAt.toISOString(),
-            updatedAt: order.party.updatedAt.toISOString(),
-          },
+          party: order.party
+            ? {
+                ...order.party,
+                createdAt: order.party.createdAt.toISOString(),
+                updatedAt: order.party.updatedAt.toISOString(),
+              }
+            : null,
         },
         mtoMap,
         skuMap,

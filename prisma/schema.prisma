@@ -112,8 +112,12 @@ model ProductSize {
 model Order {
   id            String               @id @default(cuid())
   orderNumber   String               @unique
-  party         Party                @relation(fields: [partyId], references: [id])
-  partyId       String
+  party         Party?               @relation(fields: [partyId], references: [id])
+  partyId       String?
+  guestName     String?
+  guestMobile   String?
+  guestAddress  String?
+  guestPincode  String?
   status        OrderStatus          @default(PENDING)
   subtotal      Decimal              @db.Decimal(12, 2)
   gstRate       Decimal              @default(3.0) @db.Decimal(5, 2)

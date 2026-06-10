@@ -5,6 +5,7 @@ import { formatINR, formatDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { SaveOrderId } from "./SaveOrderId";
 
 export const metadata = { title: "Order placed · Borana B2B" };
 
@@ -26,6 +27,7 @@ export default async function OrderSuccessPage({
 
   return (
     <div className="flex flex-col items-center gap-6 py-8">
+      {order && <SaveOrderId orderId={order.id} />}
       <div className="grid h-20 w-20 place-items-center rounded-full bg-emerald-50">
         <CheckCircle2 className="h-10 w-10 text-emerald-600" />
       </div>

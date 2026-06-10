@@ -134,7 +134,7 @@ export default async function AdminDashboardPage() {
                         <StatusPill status={o.status} />
                       </div>
                       <p className="mt-0.5 truncate text-xs text-stone-500">
-                        {o.party.shopName} · {relativeTime(o.createdAt)}
+                        {o.party?.shopName ?? "Guest"} · {relativeTime(o.createdAt)}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
