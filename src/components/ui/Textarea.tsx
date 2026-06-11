@@ -24,7 +24,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, Props>(function Textarea
         id={fieldId}
         {...props}
         className={cn(
-          "min-h-[88px] rounded-xl border bg-white px-3 py-2.5 text-sm text-stone-900 outline-none transition-all duration-150",
+          "min-h-[88px] rounded-xl border bg-white px-3 py-2.5 text-[16px] sm:text-sm text-stone-900 outline-none transition-all duration-150",
           "placeholder:text-stone-400",
           "focus:border-brand-600 focus:ring-2 focus:ring-brand-500/15",
           error ? "border-rose-400" : "border-[var(--border)]",

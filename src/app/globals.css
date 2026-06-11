@@ -57,6 +57,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Safe-area padding helpers (for BottomTabs on Android/iOS gesture nav) ── */
+.pb-safe-tabs {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .pb-safe-tabs {
+    padding-bottom: 24px; /* same as pb-6 on desktop where BottomTabs is hidden */
+  }
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb {
@@ -64,6 +74,12 @@ body {
   border-radius: 999px;
 }
 ::-webkit-scrollbar-track { background: transparent; }
+
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Prevent layout propagation from product/category cards */
+.card-contain { contain: layout style; }
 
 /* ── Number input ── */
 input[type="number"]::-webkit-outer-spin-button,
@@ -74,7 +90,7 @@ input[type="number"] { -moz-appearance: textfield; }
    Page animations
 ═══════════════════════════════════════ */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fade-down {
@@ -86,35 +102,44 @@ input[type="number"] { -moz-appearance: textfield; }
   to   { opacity: 1; }
 }
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.94); }
   to   { opacity: 1; transform: scale(1); }
 }
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-16px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateX(-20px) scale(0.98); }
+  to   { opacity: 1; transform: translateX(0)     scale(1); }
 }
 @keyframes pop-in {
-  from { opacity: 0; transform: scale(0.92) translateY(8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: scale(0.88) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
 }
 
-.animate-fade-up      { animation: fade-up      0.22s ease both; }
-.animate-fade-down    { animation: fade-down     0.18s ease both; }
-.animate-fade-in      { animation: fade-in       0.15s ease both; }
-.animate-scale-in     { animation: scale-in      0.2s  ease both; }
-.animate-slide-left   { animation: slide-in-left 0.2s  ease both; }
-.animate-pop-in       { animation: pop-in        0.2s  ease both; }
+.animate-fade-up      { animation: fade-up      0.24s ease both; }
+.animate-fade-down    { animation: fade-down     0.3s  cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+.animate-fade-in      { animation: fade-in       0.22s ease both; will-change: opacity; }
+.animate-scale-in     { animation: scale-in      0.4s  cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+.animate-slide-left   { animation: slide-in-left 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+.animate-pop-in       { animation: pop-in        0.4s  cubic-bezier(0.34, 1.56, 0.64, 1) both; will-change: transform, opacity; }
 
-/* Stagger children — each child gets animate-fade-up, stagger sets delay */
+/* Stagger children — each child needs animate-fade-up; stagger sets the delay.
+   Grid/list cards: tight delays so items feel snappy, not slow. */
 .stagger > *:nth-child(1)    { animation-delay: 0ms;  }
-.stagger > *:nth-child(2)    { animation-delay: 30ms; }
-.stagger > *:nth-child(3)    { animation-delay: 55ms; }
-.stagger > *:nth-child(4)    { animation-delay: 75ms; }
-.stagger > *:nth-child(5)    { animation-delay: 90ms; }
-.stagger > *:nth-child(6)    { animation-delay: 105ms;}
-.stagger > *:nth-child(7)    { animation-delay: 115ms;}
-.stagger > *:nth-child(8)    { animation-delay: 125ms;}
-.stagger > *:nth-child(n+9)  { animation-delay: 130ms;}
+.stagger > *:nth-child(2)    { animation-delay: 20ms; }
+.stagger > *:nth-child(3)    { animation-delay: 38ms; }
+.stagger > *:nth-child(4)    { animation-delay: 54ms; }
+.stagger > *:nth-child(5)    { animation-delay: 68ms; }
+.stagger > *:nth-child(6)    { animation-delay: 80ms; }
+.stagger > *:nth-child(7)    { animation-delay: 90ms; }
+.stagger > *:nth-child(8)    { animation-delay: 98ms; }
+.stagger > *:nth-child(n+9)  { animation-delay: 104ms;}
+
+/* Page-section stagger — wider items cascade with more breathing room */
+.stagger-sections > *:nth-child(1)   { animation-delay: 0ms;  }
+.stagger-sections > *:nth-child(2)   { animation-delay: 90ms; }
+.stagger-sections > *:nth-child(3)   { animation-delay: 170ms;}
+.stagger-sections > *:nth-child(4)   { animation-delay: 240ms;}
+.stagger-sections > *:nth-child(5)   { animation-delay: 300ms;}
+.stagger-sections > *:nth-child(n+6) { animation-delay: 350ms;}
 
 /* ── Navigation spinner ── */
 @keyframes nav-spin {
@@ -139,11 +164,11 @@ input[type="number"] { -moz-appearance: textfield; }
 
 /* ── Page transition ── */
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .page-enter {
-  animation: page-enter 0.2s ease both;
+  animation: page-enter 0.22s ease both;
   will-change: opacity, transform;
 }
 
@@ -195,10 +220,93 @@ input[type="number"] { -moz-appearance: textfield; }
   100%{ transform: rotate(0deg); }
 }
 
+/* ── Hero Banner live animations ── */
+@keyframes hero-gradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes hero-shimmer-sweep {
+  0%          { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  4%          { opacity: 1; }
+  48%         { transform: translateX(220%) skewX(-18deg); opacity: 0.7; }
+  49%, 100%   { opacity: 0; transform: translateX(220%) skewX(-18deg); }
+}
+@keyframes hero-orb-pulse {
+  0%, 100%    { opacity: 0.13; transform: scale(1); }
+  50%         { opacity: 0.30; transform: scale(1.15); }
+}
+@keyframes hero-orb-pulse-slow {
+  0%, 100%    { opacity: 0.07; transform: scale(1); }
+  50%         { opacity: 0.20; transform: scale(1.22); }
+}
+@keyframes hero-gold-line {
+  0%, 100%    { opacity: 0.4; }
+  50%         { opacity: 1; }
+}
+
+.hero-banner-bg {
+  background: linear-gradient(-45deg,
+    #0d0306 0%,
+    #3d0f1e 22%,
+    #6b1322 42%,
+    #1a0a0e 60%,
+    #4a0e20 80%,
+    #2a060e 100%);
+}
+.hero-shimmer {
+  /* static overlay — removed sweep animation (caused full repaint every frame) */
+  background: linear-gradient(
+    108deg,
+    transparent 28%,
+    rgba(196, 154, 60, 0.08) 50%,
+    transparent 72%
+  );
+}
+.hero-orb-1 {
+  /* transform+opacity only — GPU composited, safe to animate */
+  animation: hero-orb-pulse 4s ease-in-out infinite;
+  will-change: opacity;
+}
+.hero-orb-2 {
+  animation: hero-orb-pulse-slow 5.5s ease-in-out infinite 1.2s;
+  will-change: opacity;
+}
+.hero-gold-line {
+  opacity: 0.6;
+}
+
+/* ── Budget Cards live animations ── */
+@keyframes budget-gradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes budget-orb-pulse {
+  0%, 100% { opacity: 0.22; transform: scale(1); }
+  50%      { opacity: 0.50; transform: scale(1.20); }
+}
+.budget-card-anim {
+  /* static gradient — removed background-position animation (caused repaint every frame) */
+}
+.budget-orb {
+  /* removed — orbs are now static, no animation */
+}
+.budget-orb-slow {
+  /* removed — orbs are now static, no animation */
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up, .animate-fade-down, .animate-fade-in,
-  .animate-scale-in, .animate-slide-left, .animate-pop-in { animation: none; }
+  .animate-scale-in, .animate-slide-left, .animate-pop-in,
+  .page-enter { animation: none; }
   .card-hover:hover { transform: none; }
+  .hero-banner-bg   { animation: none; background-position: 0% 50%; }
+  .hero-shimmer     { animation: none; opacity: 0; }
+  .hero-orb-1, .hero-orb-2 { animation: none; }
+  .hero-gold-line   { animation: none; }
+  .budget-card-anim { animation: none; background-position: 0% 50%; }
+  .budget-orb, .budget-orb-slow { animation: none; }
 }
 
 /* ═══════════════════════════════════════

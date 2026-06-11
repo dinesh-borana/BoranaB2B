@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyParty } from "@/lib/notifications";
 import type { OrderStatus } from "@prisma/client";
 
 const schema = z.object({
@@ -20,6 +21,15 @@ const schema = z.object({
   note: z.string().max(500).optional(),
 });
 
+const statusMessages: Partial<Record<OrderStatus, { title: string; body: (num: string) => string }>> = {
+  CONFIRMED:  { title: "✅ Order confirmed!",   body: (n) => `Great news! Your order #${n} has been confirmed by Borana Jewels. We'll start processing it shortly.` },
+  PACKING:    { title: "📦 Order being packed", body: (n) => `Your order #${n} is being packed and will be shipped soon.` },
+  SHIPPED:    { title: "🚚 Order shipped!",      body: (n) => `Your order #${n} is on its way! You'll receive it soon.` },
+  DELIVERED:  { title: "🎉 Order delivered!",   body: (n) => `Your order #${n} has been delivered successfully. Thank you for ordering from Borana Jewels!` },
+  REJECTED:   { title: "Order rejected",        body: (n) => `Your order #${n} was rejected. Please contact us for more details.` },
+  CANCELLED:  { title: "Order cancelled",       body: (n) => `Your order #${n} has been cancelled.` },
+};
+
 export async function updateOrderStatus(formData: FormData) {
   const session = await auth();
   if (session?.user.role !== "ADMIN") throw new Error("Unauthorized");
@@ -28,6 +38,12 @@ export async function updateOrderStatus(formData: FormData) {
     orderId: formData.get("orderId"),
     status: formData.get("status"),
     note: formData.get("note") ?? "",
+  });
+
+  // Fetch order for partyId + orderNumber before updating
+  const order = await prisma.order.findUnique({
+    where: { id: parsed.orderId },
+    select: { partyId: true, orderNumber: true },
   });
 
   await prisma.$transaction([
@@ -45,6 +61,20 @@ export async function updateOrderStatus(formData: FormData) {
     }),
   ]);
 
+  // Send notification to the party
+  const msg = statusMessages[parsed.status as OrderStatus];
+  if (msg && order?.partyId) {
+    await notifyParty(
+      order.partyId,
+      "ORDER_STATUS",
+      msg.title,
+      msg.body(order.orderNumber),
+      `/customer/orders/${parsed.orderId}`,
+    );
+  }
+
+  revalidateTag("admin-stats", {});
+  revalidateTag("orders", {});
   revalidatePath(`/admin/orders/${parsed.orderId}`);
   revalidatePath("/admin/orders");
   revalidatePath("/admin/dashboard");

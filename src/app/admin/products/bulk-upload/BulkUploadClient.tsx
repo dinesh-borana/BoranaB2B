@@ -10,15 +10,16 @@ import {
   FileText,
   AlertTriangle,
   TriangleAlert,
+  Trash2,
 } from "lucide-react";
-import { bulkCreateProducts, type BulkRow, type BulkResult } from "./actions";
+import { bulkCreateProducts, deleteBulkBatch, type BulkRow, type BulkResult } from "./actions";
 
 // ─── Types ────────────────────────────────────────────────────
 type FieldError = { field: string; message: string };
 type ParsedRow = BulkRow & { _line: number; _errors: FieldError[] };
 
 const VALID_STOCK = ["IN_STOCK", "MADE_TO_ORDER", "OUT_OF_STOCK"] as const;
-const REQUIRED_COLS = ["name", "sku", "price"];
+const REQUIRED_COLS = ["sku", "price"];
 
 // ─── CSV parser ───────────────────────────────────────────────
 function parseCSVLine(line: string): string[] {
@@ -51,7 +52,6 @@ function parseCSV(text: string): ParseResult {
 
   const header = parseCSVLine(lines[0]).map((h) => h.toLowerCase().replace(/\s+/g, "_").trim());
 
-  // Check required columns exist in header
   const missingCols = REQUIRED_COLS.filter((c) => !header.includes(c));
   if (missingCols.length > 0) {
     return {
@@ -67,15 +67,9 @@ function parseCSV(text: string): ParseResult {
     return idx >= 0 ? (vals[idx] ?? "").trim() : "";
   };
 
-  // First pass: parse each row
   const rows: ParsedRow[] = lines.slice(1).map((line, i) => {
     const vals = parseCSVLine(line);
     const errors: FieldError[] = [];
-
-    // ── Required fields ──
-    const name = get(vals, "name");
-    if (!name) errors.push({ field: "name", message: "Name is required" });
-    else if (name.length > 200) errors.push({ field: "name", message: "Name too long (max 200 chars)" });
 
     const sku = get(vals, "sku");
     if (!sku) errors.push({ field: "sku", message: "SKU is required" });
@@ -87,7 +81,6 @@ function parseCSV(text: string): ParseResult {
     else if (isNaN(price)) errors.push({ field: "price", message: `"${priceStr}" is not a valid number` });
     else if (price <= 0) errors.push({ field: "price", message: "Price must be greater than 0" });
 
-    // ── Optional with validation ──
     const rawStatus = get(vals, "stock_status").toUpperCase();
     let stockStatus: "IN_STOCK" | "MADE_TO_ORDER" | "OUT_OF_STOCK" = "IN_STOCK";
     if (rawStatus && !VALID_STOCK.includes(rawStatus as typeof VALID_STOCK[number])) {
@@ -108,17 +101,24 @@ function parseCSV(text: string): ParseResult {
       if (emptyParts) errors.push({ field: "sizes", message: `Sizes has an empty entry — check for extra "|" characters` });
     }
 
+    const rawCategories = get(vals, "categories") || get(vals, "category");
+    const categories = rawCategories
+      ? rawCategories.split("|").map((s) => s.trim()).filter(Boolean)
+      : undefined;
+
     const activeRaw = get(vals, "active").toLowerCase();
     const isActive = activeRaw !== "no" && activeRaw !== "false" && activeRaw !== "0";
+
+    // Image URLs — optional, no error if empty
+    const imageUrls = [get(vals, "img1"), get(vals, "img2"), get(vals, "img3")].filter(Boolean);
 
     return {
       _line: i + 2,
       _errors: errors,
-      name,
       sku,
       price: isNaN(price) ? 0 : price,
-      category: get(vals, "category") || undefined,
-      description: get(vals, "description") || undefined,
+      categories,
+      imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       sizes,
       stockStatus,
       isActive,
@@ -151,11 +151,11 @@ function parseCSV(text: string): ParseResult {
 }
 
 // ─── Template download ────────────────────────────────────────
-const HEADERS = ["name", "sku", "price", "category", "description", "sizes", "stock_status", "active"];
+const HEADERS = ["sku", "price", "categories", "sizes", "stock_status", "active", "img1", "img2", "img3"];
 
 function downloadTemplate() {
-  const example1 = ['"Gold Bangles"', "BNG-001", "450", "Bangles", '"Beautiful gold bangles"', "2.4|2.6|2.8", "IN_STOCK", "yes"].join(",");
-  const example2 = ['"Silver Necklace"', "NCK-002", "780", "Necklaces", "", "", "MADE_TO_ORDER", "yes"].join(",");
+  const example1 = ["BNG-001", "450", "Bangles|New Arrival", "2.4|2.6|2.8", "IN_STOCK", "yes", "https://example.com/img1.jpg", "", ""].join(",");
+  const example2 = ["NCK-002", "780", "Necklaces", "", "MADE_TO_ORDER", "yes", "", "", ""].join(",");
   const csv = [HEADERS.join(","), example1, example2].join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
@@ -173,6 +173,8 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
   const [result, setResult] = useState<BulkResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteState, setDeleteState] = useState<"idle" | "deleting" | "done">("idle");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const rows = parseResult?.ok ? parseResult.rows : [];
@@ -218,7 +220,17 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
     setResult(null);
     setParseResult(null);
     setFileName("");
+    setDeleteConfirm(false);
+    setDeleteState("idle");
     if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function handleDeleteBatch() {
+    if (!result?.createdIds.length) return;
+    setDeleteState("deleting");
+    await deleteBulkBatch(result.createdIds);
+    setDeleteState("done");
+    setDeleteConfirm(false);
   }
 
   // ── Result screen ──────────────────────────────────────────
@@ -230,14 +242,18 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
             <CheckCircle className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
-            <p className="font-semibold text-stone-900">Upload complete</p>
+            <p className="font-semibold text-stone-900">
+              {deleteState === "done" ? "Products deleted" : "Upload complete"}
+            </p>
             <p className="text-sm text-stone-500">
-              {result.created} product{result.created !== 1 ? "s" : ""} created successfully
+              {deleteState === "done"
+                ? `${result.createdIds.length} product${result.createdIds.length !== 1 ? "s" : ""} deleted`
+                : `${result.created} product${result.created !== 1 ? "s" : ""} created successfully`}
             </p>
           </div>
         </div>
 
-        {result.skipped.length > 0 && (
+        {result.skipped.length > 0 && deleteState === "idle" && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
@@ -259,6 +275,45 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
             Upload more
           </button>
         </div>
+
+        {/* ── Delete batch section ── */}
+        {result.createdIds.length > 0 && deleteState !== "done" && (
+          <div className="border-t border-stone-100 pt-4">
+            {!deleteConfirm ? (
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-rose-200 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete all {result.createdIds.length} uploaded products
+              </button>
+            ) : (
+              <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 flex flex-col gap-3">
+                <p className="text-sm font-semibold text-rose-800">
+                  Are you sure? This will permanently delete all {result.createdIds.length} products from this upload.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDeleteBatch}
+                    disabled={deleteState === "deleting"}
+                    className="flex-1 rounded-lg bg-rose-600 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
+                  >
+                    {deleteState === "deleting" ? "Deleting…" : "Yes, delete all"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirm(false)}
+                    className="flex-1 rounded-lg border border-stone-200 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -272,11 +327,11 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
           <div>
             <p className="font-medium text-stone-900">Download CSV template</p>
             <p className="text-sm text-stone-500 mt-0.5">
-              Fill in Excel or Google Sheets. Columns: <span className="font-medium text-stone-700">name</span>, <span className="font-medium text-stone-700">sku</span>, <span className="font-medium text-stone-700">price</span> are required. Sizes use <code className="bg-stone-100 px-1 rounded text-xs">|</code> separator e.g. <code className="bg-stone-100 px-1 rounded text-xs">2.4|2.6|2.8</code>
+              Fill in Excel or Google Sheets. <span className="font-medium text-stone-700">sku</span> and <span className="font-medium text-stone-700">price</span> are required. Sizes &amp; categories use <code className="bg-stone-100 px-1 rounded text-xs">|</code> separator. Image URLs go in <code className="bg-stone-100 px-1 rounded text-xs">img1</code>, <code className="bg-stone-100 px-1 rounded text-xs">img2</code>, <code className="bg-stone-100 px-1 rounded text-xs">img3</code> columns (all optional).
             </p>
             {categories.length > 0 && (
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-stone-400">Categories:</span>
+                <span className="text-xs text-stone-400">Available categories:</span>
                 {categories.map((c) => (
                   <span key={c} className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{c}</span>
                 ))}
@@ -371,7 +426,7 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
               <ul className="space-y-2">
                 {errorRows.map((r) => (
                   <li key={r._line} className="text-xs">
-                    <span className="font-semibold text-red-800">Row {r._line}{r.name ? ` (${r.name})` : ""}:</span>
+                    <span className="font-semibold text-red-800">Row {r._line}{r.sku ? ` (${r.sku})` : ""}:</span>
                     <ul className="mt-0.5 ml-3 space-y-0.5">
                       {r._errors.map((e, i) => (
                         <li key={i} className="text-red-600">
@@ -391,12 +446,11 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
               <thead>
                 <tr className="bg-stone-50 text-left text-stone-500">
                   <th className="px-3 py-2 font-medium">Row</th>
-                  <th className="px-3 py-2 font-medium">Name</th>
                   <th className="px-3 py-2 font-medium">SKU</th>
                   <th className="px-3 py-2 font-medium">Price</th>
-                  <th className="px-3 py-2 font-medium">Category</th>
+                  <th className="px-3 py-2 font-medium">Categories</th>
                   <th className="px-3 py-2 font-medium">Sizes</th>
-                  <th className="px-3 py-2 font-medium">Stock</th>
+                  <th className="px-3 py-2 font-medium">Images</th>
                   <th className="px-3 py-2 font-medium w-6"></th>
                 </tr>
               </thead>
@@ -406,20 +460,23 @@ export function BulkUploadClient({ categories }: { categories: string[] }) {
                   return (
                     <tr key={r._line} className={hasError ? "bg-red-50" : ""}>
                       <td className="px-3 py-2 text-stone-400">{r._line}</td>
-                      <td className="px-3 py-2 font-medium text-stone-800 max-w-[140px] truncate">
-                        {r.name || <span className="text-red-400 italic">missing</span>}
-                      </td>
-                      <td className="px-3 py-2 text-stone-600">
+                      <td className="px-3 py-2 font-medium text-stone-800">
                         {r.sku || <span className="text-red-400 italic">missing</span>}
                       </td>
                       <td className="px-3 py-2 text-stone-600">
                         {r.price > 0 ? `₹${r.price}` : <span className="text-red-400 italic">invalid</span>}
                       </td>
-                      <td className="px-3 py-2 text-stone-500">{r.category ?? <span className="text-stone-300">—</span>}</td>
+                      <td className="px-3 py-2 text-stone-500">
+                        {r.categories?.length ? r.categories.join(", ") : <span className="text-stone-300">—</span>}
+                      </td>
                       <td className="px-3 py-2 text-stone-500">
                         {r.sizes.length > 0 ? r.sizes.join(", ") : <span className="text-stone-300">Standard</span>}
                       </td>
-                      <td className="px-3 py-2 text-stone-500">{r.stockStatus.replace(/_/g, " ")}</td>
+                      <td className="px-3 py-2 text-stone-500">
+                        {r.imageUrls?.length
+                          ? <span className="text-emerald-600">{r.imageUrls.length} img</span>
+                          : <span className="text-stone-300">—</span>}
+                      </td>
                       <td className="px-3 py-2 text-center">
                         {hasError
                           ? <XCircle className="h-4 w-4 text-red-400 inline" />

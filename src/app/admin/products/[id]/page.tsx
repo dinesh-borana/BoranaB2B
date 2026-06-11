@@ -21,7 +21,7 @@ export default async function AdminProductDetailPage({
     .findUnique({
       where: { id },
       include: {
-        category: true,
+        categories: true,
         images: { orderBy: { sortOrder: "asc" } },
         sizes: { orderBy: { size: "asc" } },
       },
@@ -46,7 +46,7 @@ export default async function AdminProductDetailPage({
       </Link>
 
       <PageHeader
-        title={product.name}
+        title={product.sku}
         actions={
           <div className="flex items-center gap-2">
             <DeleteProductButton productId={id} />
@@ -68,22 +68,29 @@ export default async function AdminProductDetailPage({
             <p className="font-medium text-stone-900">{product.sku}</p>
           </div>
           <div>
-            <p className="text-xs text-stone-500">Selling price</p>
+            <p className="text-xs text-stone-500">Price</p>
             <div className="flex items-center gap-2">
               <p className="font-semibold text-brand-700">
                 {formatINR(product.price)}
               </p>
-              {product.mrp && (
-                <p className="text-sm text-stone-400 line-through">
-                  {formatINR(product.mrp)}
-                </p>
+              {product.mrp && Number(product.mrp) > Number(product.price) && (
+                <>
+                  <p className="text-sm text-stone-400 line-through">
+                    {formatINR(product.mrp)}
+                  </p>
+                  <p className="text-xs text-emerald-700 font-medium">
+                    {Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100)}% off
+                  </p>
+                </>
               )}
             </div>
           </div>
           <div>
             <p className="text-xs text-stone-500">Category</p>
             <p className="font-medium text-stone-900">
-              {product.category?.name ?? "—"}
+              {product.categories.length > 0
+                ? product.categories.map((c) => c.name).join(", ")
+                : "—"}
             </p>
           </div>
           <div>
@@ -92,12 +99,6 @@ export default async function AdminProductDetailPage({
               {product.isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
-          {product.description && (
-            <div className="sm:col-span-2">
-              <p className="text-xs text-stone-500">Description</p>
-              <p className="text-stone-700">{product.description}</p>
-            </div>
-          )}
         </CardBody>
       </Card>
 
@@ -115,7 +116,9 @@ export default async function AdminProductDetailPage({
                 className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-center text-xs"
               >
                 <p className="font-semibold text-stone-900">{s.size}</p>
-                <p className="text-stone-500">{stockLabel[s.stockStatus]}</p>
+                {s.stockStatus !== "IN_STOCK" && (
+                  <p className="text-stone-500">{stockLabel[s.stockStatus]}</p>
+                )}
               </div>
             ))
           )}

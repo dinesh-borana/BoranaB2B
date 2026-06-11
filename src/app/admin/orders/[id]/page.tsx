@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Building2, Printer } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { formatINR, formatDateTime } from "@/lib/format";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { StatusUpdater } from "./StatusUpdater";
+import { getCachedOrderDetail } from "@/lib/data-cache";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -14,32 +14,10 @@ export default async function AdminOrderDetailPage({
 }) {
   const { id } = await params;
 
-  const order = await prisma.order
-    .findUnique({
-      where: { id },
-      include: {
-        party: true,
-        items: true,
-        statusHistory: { orderBy: { createdAt: "asc" } },
-      },
-    })
-    .catch(() => null);
+  const result = await getCachedOrderDetail(id).catch(() => null);
+  if (!result) notFound();
 
-  if (!order) notFound();
-
-  // Fetch MTO status for each product's sizes
-  const productIds = order.items.map((i) => i.productId).filter((p): p is string => !!p);
-  const mtoMap: Record<string, Set<string>> = {};
-  if (productIds.length > 0) {
-    const sizes = await prisma.productSize.findMany({
-      where: { productId: { in: productIds }, stockStatus: "MADE_TO_ORDER" },
-      select: { productId: true, size: true },
-    });
-    for (const s of sizes) {
-      if (!mtoMap[s.productId]) mtoMap[s.productId] = new Set();
-      mtoMap[s.productId].add(s.size);
-    }
-  }
+  const { order, mtoMap, skuMap } = result;
 
   return (
     <div className="flex flex-col gap-4">
@@ -106,7 +84,7 @@ export default async function AdminOrderDetailPage({
             <Row label="Total pieces" value={order.totalPieces.toString()} />
             <Row label="Subtotal" value={formatINR(order.subtotal)} />
             <Row
-              label={`GST @${order.gstRate.toString()}%`}
+              label={`GST @${order.gstRate}%`}
               value={formatINR(order.gstAmount)}
             />
             <div className="mt-1 flex items-center justify-between border-t border-stone-100 pt-2 font-semibold text-stone-900">
@@ -117,7 +95,6 @@ export default async function AdminOrderDetailPage({
         </Card>
       </div>
 
-      {/* Admin-placed badge */}
       {order.statusHistory[0]?.note === "Order placed by admin" && (
         <div className="flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
           <span className="font-semibold">🛒 Placed by admin</span>
@@ -148,12 +125,12 @@ export default async function AdminOrderDetailPage({
             <tbody className="divide-y divide-stone-100">
               {order.items.map((item) => {
                 const sq = item.sizeQuantities as Record<string, number>;
-                const mtoSizes = item.productId ? (mtoMap[item.productId] ?? new Set()) : new Set();
+                const mtoSizes = new Set(item.productId ? (mtoMap[item.productId] ?? []) : []);
                 return (
                   <tr key={item.id}>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-stone-900">
-                        {item.productName}
+                      <p className="font-medium tracking-wide text-stone-900">
+                        {item.productId ? (skuMap[item.productId] ?? item.productName) : item.productName}
                       </p>
                       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
                         {Object.entries(sq).filter(([, q]) => q > 0).map(([s, q]) => (
@@ -199,9 +176,7 @@ export default async function AdminOrderDetailPage({
               <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-stone-300" />
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-stone-900">
-                    {h.status}
-                  </span>
+                  <span className="font-medium text-stone-900">{h.status}</span>
                   <span className="text-xs text-stone-500">
                     {formatDateTime(h.createdAt)}
                   </span>

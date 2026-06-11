@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
@@ -18,8 +18,6 @@ const partySchema = z.object({
   state: z.string().max(100).optional(),
   pincode: z.string().max(10).optional(),
   gstin: z.string().max(20).optional(),
-  pan: z.string().max(10).optional(),
-  creditLimit: z.number().nonnegative().optional(),
   isActive: z.boolean().default(true),
   createLogin: z.boolean().default(false),
   loginPassword: z.string().min(8).optional(),
@@ -55,8 +53,6 @@ export async function createParty(formData: FormData) {
         state: data.state || null,
         pincode: data.pincode || null,
         gstin: data.gstin || null,
-        pan: data.pan || null,
-        creditLimit: data.creditLimit ?? null,
         isActive: data.isActive,
       },
     });
@@ -69,6 +65,7 @@ export async function createParty(formData: FormData) {
           mobile: data.mobile,
           email: data.email || null,
           passwordHash,
+          passwordText: data.loginPassword,
           role: "CUSTOMER",
           partyId: newParty.id,
         },
@@ -81,6 +78,7 @@ export async function createParty(formData: FormData) {
     return newParty;
   });
 
+  revalidateTag("admin-stats", {});
   revalidatePath("/admin/parties");
   redirect(`/admin/parties/${party.id}`);
 }
@@ -88,6 +86,8 @@ export async function createParty(formData: FormData) {
 export async function deleteParty(partyId: string) {
   await checkAdmin();
   await prisma.party.delete({ where: { id: partyId } });
+  revalidateTag("admin-stats", {});
+  revalidateTag("parties", {});
   revalidatePath("/admin/parties");
   redirect("/admin/parties");
 }
@@ -110,13 +110,66 @@ export async function updateParty(partyId: string, formData: FormData) {
       state: data.state || null,
       pincode: data.pincode || null,
       gstin: data.gstin || null,
-      pan: data.pan || null,
-      creditLimit: data.creditLimit ?? null,
       isActive: data.isActive,
     },
   });
 
+  revalidateTag("parties", {});
   revalidatePath("/admin/parties");
   revalidatePath(`/admin/parties/${partyId}`);
   redirect(`/admin/parties/${partyId}`);
+}
+
+export async function changePartyPassword(partyId: string, newPassword: string) {
+  await checkAdmin();
+  if (newPassword.length < 8) throw new Error("Password must be at least 8 characters");
+
+  const party = await prisma.party.findUnique({
+    where: { id: partyId },
+    include: { users: { take: 1, select: { id: true } } },
+  });
+  if (!party) throw new Error("Party not found");
+  if (party.users.length === 0) throw new Error("This party has no login account");
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({ where: { id: party.users[0].id }, data: { passwordHash, passwordText: newPassword } });
+
+  revalidateTag("parties", {});
+  revalidatePath(`/admin/parties/${partyId}`);
+}
+
+export async function createPartyLogin(partyId: string, password: string) {
+  await checkAdmin();
+  if (password.length < 8) throw new Error("Password must be at least 8 characters");
+
+  const party = await prisma.party.findUnique({
+    where: { id: partyId },
+    include: { users: { take: 1, select: { id: true } } },
+  });
+  if (!party) throw new Error("Party not found");
+  if (party.users.length > 0) throw new Error("This party already has a login account");
+
+  const existing = await prisma.user.findUnique({ where: { mobile: party.mobile } });
+  if (existing) throw new Error(`A login with mobile ${party.mobile} already exists`);
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.user.create({
+    data: {
+      name: party.ownerName,
+      mobile: party.mobile,
+      email: party.email || null,
+      passwordHash,
+      passwordText: password,
+      role: "CUSTOMER",
+      partyId: party.id,
+    },
+  });
+
+  console.log(
+    `[stub] SMS/WhatsApp to ${party.mobile}: Your Borana B2B login — mobile: ${party.mobile}, password: ${password}`,
+  );
+
+  revalidateTag("parties", {});
+  revalidatePath("/admin/parties");
+  revalidatePath(`/admin/parties/${partyId}`);
 }

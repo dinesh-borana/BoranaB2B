@@ -34,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
           id={inputId}
           {...props}
           className={cn(
-            "flex-1 bg-transparent text-sm text-stone-900 placeholder:text-stone-400 outline-none",
+            "flex-1 bg-transparent text-[16px] sm:text-sm text-stone-900 placeholder:text-stone-400 outline-none",
             className,
           )}
         />

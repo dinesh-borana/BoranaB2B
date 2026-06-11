@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Plus, Package, Upload } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { Plus, Package, Upload, Tag } from "lucide-react";
 import { formatINR } from "@/lib/format";
+import { getCachedCategories, getCachedProductsList } from "@/lib/data-cache";
+import { cdnImg } from "@/lib/cdn";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -18,28 +19,8 @@ export default async function AdminProductsPage({
   const { q, cat } = await searchParams;
 
   const [products, categories] = await Promise.all([
-    prisma.product
-      .findMany({
-        where: {
-          ...(q
-            ? {
-                OR: [
-                  { name: { contains: q, mode: "insensitive" } },
-                  { sku: { contains: q, mode: "insensitive" } },
-                ],
-              }
-            : {}),
-          ...(cat ? { category: { slug: cat } } : {}),
-        },
-        include: {
-          category: true,
-          images: { where: { isMain: true }, take: 1 },
-          _count: { select: { sizes: true } },
-        },
-        orderBy: { createdAt: "desc" },
-      })
-      .catch(() => []),
-    prisma.category.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+    getCachedProductsList(q, cat).catch(() => []),
+    getCachedCategories().catch(() => []),
   ]);
 
   return (
@@ -49,6 +30,11 @@ export default async function AdminProductsPage({
         description={`${products.length} products`}
         actions={
           <div className="flex gap-2">
+            <Link href="/admin/products/bulk-assign">
+              <Button variant="secondary" size="sm">
+                <Tag className="h-4 w-4" /> Bulk assign
+              </Button>
+            </Link>
             <Link href="/admin/products/bulk-upload">
               <Button variant="secondary" size="sm">
                 <Upload className="h-4 w-4" /> Bulk upload
@@ -68,7 +54,7 @@ export default async function AdminProductsPage({
           <input
             name="q"
             defaultValue={q ?? ""}
-            placeholder="Search by name or SKU…"
+            placeholder="Search by SKU…"
             className="h-10 w-full rounded-lg border border-stone-200 bg-white px-3 text-sm outline-none focus:border-admin-800"
           />
           {cat && <input type="hidden" name="cat" value={cat} />}
@@ -117,8 +103,9 @@ export default async function AdminProductsPage({
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={img}
-                        alt={p.name}
+                        src={cdnImg(img, 192)}
+                        alt={p.sku}
+                        loading="lazy"
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -129,10 +116,10 @@ export default async function AdminProductsPage({
                   </div>
                   <CardBody className="flex flex-col justify-center gap-1 !py-2">
                     <p className="text-[10px] uppercase tracking-wider text-stone-400">
-                      {p.category?.name} · {p.sku}
+                      {p.categories.map((c) => c.name).join(", ") || "—"}
                     </p>
-                    <p className="font-semibold text-stone-900 leading-tight">
-                      {p.name}
+                    <p className="font-semibold text-stone-900 leading-tight tracking-wide">
+                      {p.sku}
                     </p>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-brand-700">

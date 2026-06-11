@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
@@ -46,8 +46,15 @@ export function CheckoutClient({
     );
   }
 
-  const gstAmount = (subtotal * gstRate) / 100;
-  const total = subtotal + gstAmount;
+  const { gstAmount, total, totalSaved } = useMemo(() => {
+    const gst = (subtotal * gstRate) / 100;
+    const saved = lines.reduce((sum, l) => {
+      if (!l.mrp || l.mrp <= l.unitPrice) return sum;
+      const pieces = Object.values(l.sizeQuantities).reduce((a, b) => a + b, 0);
+      return sum + pieces * (l.mrp - l.unitPrice);
+    }, 0);
+    return { gstAmount: gst, total: subtotal + gst, totalSaved: saved };
+  }, [subtotal, gstRate, lines]);
 
   return (
     <form
@@ -128,6 +135,12 @@ export function CheckoutClient({
           <div className="flex flex-col gap-1 text-sm">
             <Row label={`Subtotal · ${totalPieces} pcs`} value={subtotal} />
             <Row label={`GST @ ${gstRate}%`} value={gstAmount} />
+            {totalSaved > 0 && (
+              <div className="flex items-center justify-between text-emerald-700">
+                <span>You saved</span>
+                <span className="font-semibold">-{formatINR(totalSaved)}</span>
+              </div>
+            )}
             <div className="mt-2 flex items-center justify-between border-t border-stone-100 pt-2">
               <span className="text-base font-semibold text-stone-900">
                 Total

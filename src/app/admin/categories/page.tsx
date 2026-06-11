@@ -6,7 +6,7 @@ export const metadata = { title: "Categories · Admin" };
 
 export default async function AdminCategoriesPage() {
   const categories = await prisma.category
-    .findMany({ orderBy: { sortOrder: "asc" } })
+    .findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true, slug: true, imageUrl: true, sortOrder: true } })
     .catch(() => []);
 
   return (

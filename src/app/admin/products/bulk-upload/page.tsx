@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { BulkUploadClient } from "./BulkUploadClient";
+import { getCachedCategories } from "@/lib/data-cache";
 
 export const metadata = { title: "Bulk Upload · Products · Admin" };
 
 export default async function BulkUploadPage() {
-  const categories = await prisma.category
-    .findMany({ orderBy: { sortOrder: "asc" } })
-    .catch(() => []);
+  const categories = await getCachedCategories().catch(() => []);
 
   return (
     <div className="flex flex-col gap-4">

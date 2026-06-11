@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus, Users } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getCachedParties } from "@/lib/data-cache";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -16,24 +16,7 @@ export default async function AdminPartiesPage({
 }) {
   const { q } = await searchParams;
 
-  const parties = await prisma.party
-    .findMany({
-      where: q
-        ? {
-            OR: [
-              { shopName: { contains: q, mode: "insensitive" } },
-              { ownerName: { contains: q, mode: "insensitive" } },
-              { mobile: { contains: q } },
-              { city: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {},
-      include: {
-        _count: { select: { orders: true } },
-      },
-      orderBy: { shopName: "asc" },
-    })
-    .catch(() => []);
+  const parties = await getCachedParties(q).catch(() => []);
 
   return (
     <div className="flex flex-col gap-4">

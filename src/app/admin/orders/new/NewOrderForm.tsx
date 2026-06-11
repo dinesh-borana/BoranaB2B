@@ -108,7 +108,7 @@ export function NewOrderForm({
 
   const linesPayload = lines.map((l) => ({
     productId: l.product.id,
-    productName: l.product.name,
+    productName: l.product.sku,
     unitPrice: l.product.price,
     sizeQuantities: l.sizeQtys,
   }));
@@ -216,8 +216,8 @@ export function NewOrderForm({
                   className="flex w-full items-center justify-between px-3 py-2.5 text-left hover:bg-stone-50 disabled:opacity-40"
                 >
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{p.name}</p>
-                    <p className="text-xs text-stone-500">{p.sku} · {formatINR(p.price)}</p>
+                    <p className="text-sm font-semibold tracking-wide text-stone-900">{p.sku}</p>
+                    <p className="text-xs text-stone-500">{formatINR(p.price)}</p>
                   </div>
                   {!already && <Plus className="h-4 w-4 text-admin-800" />}
                 </button>
@@ -234,8 +234,8 @@ export function NewOrderForm({
             <div key={line.product.id} className="rounded-xl border border-stone-200 bg-white p-4">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div>
-                  <p className="font-semibold text-stone-900">{line.product.name}</p>
-                  <p className="text-xs text-stone-500">{line.product.sku} · {formatINR(line.product.price)} per pc</p>
+                  <p className="font-semibold tracking-wide text-stone-900">{line.product.sku}</p>
+                  <p className="text-xs text-stone-500">{formatINR(line.product.price)} per pc</p>
                 </div>
                 <button
                   type="button"
