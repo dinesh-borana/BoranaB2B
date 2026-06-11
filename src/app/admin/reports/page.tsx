@@ -92,7 +92,7 @@ async function loadOverview() {
       `,
     ]);
 
-    const partyIds = topParties.map((p) => p.partyId);
+    const partyIds = topParties.map((p) => p.partyId).filter((id): id is string => id !== null);
     const parties = await prisma.party.findMany({
       where: { id: { in: partyIds } },
       select: { id: true, shopName: true },
@@ -105,7 +105,7 @@ async function loadOverview() {
       deliveredOrders,
       pendingOrders,
       topParties: topParties.map((p) => ({
-        name: partyMap[p.partyId] ?? "Unknown",
+        name: (p.partyId ? partyMap[p.partyId] : null) ?? "Guest / Unknown",
         total: p._sum.total ?? 0,
         count: p._count,
       })),
