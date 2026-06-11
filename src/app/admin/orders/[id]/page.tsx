@@ -57,21 +57,41 @@ export default async function AdminOrderDetailPage({
             <CardTitle>Party</CardTitle>
           </CardHeader>
           <CardBody className="flex flex-col gap-1.5 text-sm">
-            <div className="flex items-center gap-2 font-semibold text-stone-900">
-              <Building2 className="h-4 w-4 text-stone-400" />
-              {order.party.shopName}
-            </div>
-            <p className="text-stone-600">{order.party.ownerName}</p>
-            <p className="text-stone-500">{order.party.mobile}</p>
-            {order.party.city && (
-              <p className="text-stone-500">
-                {[order.party.city, order.party.state, order.party.pincode]
-                  .filter(Boolean)
-                  .join(", ")}
-              </p>
-            )}
-            {order.party.gstin && (
-              <p className="text-stone-500">GSTIN: {order.party.gstin}</p>
+            {order.party ? (
+              <>
+                <div className="flex items-center gap-2 font-semibold text-stone-900">
+                  <Building2 className="h-4 w-4 text-stone-400" />
+                  {order.party.shopName}
+                </div>
+                <p className="text-stone-600">{order.party.ownerName}</p>
+                <p className="text-stone-500">{order.party.mobile}</p>
+                {order.party.city && (
+                  <p className="text-stone-500">
+                    {[order.party.city, order.party.state, order.party.pincode]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                )}
+                {order.party.gstin && (
+                  <p className="text-stone-500">GSTIN: {order.party.gstin}</p>
+                )}
+              </>
+            ) : order.guestName ? (
+              <>
+                <div className="flex items-center gap-2 font-semibold text-stone-900">
+                  <Building2 className="h-4 w-4 text-stone-400" />
+                  {order.guestShopName ?? order.guestName}
+                  <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                    Guest
+                  </span>
+                </div>
+                {order.guestShopName && (
+                  <p className="text-stone-600">{order.guestName}</p>
+                )}
+                <p className="text-stone-500">{order.guestMobile}</p>
+              </>
+            ) : (
+              <p className="text-stone-400 italic">Party not found</p>
             )}
           </CardBody>
         </Card>

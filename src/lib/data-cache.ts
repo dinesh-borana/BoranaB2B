@@ -33,7 +33,17 @@ export const getCachedDashboardStats = unstable_cache(
       prisma.order.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
-        include: { party: { select: { shopName: true } } },
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          total: true,
+          totalPieces: true,
+          createdAt: true,
+          guestName: true,
+          guestShopName: true,
+          party: { select: { shopName: true } },
+        },
       }),
       prisma.order.aggregate({ _sum: { total: true }, where: { status: "DELIVERED" } }),
     ]);
@@ -51,7 +61,8 @@ export const getCachedDashboardStats = unstable_cache(
         total: o.total.toString(),
         totalPieces: o.totalPieces,
         createdAt: o.createdAt.toISOString(),
-        party: o.party,
+        displayName:
+          o.party?.shopName ?? o.guestShopName ?? o.guestName ?? "Guest",
       })),
       totalRevenue: (revenueResult._sum.total ?? 0).toString(),
     };
@@ -74,11 +85,23 @@ export function getCachedOrders(status?: OrderStatus | "", q?: string) {
                 OR: [
                   { orderNumber: { contains: q, mode: "insensitive" } },
                   { party: { shopName: { contains: q, mode: "insensitive" } } },
+                  { guestName: { contains: q, mode: "insensitive" } },
+                  { guestShopName: { contains: q, mode: "insensitive" } },
                 ],
               }
             : {}),
         },
-        include: { party: { select: { shopName: true } } },
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          total: true,
+          totalPieces: true,
+          createdAt: true,
+          guestName: true,
+          guestShopName: true,
+          party: { select: { shopName: true } },
+        },
         orderBy: { createdAt: "desc" },
       });
       return orders.map((o) => ({
@@ -88,7 +111,8 @@ export function getCachedOrders(status?: OrderStatus | "", q?: string) {
         total: o.total.toString(),
         totalPieces: o.totalPieces,
         createdAt: o.createdAt.toISOString(),
-        party: o.party,
+        displayName:
+          o.party?.shopName ?? o.guestShopName ?? o.guestName ?? "Guest",
       }));
     },
     ["orders-list", status ?? "", q ?? ""],
@@ -224,11 +248,13 @@ export function getCachedOrderDetail(id: string) {
             ...h,
             createdAt: h.createdAt.toISOString(),
           })),
-          party: {
-            ...order.party,
-            createdAt: order.party.createdAt.toISOString(),
-            updatedAt: order.party.updatedAt.toISOString(),
-          },
+          party: order.party
+            ? {
+                ...order.party,
+                createdAt: order.party.createdAt.toISOString(),
+                updatedAt: order.party.updatedAt.toISOString(),
+              }
+            : null,
         },
         mtoMap,
         skuMap,

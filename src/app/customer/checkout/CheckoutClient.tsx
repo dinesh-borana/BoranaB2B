@@ -6,6 +6,7 @@ import { CheckCircle2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatINR } from "@/lib/format";
@@ -16,6 +17,7 @@ const initial: PlaceOrderState = {};
 export function CheckoutClient({
   gstRate,
   party,
+  isGuest,
 }: {
   gstRate: number;
   party: {
@@ -26,6 +28,7 @@ export function CheckoutClient({
     state: string | null;
     pincode: string | null;
   } | null;
+  isGuest: boolean;
 }) {
   const { lines, totalPieces, subtotal, clear } = useCart();
   const [note, setNote] = useState("");
@@ -65,12 +68,38 @@ export function CheckoutClient({
       }}
       className="flex flex-col gap-4"
     >
+      {/* Shipping / contact details */}
       <Card>
         <CardBody>
           <h2 className="text-sm font-semibold text-stone-900">
-            Shipping to
+            {isGuest ? "Your details" : "Shipping to"}
           </h2>
-          {party ? (
+          {isGuest ? (
+            <div className="mt-3 flex flex-col gap-3">
+              <Input
+                name="guestName"
+                label="Your name"
+                placeholder="Full name"
+                required
+                autoComplete="name"
+              />
+              <Input
+                name="guestMobile"
+                label="Mobile number"
+                placeholder="10-digit mobile"
+                required
+                autoComplete="tel"
+                inputMode="numeric"
+                maxLength={15}
+              />
+              <Input
+                name="guestShopName"
+                label="Shop / business name (optional)"
+                placeholder="e.g. Sharma Jewels"
+                autoComplete="organization"
+              />
+            </div>
+          ) : party ? (
             <div className="mt-1 text-sm text-stone-700">
               <p className="font-medium text-stone-900">{party.shopName}</p>
               <p>{party.ownerName} · {party.mobile}</p>
@@ -90,6 +119,7 @@ export function CheckoutClient({
         </CardBody>
       </Card>
 
+      {/* Order items */}
       <Card>
         <CardBody>
           <h2 className="text-sm font-semibold text-stone-900">Order items</h2>
@@ -122,6 +152,7 @@ export function CheckoutClient({
         </CardBody>
       </Card>
 
+      {/* Note + totals */}
       <Card>
         <CardBody className="flex flex-col gap-3">
           <Textarea

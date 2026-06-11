@@ -17,7 +17,7 @@ type Order = {
   total: string;
   totalPieces: number;
   createdAt: Date | string;
-  party: { shopName: string };
+  displayName: string;
 };
 
 export function OrdersListClient({ orders }: { orders: Order[] }) {
@@ -120,7 +120,7 @@ export function OrdersListClient({ orders }: { orders: Order[] }) {
                         <StatusPill status={o.status} />
                       </div>
                       <p className="mt-0.5 truncate text-xs text-stone-500">
-                        {o.party.shopName} · {relativeTime(o.createdAt)}
+                        {o.displayName} · {relativeTime(o.createdAt)}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">

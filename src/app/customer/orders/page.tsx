@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, LogIn } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatINR, relativeTime } from "@/lib/format";
@@ -7,13 +7,38 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 
 export const metadata = { title: "My orders · Borana B2B" };
 
 export default async function CustomerOrdersPage() {
   const session = await auth();
 
-  const orders = session?.user.partyId
+  if (!session?.user) {
+    return (
+      <div className="flex flex-col gap-4">
+        <PageHeader title="My orders" />
+        <Card>
+          <CardBody className="flex flex-col items-center gap-4 py-8 text-center">
+            <div className="grid h-16 w-16 place-items-center rounded-full bg-brand-50">
+              <LogIn className="h-7 w-7 text-brand-700" />
+            </div>
+            <div>
+              <p className="font-semibold text-stone-900">Log in to see your orders</p>
+              <p className="mt-1 text-sm text-stone-500">
+                Your order history is linked to your account.
+              </p>
+            </div>
+            <Link href="/login" className="w-full">
+              <Button block>Log in</Button>
+            </Link>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  const orders = session.user.partyId
     ? await prisma.order
         .findMany({
           where: { partyId: session.user.partyId },

@@ -16,6 +16,9 @@ const lineSchema = z.object({
 const payloadSchema = z.object({
   note: z.string().max(500).optional().default(""),
   lines: z.array(lineSchema).min(1),
+  guestName: z.string().max(100).optional(),
+  guestMobile: z.string().max(20).optional(),
+  guestShopName: z.string().max(150).optional(),
 });
 
 export type PlaceOrderState = { error?: string };
@@ -34,18 +37,26 @@ export async function placeOrderAction(
   formData: FormData,
 ): Promise<PlaceOrderState> {
   const session = await auth();
-  if (!session?.user || session.user.role !== "CUSTOMER" || !session.user.partyId) {
-    return { error: "Sign in as a party to place an order." };
-  }
+  const isGuest = !session?.user || session.user.role !== "CUSTOMER";
 
+  // Logged-in customers must have a party OR provide guest details
+  // Guests must provide name + mobile
   let parsed;
   try {
     parsed = payloadSchema.parse({
       note: formData.get("note") ?? "",
       lines: JSON.parse(formData.get("lines")?.toString() ?? "[]"),
+      guestName: formData.get("guestName")?.toString().trim() || undefined,
+      guestMobile: formData.get("guestMobile")?.toString().trim() || undefined,
+      guestShopName: formData.get("guestShopName")?.toString().trim() || undefined,
     });
   } catch {
     return { error: "Your cart contents look invalid. Please try again." };
+  }
+
+  if (isGuest) {
+    if (!parsed.guestName) return { error: "Please enter your name." };
+    if (!parsed.guestMobile) return { error: "Please enter your mobile number." };
   }
 
   const gstRate = Number((await getSetting("gst.rate")) || "3");
@@ -65,7 +76,10 @@ export async function placeOrderAction(
   const order = await prisma.order.create({
     data: {
       orderNumber: makeOrderNumber(prefix),
-      partyId: session.user.partyId,
+      partyId: isGuest ? null : (session?.user.partyId ?? null),
+      guestName: isGuest ? parsed.guestName : null,
+      guestMobile: isGuest ? parsed.guestMobile : null,
+      guestShopName: isGuest ? (parsed.guestShopName ?? null) : null,
       status: "PENDING",
       subtotal,
       gstRate,
@@ -73,7 +87,7 @@ export async function placeOrderAction(
       total,
       totalPieces,
       customerNote: parsed.note || null,
-      placedById: session.user.id,
+      placedById: session?.user?.id ?? null,
       items: {
         create: parsed.lines.map((l) => {
           const pieces = Object.values(l.sizeQuantities).reduce(
@@ -93,8 +107,8 @@ export async function placeOrderAction(
       statusHistory: {
         create: {
           status: "PENDING",
-          note: "Order placed by customer",
-          changedBy: session.user.id,
+          note: isGuest ? "Order placed by guest" : "Order placed by customer",
+          changedBy: session?.user?.id ?? null,
         },
       },
     },

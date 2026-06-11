@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Always allow static assets, API routes, and the login page
   if (
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
@@ -14,31 +15,33 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const session = await auth();
+  // Customer-facing routes are fully public — no session required
+  if (pathname.startsWith("/customer") || pathname === "/") {
+    const session = await auth();
+    // If a logged-in admin somehow lands on a customer page, send them home
+    if (session?.user?.role === "ADMIN") {
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
 
+  // Admin routes require an authenticated admin session
+  if (pathname.startsWith("/admin")) {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/customer/catalog", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Everything else (print pages, etc.) — require a session
+  const session = await auth();
   if (!session?.user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-
-  const role = session.user.role;
-
-  if (pathname.startsWith("/admin") && role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/customer/dashboard", request.url));
-  }
-
-  if (pathname.startsWith("/customer") && role !== "CUSTOMER") {
-    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-  }
-
-  if (pathname === "/") {
-    return NextResponse.redirect(
-      new URL(
-        role === "ADMIN" ? "/admin/dashboard" : "/customer/dashboard",
-        request.url,
-      ),
-    );
-  }
-
   return NextResponse.next();
 }
 

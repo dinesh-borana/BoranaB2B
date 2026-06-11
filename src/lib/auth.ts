@@ -81,12 +81,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     authorized: async ({ auth: session, request }) => {
       const { pathname } = request.nextUrl;
+      // Public routes — no auth required
       if (pathname.startsWith("/login")) return true;
-      if (!session) return false;
-      const role = session.user.role as Role;
-      if (pathname.startsWith("/admin") && role !== "ADMIN") return false;
-      if (pathname.startsWith("/customer") && role !== "CUSTOMER") return false;
-      return true;
+      if (pathname.startsWith("/customer")) return true;
+      if (pathname === "/") return true;
+      // Admin routes require an authenticated admin
+      if (pathname.startsWith("/admin")) {
+        return session?.user?.role === "ADMIN";
+      }
+      // Everything else (API routes, etc.) requires a session
+      return !!session;
     },
   },
 });
