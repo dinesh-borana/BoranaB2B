@@ -150,7 +150,7 @@ export function AdminTopBar({ title }: { title?: string }) {
         {/* Sign out */}
         <div className="shrink-0 border-t border-white/10 p-3">
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOut({ redirect: false }).then(() => { window.location.href = "/login"; })}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-white/50 transition-all duration-150 hover:bg-white/10 hover:text-white active:bg-white/20"
           >
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/5">

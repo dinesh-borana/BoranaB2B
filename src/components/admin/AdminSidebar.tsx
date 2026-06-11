@@ -68,7 +68,7 @@ export function AdminSidebar() {
       </nav>
       <div className="border-t border-white/10 p-3">
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ redirect: false }).then(() => { window.location.href = "/login"; })}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/50 hover:bg-white/10 hover:text-white transition-all duration-150"
         >
           <LogOut className="h-4 w-4" />

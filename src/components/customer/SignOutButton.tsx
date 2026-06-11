@@ -10,7 +10,7 @@ export function SignOutButton() {
       variant="ghost"
       block
       className="text-rose-600 hover:bg-rose-50"
-      onClick={() => signOut({ callbackUrl: "/login" })}
+      onClick={() => signOut({ redirect: false }).then(() => { window.location.href = "/login"; })}
     >
       <LogOut className="h-4 w-4" /> Sign out
     </Button>
