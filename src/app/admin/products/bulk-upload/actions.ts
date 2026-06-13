@@ -3,7 +3,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { notifyAllParties } from "@/lib/notifications";
 
 export type BulkRow = {
   sku: string;
@@ -75,15 +74,6 @@ export async function bulkCreateProducts(rows: BulkRow[]): Promise<BulkResult> {
   }
 
   const created = createdIds.length;
-
-  if (created > 0) {
-    await notifyAllParties(
-      "NEW_PRODUCT",
-      "New products available",
-      `${created} new product${created === 1 ? "" : "s"} added to the catalog — check them out!`,
-      `/customer/catalog`,
-    );
-  }
 
   revalidateTag("products", {});
   revalidatePath("/admin/products");

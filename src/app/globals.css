@@ -61,11 +61,6 @@ body {
 .pb-safe-tabs {
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
-@media (min-width: 768px) {
-  .pb-safe-tabs {
-    padding-bottom: 24px; /* same as pb-6 on desktop where BottomTabs is hidden */
-  }
-}
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
