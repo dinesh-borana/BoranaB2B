@@ -14,6 +14,7 @@ import { placeOrderAction, type PlaceOrderState } from "./actions";
 
 const initial: PlaceOrderState = {};
 
+<<<<<<< HEAD
 export function CheckoutClient({
   gstRate,
   party,
@@ -30,6 +31,9 @@ export function CheckoutClient({
   } | null;
   isGuest: boolean;
 }) {
+=======
+export function CheckoutClient({ gstRate }: { gstRate: number }) {
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
   const { lines, totalPieces, subtotal, clear } = useCart();
   const [note, setNote] = useState("");
   const [state, action, pending] = useActionState(placeOrderAction, initial);
@@ -68,10 +72,15 @@ export function CheckoutClient({
       }}
       className="flex flex-col gap-4"
     >
+<<<<<<< HEAD
       {/* Shipping / contact details */}
+=======
+      {/* Delivery details */}
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
       <Card>
-        <CardBody>
+        <CardBody className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-stone-900">
+<<<<<<< HEAD
             {isGuest ? "Your details" : "Shipping to"}
           </h2>
           {isGuest ? (
@@ -116,6 +125,49 @@ export function CheckoutClient({
               No party linked to your account yet.
             </p>
           )}
+=======
+            Delivery details
+          </h2>
+          <Input
+            name="guestName"
+            label="Full name"
+            placeholder="Your full name"
+            required
+            autoComplete="name"
+            error={state.fieldErrors?.guestName}
+          />
+          <Input
+            name="guestMobile"
+            label="Mobile number"
+            placeholder="10-digit mobile number"
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]{10}"
+            maxLength={10}
+            required
+            autoComplete="tel"
+            error={state.fieldErrors?.guestMobile}
+          />
+          <Input
+            name="guestAddress"
+            label="Address"
+            placeholder="Street, area, city"
+            required
+            autoComplete="street-address"
+            error={state.fieldErrors?.guestAddress}
+          />
+          <Input
+            name="guestPincode"
+            label="Pincode"
+            placeholder="6-digit pincode"
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]{6}"
+            maxLength={6}
+            required
+            error={state.fieldErrors?.guestPincode}
+          />
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
         </CardBody>
       </Card>
 
@@ -152,7 +204,11 @@ export function CheckoutClient({
         </CardBody>
       </Card>
 
+<<<<<<< HEAD
       {/* Note + totals */}
+=======
+      {/* Summary + note */}
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
       <Card>
         <CardBody className="flex flex-col gap-3">
           <Textarea

@@ -116,7 +116,12 @@ model Order {
   partyId       String?
   guestName     String?
   guestMobile   String?
+<<<<<<< HEAD
   guestShopName String?
+=======
+  guestAddress  String?
+  guestPincode  String?
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
   status        OrderStatus          @default(PENDING)
   subtotal      Decimal              @db.Decimal(12, 2)
   gstRate       Decimal              @default(3.0) @db.Decimal(5, 2)

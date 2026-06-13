@@ -83,17 +83,6 @@ export async function createProduct(formData: FormData): Promise<{ error: string
     throw err;
   }
 
-  if (data.isActive) {
-    after(() =>
-      notifyAllParties(
-        "NEW_PRODUCT",
-        "New product added",
-        `Check out ${data.name} — just added to the catalog.`,
-        `/customer/catalog/${product.id}`,
-      ).catch(() => {}),
-    );
-  }
-
   revalidateTag("products", "max");
   revalidatePath("/admin/products");
   redirect(`/admin/products/${product.id}`);

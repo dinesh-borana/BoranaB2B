@@ -1,65 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
-import { ShoppingBag, Bell } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { Logo } from "@/components/ui/Logo";
 
-function useNotificationCount(pathname: string) {
-  const [count, setCount] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  async function fetchCount() {
-    // Don't fetch if tab is hidden — saves battery and network on mobile
-    if (document.visibilityState === "hidden") return;
-    try {
-      const res = await fetch("/api/notifications/count", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        setCount(data.count ?? 0);
-      }
-    } catch {
-      // ignore network errors silently
-    }
-  }
-
-  // Reset badge immediately when user visits the notifications page
-  useEffect(() => {
-    if (pathname === "/customer/notifications") {
-      setCount(0);
-    } else {
-      fetchCount();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
-  // Poll every 120s (was 30s) — also resume when tab becomes visible
-  useEffect(() => {
-    fetchCount();
-    intervalRef.current = setInterval(fetchCount, 120_000);
-
-    function onVisibilityChange() {
-      if (document.visibilityState === "visible") fetchCount();
-    }
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return count;
-}
-
-export function TopBar({ title, userName }: { title?: string; userName?: string | null }) {
+export function TopBar({ title }: { title?: string }) {
   const { totalPieces } = useCart();
-  const pathname = usePathname() ?? "";
-  const initial = userName?.slice(0, 1).toUpperCase() ?? "?";
-  const unreadCount = useNotificationCount(pathname);
 
   return (
     <header
@@ -73,6 +20,7 @@ export function TopBar({ title, userName }: { title?: string; userName?: string 
           <Logo size="sm" href="/customer/dashboard" />
         )}
         <div className="flex items-center gap-1">
+<<<<<<< HEAD
           {/* Notification bell — only for logged-in users */}
           {userName && (
             <Link
@@ -89,6 +37,8 @@ export function TopBar({ title, userName }: { title?: string; userName?: string 
             </Link>
           )}
 
+=======
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
           {/* Cart */}
           <Link
             href="/customer/cart"
@@ -102,6 +52,7 @@ export function TopBar({ title, userName }: { title?: string; userName?: string 
               </span>
             )}
           </Link>
+<<<<<<< HEAD
 
           {/* Profile avatar or Login button */}
           {userName ? (
@@ -120,6 +71,8 @@ export function TopBar({ title, userName }: { title?: string; userName?: string 
               Login
             </Link>
           )}
+=======
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
         </div>
       </div>
     </header>

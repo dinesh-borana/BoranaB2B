@@ -12,7 +12,12 @@
       "Bash(cd /d \"d:\\\\projects\\\\borana-b2b\")",
       "Bash(Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue)",
       "Bash(Write-Host \"Cache cleared\")",
+<<<<<<< HEAD
       "Bash(sudo chown -R dineshborana /Users/dineshborana/learn/BoranaB2B/.next)"
+=======
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
     ],
     "additionalDirectories": [
       "d:\\projects\\borana-b2b\\src\\app\\customer\\catalog\\[id]"

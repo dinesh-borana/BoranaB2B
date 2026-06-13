@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatINR, formatDateTime } from "@/lib/format";
 import { compareSize } from "@/lib/size";
@@ -15,7 +14,6 @@ export default async function CustomerOrderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await auth();
 
   const order = await prisma.order
     .findUnique({
@@ -27,7 +25,7 @@ export default async function CustomerOrderDetailPage({
     })
     .catch(() => null);
 
-  if (!order || order.partyId !== session?.user.partyId) notFound();
+  if (!order) notFound();
 
   const productIds = order.items.map((i) => i.productId).filter((x): x is string => !!x);
   const skuRows = productIds.length > 0

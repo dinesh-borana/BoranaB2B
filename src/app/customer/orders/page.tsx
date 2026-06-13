@@ -1,19 +1,38 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+<<<<<<< HEAD
 import { ClipboardList, LogIn } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+=======
+import { ClipboardList } from "lucide-react";
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 import { formatINR, relativeTime } from "@/lib/format";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { EmptyState } from "@/components/ui/EmptyState";
+<<<<<<< HEAD
 import { Button } from "@/components/ui/Button";
+=======
+import { PageHeader } from "@/components/ui/PageHeader";
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 
-export const metadata = { title: "My orders · Borana B2B" };
+type OrderSummary = {
+  id: string;
+  orderNumber: string;
+  status: string;
+  totalPieces: number;
+  total: string;
+  guestName: string | null;
+  createdAt: string;
+};
 
-export default async function CustomerOrdersPage() {
-  const session = await auth();
+export default function CustomerOrdersPage() {
+  const [orders, setOrders] = useState<OrderSummary[] | null>(null);
 
+<<<<<<< HEAD
   if (!session?.user) {
     return (
       <div className="flex flex-col gap-4">
@@ -55,18 +74,44 @@ export default async function CustomerOrdersPage() {
         })
         .catch(() => [])
     : [];
+=======
+  useEffect(() => {
+    let ids: string[] = [];
+    try {
+      ids = JSON.parse(localStorage.getItem("borana-orders") ?? "[]");
+    } catch {
+      // ignore
+    }
+
+    if (ids.length === 0) {
+      setOrders([]);
+      return;
+    }
+
+    fetch(`/api/orders/by-ids?ids=${ids.join(",")}`)
+      .then((r) => r.json())
+      .then((data) => setOrders(data))
+      .catch(() => setOrders([]));
+  }, []);
+>>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 
   return (
     <div>
       <PageHeader title="My orders" />
-      {orders.length === 0 ? (
+      {orders === null ? (
+        <div className="flex justify-center py-12">
+          <span className="text-sm text-stone-400">Loading…</span>
+        </div>
+      ) : orders.length === 0 ? (
         <EmptyState
           icon={<ClipboardList className="h-5 w-5" />}
           title="No orders yet"
           description="Browse the catalog and place your first order."
           action={
             <Link href="/customer/catalog">
-              <span className="text-sm font-medium text-brand-700">Browse catalog →</span>
+              <span className="text-sm font-medium text-brand-700">
+                Browse catalog →
+              </span>
             </Link>
           }
         />
@@ -79,15 +124,19 @@ export default async function CustomerOrdersPage() {
                   <CardBody className="flex items-center gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-stone-900">#{o.orderNumber}</span>
-                        <StatusPill status={o.status} />
+                        <span className="font-semibold text-stone-900">
+                          #{o.orderNumber}
+                        </span>
+                        <StatusPill status={o.status as never} />
                       </div>
                       <p className="mt-0.5 text-xs text-stone-500">
-                        {o.totalPieces} pcs · {relativeTime(o.createdAt)}
+                        {o.totalPieces} pcs · {relativeTime(new Date(o.createdAt))}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-stone-900">{formatINR(o.total)}</p>
+                      <p className="font-semibold text-stone-900">
+                        {formatINR(o.total)}
+                      </p>
                       <p className="text-xs text-stone-500">incl. GST</p>
                     </div>
                   </CardBody>
