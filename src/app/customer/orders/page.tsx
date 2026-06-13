@@ -2,22 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-<<<<<<< HEAD
-import { ClipboardList, LogIn } from "lucide-react";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-=======
 import { ClipboardList } from "lucide-react";
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 import { formatINR, relativeTime } from "@/lib/format";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { EmptyState } from "@/components/ui/EmptyState";
-<<<<<<< HEAD
-import { Button } from "@/components/ui/Button";
-=======
 import { PageHeader } from "@/components/ui/PageHeader";
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 
 type OrderSummary = {
   id: string;
@@ -32,49 +22,6 @@ type OrderSummary = {
 export default function CustomerOrdersPage() {
   const [orders, setOrders] = useState<OrderSummary[] | null>(null);
 
-<<<<<<< HEAD
-  if (!session?.user) {
-    return (
-      <div className="flex flex-col gap-4">
-        <PageHeader title="My orders" />
-        <Card>
-          <CardBody className="flex flex-col items-center gap-4 py-8 text-center">
-            <div className="grid h-16 w-16 place-items-center rounded-full bg-brand-50">
-              <LogIn className="h-7 w-7 text-brand-700" />
-            </div>
-            <div>
-              <p className="font-semibold text-stone-900">Log in to see your orders</p>
-              <p className="mt-1 text-sm text-stone-500">
-                Your order history is linked to your account.
-              </p>
-            </div>
-            <Link href="/login" className="w-full">
-              <Button block>Log in</Button>
-            </Link>
-          </CardBody>
-        </Card>
-      </div>
-    );
-  }
-
-  const orders = session.user.partyId
-    ? await prisma.order
-        .findMany({
-          where: { partyId: session.user.partyId },
-          orderBy: { createdAt: "desc" },
-          take: 50,
-          select: {
-            id: true,
-            orderNumber: true,
-            status: true,
-            totalPieces: true,
-            total: true,
-            createdAt: true,
-          },
-        })
-        .catch(() => [])
-    : [];
-=======
   useEffect(() => {
     let ids: string[] = [];
     try {
@@ -93,7 +40,6 @@ export default function CustomerOrdersPage() {
       .then((data) => setOrders(data))
       .catch(() => setOrders([]));
   }, []);
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 
   return (
     <div>

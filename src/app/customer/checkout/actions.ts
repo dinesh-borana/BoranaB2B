@@ -22,14 +22,7 @@ const payloadSchema = z.object({
     .string()
     .regex(/^\d{6}$/, "Enter a valid 6-digit pincode"),
   note: z.string().max(500).optional().default(""),
-<<<<<<< HEAD
-  lines: z.array(lineSchema).min(1),
-  guestName: z.string().max(100).optional(),
-  guestMobile: z.string().max(20).optional(),
-  guestShopName: z.string().max(150).optional(),
-=======
   lines: z.array(lineSchema).min(1, "Cart is empty"),
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 });
 
 export type PlaceOrderState = {
@@ -55,26 +48,15 @@ export async function placeOrderAction(
   _prev: PlaceOrderState,
   formData: FormData,
 ): Promise<PlaceOrderState> {
-<<<<<<< HEAD
-  const session = await auth();
-  const isGuest = !session?.user || session.user.role !== "CUSTOMER";
-
-  // Logged-in customers must have a party OR provide guest details
-  // Guests must provide name + mobile
-=======
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
   let parsed;
   try {
     parsed = payloadSchema.parse({
-      guestName: formData.get("guestName") ?? "",
-      guestMobile: formData.get("guestMobile") ?? "",
-      guestAddress: formData.get("guestAddress") ?? "",
-      guestPincode: formData.get("guestPincode") ?? "",
-      note: formData.get("note") ?? "",
+      guestName: formData.get("guestName")?.toString().trim() || "",
+      guestMobile: formData.get("guestMobile")?.toString().trim() || "",
+      guestAddress: formData.get("guestAddress")?.toString().trim() || "",
+      guestPincode: formData.get("guestPincode")?.toString().trim() || "",
+      note: formData.get("note")?.toString().trim() || "",
       lines: JSON.parse(formData.get("lines")?.toString() ?? "[]"),
-      guestName: formData.get("guestName")?.toString().trim() || undefined,
-      guestMobile: formData.get("guestMobile")?.toString().trim() || undefined,
-      guestShopName: formData.get("guestShopName")?.toString().trim() || undefined,
     });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -97,11 +79,6 @@ export async function placeOrderAction(
     return { error: "Your cart contents look invalid. Please try again." };
   }
 
-  if (isGuest) {
-    if (!parsed.guestName) return { error: "Please enter your name." };
-    if (!parsed.guestMobile) return { error: "Please enter your mobile number." };
-  }
-
   const gstRate = Number((await getSetting("gst.rate")) || "3");
   const prefix = (await getSetting("order.prefix")) || "BJ";
 
@@ -119,17 +96,10 @@ export async function placeOrderAction(
   const order = await prisma.order.create({
     data: {
       orderNumber: makeOrderNumber(prefix),
-<<<<<<< HEAD
-      partyId: isGuest ? null : (session?.user.partyId ?? null),
-      guestName: isGuest ? parsed.guestName : null,
-      guestMobile: isGuest ? parsed.guestMobile : null,
-      guestShopName: isGuest ? (parsed.guestShopName ?? null) : null,
-=======
       guestName: parsed.guestName,
       guestMobile: parsed.guestMobile,
       guestAddress: parsed.guestAddress,
       guestPincode: parsed.guestPincode,
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
       status: "PENDING",
       subtotal,
       gstRate,
@@ -137,10 +107,6 @@ export async function placeOrderAction(
       total,
       totalPieces,
       customerNote: parsed.note || null,
-<<<<<<< HEAD
-      placedById: session?.user?.id ?? null,
-=======
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
       items: {
         create: parsed.lines.map((l) => {
           const pieces = Object.values(l.sizeQuantities).reduce(
@@ -160,12 +126,7 @@ export async function placeOrderAction(
       statusHistory: {
         create: {
           status: "PENDING",
-<<<<<<< HEAD
-          note: isGuest ? "Order placed by guest" : "Order placed by customer",
-          changedBy: session?.user?.id ?? null,
-=======
           note: "Order placed",
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
         },
       },
     },

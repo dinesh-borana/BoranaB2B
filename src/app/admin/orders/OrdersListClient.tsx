@@ -17,12 +17,8 @@ type Order = {
   total: string;
   totalPieces: number;
   createdAt: Date | string;
-<<<<<<< HEAD
-  displayName: string;
-=======
   party: { shopName: string } | null;
   guestName: string | null;
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
 };
 
 export function OrdersListClient({ orders }: { orders: Order[] }) {
@@ -125,11 +121,7 @@ export function OrdersListClient({ orders }: { orders: Order[] }) {
                         <StatusPill status={o.status} />
                       </div>
                       <p className="mt-0.5 truncate text-xs text-stone-500">
-<<<<<<< HEAD
-                        {o.displayName} · {relativeTime(o.createdAt)}
-=======
                         {o.party?.shopName ?? o.guestName ?? "Guest"} · {relativeTime(o.createdAt)}
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
                       </p>
                     </div>
                     <div className="shrink-0 text-right">

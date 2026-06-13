@@ -14,29 +14,20 @@ import { placeOrderAction, type PlaceOrderState } from "./actions";
 
 const initial: PlaceOrderState = {};
 
-<<<<<<< HEAD
-export function CheckoutClient({
-  gstRate,
-  party,
-  isGuest,
-}: {
-  gstRate: number;
-  party: {
-    shopName: string;
-    ownerName: string;
-    mobile: string;
-    city: string | null;
-    state: string | null;
-    pincode: string | null;
-  } | null;
-  isGuest: boolean;
-}) {
-=======
 export function CheckoutClient({ gstRate }: { gstRate: number }) {
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
   const { lines, totalPieces, subtotal, clear } = useCart();
   const [note, setNote] = useState("");
   const [state, action, pending] = useActionState(placeOrderAction, initial);
+
+  const { gstAmount, total, totalSaved } = useMemo(() => {
+    const gst = (subtotal * gstRate) / 100;
+    const saved = lines.reduce((sum, l) => {
+      if (!l.mrp || l.mrp <= l.unitPrice) return sum;
+      const pieces = Object.values(l.sizeQuantities).reduce((a, b) => a + b, 0);
+      return sum + pieces * (l.mrp - l.unitPrice);
+    }, 0);
+    return { gstAmount: gst, total: subtotal + gst, totalSaved: saved };
+  }, [subtotal, gstRate, lines]);
 
   if (lines.length === 0) {
     return (
@@ -53,16 +44,6 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
     );
   }
 
-  const { gstAmount, total, totalSaved } = useMemo(() => {
-    const gst = (subtotal * gstRate) / 100;
-    const saved = lines.reduce((sum, l) => {
-      if (!l.mrp || l.mrp <= l.unitPrice) return sum;
-      const pieces = Object.values(l.sizeQuantities).reduce((a, b) => a + b, 0);
-      return sum + pieces * (l.mrp - l.unitPrice);
-    }, 0);
-    return { gstAmount: gst, total: subtotal + gst, totalSaved: saved };
-  }, [subtotal, gstRate, lines]);
-
   return (
     <form
       action={(fd) => {
@@ -72,60 +53,10 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
       }}
       className="flex flex-col gap-4"
     >
-<<<<<<< HEAD
-      {/* Shipping / contact details */}
-=======
       {/* Delivery details */}
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
       <Card>
         <CardBody className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-stone-900">
-<<<<<<< HEAD
-            {isGuest ? "Your details" : "Shipping to"}
-          </h2>
-          {isGuest ? (
-            <div className="mt-3 flex flex-col gap-3">
-              <Input
-                name="guestName"
-                label="Your name"
-                placeholder="Full name"
-                required
-                autoComplete="name"
-              />
-              <Input
-                name="guestMobile"
-                label="Mobile number"
-                placeholder="10-digit mobile"
-                required
-                autoComplete="tel"
-                inputMode="numeric"
-                maxLength={15}
-              />
-              <Input
-                name="guestShopName"
-                label="Shop / business name (optional)"
-                placeholder="e.g. Sharma Jewels"
-                autoComplete="organization"
-              />
-            </div>
-          ) : party ? (
-            <div className="mt-1 text-sm text-stone-700">
-              <p className="font-medium text-stone-900">{party.shopName}</p>
-              <p>{party.ownerName} · {party.mobile}</p>
-              {(party.city || party.state) && (
-                <p className="text-stone-500">
-                  {[party.city, party.state, party.pincode]
-                    .filter(Boolean)
-                    .join(", ")}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="mt-1 text-sm text-stone-500">
-              No party linked to your account yet.
-            </p>
-          )}
-=======
             Delivery details
           </h2>
           <Input
@@ -167,7 +98,6 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
             required
             error={state.fieldErrors?.guestPincode}
           />
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
         </CardBody>
       </Card>
 
@@ -204,11 +134,7 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
         </CardBody>
       </Card>
 
-<<<<<<< HEAD
-      {/* Note + totals */}
-=======
       {/* Summary + note */}
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
       <Card>
         <CardBody className="flex flex-col gap-3">
           <Textarea

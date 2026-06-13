@@ -178,30 +178,6 @@ export default async function PrintOrderPage({
               <div style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: "#8b1a2e", marginBottom: 8 }}>
                 Bill To
               </div>
-<<<<<<< HEAD
-              {order.party ? (
-                <>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1a0d10", marginBottom: 3 }}>
-                    {order.party.shopName}
-                  </div>
-                  {order.party.ownerName && (
-                    <div style={{ fontSize: 12, color: "#4a3035", marginBottom: 2 }}>{order.party.ownerName}</div>
-                  )}
-                  {(order.party.address || order.party.city) && (
-                    <div style={{ fontSize: 11, color: "#6b5a5d", marginBottom: 2, lineHeight: 1.5 }}>
-                      {[order.party.address, order.party.city, order.party.state, order.party.pincode].filter(Boolean).join(", ")}
-                    </div>
-                  )}
-                  {order.party.mobile && (
-                    <div style={{ fontSize: 11, color: "#4a3035", marginBottom: 2 }}>Contact: {order.party.mobile}</div>
-                  )}
-                  {order.party.gstin && (
-                    <div style={{ fontSize: 11, color: "#4a3035" }}>GSTIN: <span style={{ fontWeight: 600 }}>{order.party.gstin}</span></div>
-                  )}
-                </>
-              ) : (
-                <div style={{ fontSize: 12, color: "#9b7a82", fontStyle: "italic" }}>Party not found</div>
-=======
               <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1a0d10", marginBottom: 3 }}>
                 {order.party?.shopName ?? order.guestName ?? "Guest"}
               </div>
@@ -220,7 +196,6 @@ export default async function PrintOrderPage({
               )}
               {order.party?.gstin && (
                 <div style={{ fontSize: 11, color: "#4a3035" }}>GSTIN: <span style={{ fontWeight: 600 }}>{order.party.gstin}</span></div>
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
               )}
             </div>
 

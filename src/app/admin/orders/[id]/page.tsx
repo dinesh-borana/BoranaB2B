@@ -18,6 +18,7 @@ export default async function AdminOrderDetailPage({
   if (!result) notFound();
 
   const { order, mtoMap, skuMap } = result;
+  const guestMobile = (order as { guestMobile?: string }).guestMobile;
 
   return (
     <div className="flex flex-col gap-4">
@@ -57,21 +58,12 @@ export default async function AdminOrderDetailPage({
             <CardTitle>{order.party ? "Party" : "Customer"}</CardTitle>
           </CardHeader>
           <CardBody className="flex flex-col gap-1.5 text-sm">
-<<<<<<< HEAD
-            {order.party ? (
-              <>
-                <div className="flex items-center gap-2 font-semibold text-stone-900">
-                  <Building2 className="h-4 w-4 text-stone-400" />
-                  {order.party.shopName}
-                </div>
-=======
             <div className="flex items-center gap-2 font-semibold text-stone-900">
               <Building2 className="h-4 w-4 text-stone-400" />
               {order.party?.shopName ?? order.guestName ?? "Guest"}
             </div>
             {order.party ? (
               <>
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
                 <p className="text-stone-600">{order.party.ownerName}</p>
                 <p className="text-stone-500">{order.party.mobile}</p>
                 {order.party.city && (
@@ -85,31 +77,12 @@ export default async function AdminOrderDetailPage({
                   <p className="text-stone-500">GSTIN: {order.party.gstin}</p>
                 )}
               </>
-<<<<<<< HEAD
-            ) : order.guestName ? (
-              <>
-                <div className="flex items-center gap-2 font-semibold text-stone-900">
-                  <Building2 className="h-4 w-4 text-stone-400" />
-                  {order.guestShopName ?? order.guestName}
-                  <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                    Guest
-                  </span>
-                </div>
-                {order.guestShopName && (
-                  <p className="text-stone-600">{order.guestName}</p>
-                )}
-                <p className="text-stone-500">{order.guestMobile}</p>
-              </>
-            ) : (
-              <p className="text-stone-400 italic">Party not found</p>
-=======
             ) : (
               <>
                 {order.guestMobile && <p className="text-stone-500">{order.guestMobile}</p>}
                 {order.guestAddress && <p className="text-stone-500">{order.guestAddress}</p>}
                 {order.guestPincode && <p className="text-stone-500">Pincode: {order.guestPincode}</p>}
               </>
->>>>>>> 61dfbae538786e769e3120466091bdb565b8b8f4
             )}
           </CardBody>
         </Card>
