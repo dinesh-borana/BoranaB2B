@@ -11,7 +11,9 @@
       "Bash(npx next *)",
       "Bash(cd /d \"d:\\\\projects\\\\borana-b2b\")",
       "Bash(Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue)",
-      "Bash(Write-Host \"Cache cleared\")"
+      "Bash(Write-Host \"Cache cleared\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ],
     "additionalDirectories": [
       "d:\\projects\\borana-b2b\\src\\app\\customer\\catalog\\[id]"

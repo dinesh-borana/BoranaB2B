@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSetting } from "@/lib/settings";
 
@@ -14,11 +13,27 @@ const lineSchema = z.object({
 });
 
 const payloadSchema = z.object({
+  guestName: z.string().min(1, "Name is required"),
+  guestMobile: z
+    .string()
+    .regex(/^\d{10}$/, "Enter a valid 10-digit mobile number"),
+  guestAddress: z.string().min(3, "Address is required"),
+  guestPincode: z
+    .string()
+    .regex(/^\d{6}$/, "Enter a valid 6-digit pincode"),
   note: z.string().max(500).optional().default(""),
-  lines: z.array(lineSchema).min(1),
+  lines: z.array(lineSchema).min(1, "Cart is empty"),
 });
 
-export type PlaceOrderState = { error?: string };
+export type PlaceOrderState = {
+  error?: string;
+  fieldErrors?: {
+    guestName?: string;
+    guestMobile?: string;
+    guestAddress?: string;
+    guestPincode?: string;
+  };
+};
 
 function makeOrderNumber(prefix: string) {
   const now = new Date();
@@ -33,18 +48,34 @@ export async function placeOrderAction(
   _prev: PlaceOrderState,
   formData: FormData,
 ): Promise<PlaceOrderState> {
-  const session = await auth();
-  if (!session?.user || session.user.role !== "CUSTOMER" || !session.user.partyId) {
-    return { error: "Sign in as a party to place an order." };
-  }
-
   let parsed;
   try {
     parsed = payloadSchema.parse({
+      guestName: formData.get("guestName") ?? "",
+      guestMobile: formData.get("guestMobile") ?? "",
+      guestAddress: formData.get("guestAddress") ?? "",
+      guestPincode: formData.get("guestPincode") ?? "",
       note: formData.get("note") ?? "",
       lines: JSON.parse(formData.get("lines")?.toString() ?? "[]"),
     });
-  } catch {
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      const fieldErrors: PlaceOrderState["fieldErrors"] = {};
+      for (const issue of err.issues) {
+        const field = issue.path[0] as string;
+        if (
+          field === "guestName" ||
+          field === "guestMobile" ||
+          field === "guestAddress" ||
+          field === "guestPincode"
+        ) {
+          (fieldErrors as Record<string, string>)[field] = issue.message;
+        }
+      }
+      if (Object.keys(fieldErrors).length > 0) {
+        return { fieldErrors };
+      }
+    }
     return { error: "Your cart contents look invalid. Please try again." };
   }
 
@@ -65,7 +96,10 @@ export async function placeOrderAction(
   const order = await prisma.order.create({
     data: {
       orderNumber: makeOrderNumber(prefix),
-      partyId: session.user.partyId,
+      guestName: parsed.guestName,
+      guestMobile: parsed.guestMobile,
+      guestAddress: parsed.guestAddress,
+      guestPincode: parsed.guestPincode,
       status: "PENDING",
       subtotal,
       gstRate,
@@ -73,7 +107,6 @@ export async function placeOrderAction(
       total,
       totalPieces,
       customerNote: parsed.note || null,
-      placedById: session.user.id,
       items: {
         create: parsed.lines.map((l) => {
           const pieces = Object.values(l.sizeQuantities).reduce(
@@ -93,8 +126,7 @@ export async function placeOrderAction(
       statusHistory: {
         create: {
           status: "PENDING",
-          note: "Order placed by customer",
-          changedBy: session.user.id,
+          note: "Order placed",
         },
       },
     },

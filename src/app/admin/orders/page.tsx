@@ -105,7 +105,8 @@ export default async function AdminOrdersPage({
             total: o.total.toString(),
             totalPieces: o.totalPieces,
             createdAt: o.createdAt,
-            party: o.party,
+            party: o.party ?? null,
+            guestName: o.guestName ?? null,
           }))}
         />
       )}

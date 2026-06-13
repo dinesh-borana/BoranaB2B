@@ -6,6 +6,7 @@ import { CheckCircle2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatINR } from "@/lib/format";
@@ -13,20 +14,7 @@ import { placeOrderAction, type PlaceOrderState } from "./actions";
 
 const initial: PlaceOrderState = {};
 
-export function CheckoutClient({
-  gstRate,
-  party,
-}: {
-  gstRate: number;
-  party: {
-    shopName: string;
-    ownerName: string;
-    mobile: string;
-    city: string | null;
-    state: string | null;
-    pincode: string | null;
-  } | null;
-}) {
+export function CheckoutClient({ gstRate }: { gstRate: number }) {
   const { lines, totalPieces, subtotal, clear } = useCart();
   const [note, setNote] = useState("");
   const [state, action, pending] = useActionState(placeOrderAction, initial);
@@ -65,31 +53,55 @@ export function CheckoutClient({
       }}
       className="flex flex-col gap-4"
     >
+      {/* Delivery details */}
       <Card>
-        <CardBody>
+        <CardBody className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-stone-900">
-            Shipping to
+            Delivery details
           </h2>
-          {party ? (
-            <div className="mt-1 text-sm text-stone-700">
-              <p className="font-medium text-stone-900">{party.shopName}</p>
-              <p>{party.ownerName} · {party.mobile}</p>
-              {(party.city || party.state) && (
-                <p className="text-stone-500">
-                  {[party.city, party.state, party.pincode]
-                    .filter(Boolean)
-                    .join(", ")}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="mt-1 text-sm text-stone-500">
-              No party linked to your account yet.
-            </p>
-          )}
+          <Input
+            name="guestName"
+            label="Full name"
+            placeholder="Your full name"
+            required
+            autoComplete="name"
+            error={state.fieldErrors?.guestName}
+          />
+          <Input
+            name="guestMobile"
+            label="Mobile number"
+            placeholder="10-digit mobile number"
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]{10}"
+            maxLength={10}
+            required
+            autoComplete="tel"
+            error={state.fieldErrors?.guestMobile}
+          />
+          <Input
+            name="guestAddress"
+            label="Address"
+            placeholder="Street, area, city"
+            required
+            autoComplete="street-address"
+            error={state.fieldErrors?.guestAddress}
+          />
+          <Input
+            name="guestPincode"
+            label="Pincode"
+            placeholder="6-digit pincode"
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]{6}"
+            maxLength={6}
+            required
+            error={state.fieldErrors?.guestPincode}
+          />
         </CardBody>
       </Card>
 
+      {/* Order items */}
       <Card>
         <CardBody>
           <h2 className="text-sm font-semibold text-stone-900">Order items</h2>
@@ -122,6 +134,7 @@ export function CheckoutClient({
         </CardBody>
       </Card>
 
+      {/* Summary + note */}
       <Card>
         <CardBody className="flex flex-col gap-3">
           <Textarea
