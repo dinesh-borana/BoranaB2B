@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { BulkUploadClient } from "./BulkUploadClient";
 import { getCachedCategories } from "@/lib/data-cache";
 
+export const maxDuration = 60; // seconds — allows large uploads on Vercel
 export const metadata = { title: "Bulk Upload · Products · Admin" };
 
 export default async function BulkUploadPage() {
