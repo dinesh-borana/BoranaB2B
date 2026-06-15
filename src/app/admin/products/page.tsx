@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { Plus, Package, Upload, Tag } from "lucide-react";
-import { formatINR } from "@/lib/format";
 import { getCachedCategories, getCachedProductsList } from "@/lib/data-cache";
-import { cdnImg } from "@/lib/cdn";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
-import { Card, CardBody } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ProductsGrid } from "./ProductsGrid";
 
 export const metadata = { title: "Products · Admin" };
 
@@ -93,51 +90,7 @@ export default async function AdminProductsPage({
           }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {products.map((p) => {
-            const img = p.images[0]?.url;
-            return (
-              <Link key={p.id} href={`/admin/products/${p.id}`}>
-                <Card className="flex h-full flex-row overflow-hidden transition-all duration-200 hover:border-brand-200 hover:shadow-sm">
-                  <div className="h-24 w-24 shrink-0 bg-stone-100">
-                    {img ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={cdnImg(img, 192)}
-                        alt={p.sku}
-                        loading="lazy"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="grid h-full w-full place-items-center text-stone-300">
-                        <Package className="h-8 w-8" />
-                      </div>
-                    )}
-                  </div>
-                  <CardBody className="flex flex-col justify-center gap-1 !py-2">
-                    <p className="text-[10px] uppercase tracking-wider text-stone-400">
-                      {p.categories.map((c) => c.name).join(", ") || "—"}
-                    </p>
-                    <p className="font-semibold text-stone-900 leading-tight tracking-wide">
-                      {p.sku}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-brand-700">
-                        {formatINR(p.price)}
-                      </span>
-                      <Badge tone="neutral">
-                        {p._count.sizes} size{p._count.sizes !== 1 ? "s" : ""}
-                      </Badge>
-                      {!p.isActive && (
-                        <Badge tone="danger">Inactive</Badge>
-                      )}
-                    </div>
-                  </CardBody>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+        <ProductsGrid products={products} categories={categories} />
       )}
     </div>
   );

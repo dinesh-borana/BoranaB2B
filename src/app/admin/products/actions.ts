@@ -187,6 +187,17 @@ export async function deleteProduct(productId: string) {
   redirect("/admin/products");
 }
 
+export async function bulkDeleteProducts(
+  productIds: string[],
+): Promise<{ error?: string }> {
+  await checkAdmin();
+  if (!productIds.length) return {};
+  await prisma.product.deleteMany({ where: { id: { in: productIds } } });
+  revalidateTag("products", "max");
+  revalidatePath("/admin/products");
+  return {};
+}
+
 export async function bulkAssignCategories(
   productIds: string[],
   categoryIds: string[],

@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Package, Check, Tag, X, CheckSquare, Square } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Package, Check, Tag, X, CheckSquare, Square, Trash2, AlertTriangle } from "lucide-react";
 import { formatINR } from "@/lib/format";
 import { cdnImg } from "@/lib/cdn";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { bulkAssignCategories } from "./actions";
+import { bulkAssignCategories, bulkDeleteProducts } from "./actions";
 
 type Product = {
   id: string;
@@ -28,11 +29,15 @@ export function ProductsGrid({
   products: Product[];
   categories: Category[];
 }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showPicker, setShowPicker] = useState(false);
   const [pickedCatIds, setPickedCatIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
   const [successCount, setSuccessCount] = useState(0);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -76,7 +81,23 @@ export function ProductsGrid({
     });
   }
 
+  async function handleBulkDelete() {
+    setIsDeleting(true);
+    setDeleteError(null);
+    const res = await bulkDeleteProducts(Array.from(selected));
+    if (res.error) {
+      setDeleteError(res.error);
+      setIsDeleting(false);
+    } else {
+      setSelected(new Set());
+      setShowDeleteConfirm(false);
+      setIsDeleting(false);
+      router.refresh();
+    }
+  }
+
   const allSelected = products.length > 0 && selected.size === products.length;
+  const isDeletingAll = selected.size === products.length && products.length > 0;
 
   return (
     <>
@@ -208,6 +229,14 @@ export function ProductsGrid({
                   <Tag className="h-3.5 w-3.5" />
                   Assign category
                 </button>
+                <button
+                  type="button"
+                  onClick={() => { setDeleteError(null); setShowDeleteConfirm(true); }}
+                  className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-500"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </button>
               </div>
             </div>
           </div>
@@ -220,18 +249,13 @@ export function ProductsGrid({
           className="fixed inset-0 z-50 flex items-end"
           onClick={() => setShowPicker(false)}
         >
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/40" />
-
-          {/* Sheet */}
           <div
             className="relative w-full rounded-t-2xl bg-white px-5 pb-8 pt-5 shadow-2xl"
             style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Handle */}
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-stone-200" />
-
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <h3 className="text-base font-semibold text-stone-900">
@@ -301,6 +325,86 @@ export function ProductsGrid({
                 type="button"
                 onClick={() => setShowPicker(false)}
                 className="rounded-xl border border-stone-200 px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Bulk delete confirmation bottom sheet ── */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          onClick={() => !isDeleting && setShowDeleteConfirm(false)}
+        >
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            className="relative w-full rounded-t-2xl bg-white px-5 pb-8 pt-5 shadow-2xl"
+            style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-stone-200" />
+
+            <div className="mb-4 flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                  <Trash2 className="h-4 w-4 text-rose-600" />
+                </div>
+                <h3 className="text-base font-semibold text-stone-900">
+                  Delete {selected.size} product{selected.size !== 1 ? "s" : ""}?
+                </h3>
+              </div>
+              {!isDeleting && (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 hover:bg-stone-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* All-products warning */}
+            {isDeletingAll && (
+              <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <p className="text-sm font-medium text-amber-800">
+                  Aap sabhi {products.length} products delete kar rahe hain! Catalog bilkul khaali ho jaayega. Yeh action undo nahi hoga.
+                </p>
+              </div>
+            )}
+
+            <p className="mb-5 text-sm text-stone-500">
+              {isDeletingAll
+                ? "Aage badhne se pehle dobaara soch lijiye."
+                : `Yeh ${selected.size} product${selected.size !== 1 ? "s" : ""} permanently delete ho ${selected.size !== 1 ? "jaayenge" : "jaayega"}. Yeh action undo nahi hoga.`}
+            </p>
+
+            {deleteError && (
+              <p className="mb-4 rounded-lg bg-rose-50 px-4 py-2.5 text-sm text-rose-700">
+                {deleteError}
+              </p>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                disabled={isDeleting}
+                className="flex-1 rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60 transition-colors"
+              >
+                {isDeleting
+                  ? "Deleting…"
+                  : `Haan, ${selected.size} product${selected.size !== 1 ? "s" : ""} delete karo`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="rounded-xl border border-stone-200 px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>
