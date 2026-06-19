@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 export type LoginState = {
   error?: string;
   inactive?: boolean;
+  deleted?: boolean;
 };
 
 export async function loginAction(
@@ -21,13 +22,18 @@ export async function loginAction(
     return { error: "Enter your mobile/email and password." };
   }
 
-  // Check if party is inactive before attempting login
+  // Check account status before attempting login
   const existingUser = await prisma.user.findFirst({
     where: identifier.includes("@")
       ? { email: identifier.toLowerCase() }
       : { mobile: identifier },
     include: { party: { select: { isActive: true } } },
   });
+
+  // Party was deleted — user record remains but partyId is null
+  if (existingUser?.role === "CUSTOMER" && existingUser.partyId === null) {
+    return { deleted: true };
+  }
 
   if (existingUser?.role === "CUSTOMER" && existingUser.party && !existingUser.party.isActive) {
     return {

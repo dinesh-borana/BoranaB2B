@@ -153,9 +153,23 @@ export function LoginForm() {
           </div>
 
           {/* Error */}
-          {loginState.error && !loginState.inactive && (
+          {loginState.error && !loginState.inactive && !loginState.deleted && (
             <div style={{ background: "#FEF3F2", border: `1px solid ${C.error}`, borderRadius: 10, padding: "10px 14px", fontSize: 13.5, color: C.error, marginBottom: 16 }}>
               {loginState.error}
+            </div>
+          )}
+
+          {/* Deleted account */}
+          {loginState.deleted && (
+            <div style={{ background: "#FEF3F2", border: `1px solid ${C.error}`, borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
+              <p style={{ fontSize: 13.5, fontWeight: 600, color: C.error, marginBottom: 4 }}>Account deleted</p>
+              <p style={{ fontSize: 13, color: "#7F1D1D", lineHeight: 1.5 }}>
+                Aapka account delete kar diya gaya hai. Agar aapko naya account chahiye toh Borana Team se contact karein.
+              </p>
+              <a href={waHref} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, fontSize: 13, fontWeight: 600, color: "#25D366", textDecoration: "none" }}>
+                <WaIcon /> Contact on WhatsApp
+              </a>
             </div>
           )}
 
