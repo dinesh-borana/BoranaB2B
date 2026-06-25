@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, Building2, Printer } from "lucide-react";
 import { formatINR, formatDateTime } from "@/lib/format";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -17,7 +18,7 @@ export default async function AdminOrderDetailPage({
   const result = await getCachedOrderDetail(id).catch(() => null);
   if (!result) notFound();
 
-  const { order, mtoMap, skuMap } = result;
+  const { order, mtoMap, skuMap, imageMap } = result;
   const guestMobile = (order as { guestMobile?: string }).guestMobile;
 
   return (
@@ -140,20 +141,37 @@ export default async function AdminOrderDetailPage({
                 return (
                   <tr key={item.id}>
                     <td className="px-4 py-3">
-                      <p className="font-medium tracking-wide text-stone-900">
-                        {item.productId ? (skuMap[item.productId] ?? item.productName) : item.productName}
-                      </p>
-                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                        {Object.entries(sq).filter(([, q]) => q > 0).map(([s, q]) => (
-                          <span key={s} className="flex items-center gap-1 text-xs text-stone-500">
-                            {s}×{q}
-                            {mtoSizes.has(s) && (
-                              <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold text-amber-700">
-                                MTO
+                      <div className="flex items-start gap-3">
+                        {item.productId && imageMap[item.productId] ? (
+                          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border border-stone-200 bg-stone-100">
+                            <Image
+                              src={imageMap[item.productId]}
+                              alt={skuMap[item.productId] ?? item.productName}
+                              width={48}
+                              height={48}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-12 w-12 shrink-0 rounded-md border border-stone-200 bg-stone-100" />
+                        )}
+                        <div>
+                          <p className="font-medium tracking-wide text-stone-900">
+                            {item.productId ? (skuMap[item.productId] ?? item.productName) : item.productName}
+                          </p>
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                            {Object.entries(sq).filter(([, q]) => q > 0).map(([s, q]) => (
+                              <span key={s} className="flex items-center gap-1 text-xs text-stone-500">
+                                {s}×{q}
+                                {mtoSizes.has(s) && (
+                                  <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold text-amber-700">
+                                    MTO
+                                  </span>
+                                )}
                               </span>
-                            )}
-                          </span>
-                        ))}
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-stone-700">{item.pieces}</td>

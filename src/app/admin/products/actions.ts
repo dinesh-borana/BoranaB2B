@@ -205,14 +205,19 @@ export async function bulkAssignCategories(
   await checkAdmin();
   if (!productIds.length || !categoryIds.length) return {};
 
-  await prisma.$transaction(
-    productIds.map((id) =>
-      prisma.product.update({
-        where: { id },
-        data: { categories: { connect: categoryIds.map((catId) => ({ id: catId })) } },
-      }),
-    ),
-  );
+  try {
+    await prisma.$transaction(async (tx) => {
+      for (const id of productIds) {
+        await tx.product.update({
+          where: { id },
+          data: { categories: { connect: categoryIds.map((catId) => ({ id: catId })) } },
+        });
+      }
+    });
+  } catch (err) {
+    console.error("bulkAssignCategories error:", err);
+    return { error: "Failed to assign categories. Please try again." };
+  }
 
   revalidateTag("products", "max");
   revalidatePath("/admin/products");

@@ -215,7 +215,11 @@ export function getCachedOrderDetail(id: string) {
               }),
               prisma.product.findMany({
                 where: { id: { in: productIds } },
-                select: { id: true, sku: true },
+                select: {
+                  id: true,
+                  sku: true,
+                  images: { select: { url: true, isMain: true }, orderBy: [{ isMain: "desc" }, { sortOrder: "asc" }], take: 1 },
+                },
               }),
             ])
           : [[], []];
@@ -228,7 +232,11 @@ export function getCachedOrderDetail(id: string) {
       }
 
       const skuMap: Record<string, string> = {};
-      for (const p of skuRows) skuMap[p.id] = p.sku;
+      const imageMap: Record<string, string> = {};
+      for (const p of skuRows) {
+        skuMap[p.id] = p.sku;
+        if (p.images[0]) imageMap[p.id] = p.images[0].url;
+      }
 
       return {
         order: {
@@ -258,6 +266,7 @@ export function getCachedOrderDetail(id: string) {
         },
         mtoMap,
         skuMap,
+        imageMap,
       };
     },
     ["order-detail", id],

@@ -28,6 +28,7 @@ export function BulkAssignClient({
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -65,10 +66,15 @@ export function BulkAssignClient({
 
   function handleAssign() {
     if (!targetCatId || selected.size === 0) return;
+    setAssignError(null);
     startTransition(async () => {
-      await bulkAssignCategories(Array.from(selected), [targetCatId]);
-      setDone(true);
-      setSelected(new Set());
+      const res = await bulkAssignCategories(Array.from(selected), [targetCatId]);
+      if (res.error) {
+        setAssignError(res.error);
+      } else {
+        setDone(true);
+        setSelected(new Set());
+      }
     });
   }
 
@@ -223,6 +229,13 @@ export function BulkAssignClient({
           })}
         </div>
       </div>
+
+      {/* ── Error ── */}
+      {assignError && (
+        <div className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {assignError}
+        </div>
+      )}
 
       {/* ── Step 3: Assign ── */}
       <button

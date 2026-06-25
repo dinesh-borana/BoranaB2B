@@ -33,6 +33,7 @@ export function ProductsGrid({
   const [pickedCatIds, setPickedCatIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
   const [successCount, setSuccessCount] = useState(0);
+  const [assignError, setAssignError] = useState<string | null>(null);
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -62,12 +63,15 @@ export function ProductsGrid({
   }
 
   function handleAssign() {
+    setAssignError(null);
     startTransition(async () => {
       const res = await bulkAssignCategories(
         Array.from(selected),
         Array.from(pickedCatIds),
       );
-      if (!res.error) {
+      if (res.error) {
+        setAssignError(res.error);
+      } else {
         setSuccessCount(selected.size);
         setSelected(new Set());
         setPickedCatIds(new Set());
@@ -278,6 +282,12 @@ export function ProductsGrid({
                     </label>
                   );
                 })}
+              </div>
+            )}
+
+            {assignError && (
+              <div className="mt-4 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {assignError}
               </div>
             )}
 
