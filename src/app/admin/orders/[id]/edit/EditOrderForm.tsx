@@ -46,7 +46,7 @@ function lineSizes(line: OrderLine): string[] {
 
 function isMTO(line: OrderLine, size: string): boolean {
   if (line.kind !== "product") return false;
-  return line.product.sizes.find((s) => s.size === size)?.stockStatus === "MADE_TO_ORDER" ?? false;
+  return line.product.sizes.find((s) => s.size === size)?.stockStatus === "MADE_TO_ORDER";
 }
 
 export function EditOrderForm({
