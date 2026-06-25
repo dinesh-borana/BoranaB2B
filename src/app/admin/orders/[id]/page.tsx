@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Building2, Printer } from "lucide-react";
+import { ChevronLeft, Building2, Printer, Pencil } from "lucide-react";
 import { formatINR, formatDateTime } from "@/lib/format";
 import { cdnImg } from "@/lib/cdn";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -41,6 +41,13 @@ export default async function AdminOrderDetailPage({
           <p className="text-sm text-stone-500">
             {formatDateTime(order.createdAt)}
           </p>
+          <Link
+            href={`/admin/orders/${order.id}/edit`}
+            className="flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Edit items
+          </Link>
           <Link
             href={`/print/order/${order.id}`}
             target="_blank"
