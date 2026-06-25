@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronLeft, Building2, Printer } from "lucide-react";
 import { formatINR, formatDateTime } from "@/lib/format";
+import { cdnImg } from "@/lib/cdn";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { StatusUpdater } from "./StatusUpdater";
@@ -144,11 +144,11 @@ export default async function AdminOrderDetailPage({
                       <div className="flex items-start gap-3">
                         {item.productId && imageMap[item.productId] ? (
                           <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border border-stone-200 bg-stone-100">
-                            <Image
-                              src={imageMap[item.productId]}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={cdnImg(imageMap[item.productId], 96)}
                               alt={skuMap[item.productId] ?? item.productName}
-                              width={48}
-                              height={48}
+                              loading="lazy"
                               className="h-full w-full object-cover"
                             />
                           </div>
