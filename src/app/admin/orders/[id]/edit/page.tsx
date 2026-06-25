@@ -36,7 +36,7 @@ export default async function EditOrderPage({
         price: true,
         sizes: {
           select: { id: true, size: true, stockStatus: true },
-          orderBy: { sortOrder: "asc" },
+          orderBy: { size: "asc" },
         },
       },
       orderBy: { sku: "asc" },

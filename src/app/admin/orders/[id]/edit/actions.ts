@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -89,7 +89,8 @@ export async function updateOrderItemsAction(
     }),
   ]);
 
-  revalidateTag(`order-${parsed.orderId}`);
-  revalidateTag("orders");
+  revalidateTag("orders", {});
+  revalidatePath(`/admin/orders/${parsed.orderId}`);
+  revalidatePath("/admin/orders");
   redirect(`/admin/orders/${parsed.orderId}`);
 }
