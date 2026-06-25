@@ -25,13 +25,14 @@ export const getCachedDashboardStats = unstable_cache(
       recentOrders,
       revenueResult,
     ] = await Promise.all([
-      prisma.order.count(),
-      prisma.order.count({ where: { status: { in: ["PENDING", "CONFIRMED", "PACKING"] } } }),
-      prisma.party.count({ where: { isActive: true } }),
-      prisma.product.count({ where: { isActive: true } }),
+      prisma.order.count({ where: { deletedAt: null } }),
+      prisma.order.count({ where: { deletedAt: null, status: { in: ["PENDING", "CONFIRMED", "PACKING"] } } }),
+      prisma.party.count({ where: { isActive: true, deletedAt: null } }),
+      prisma.product.count({ where: { isActive: true, deletedAt: null } }),
       prisma.user.count({ where: { role: "ADMIN" } }),
       prisma.order.findMany({
         take: 5,
+        where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
@@ -45,7 +46,7 @@ export const getCachedDashboardStats = unstable_cache(
           party: { select: { shopName: true } },
         },
       }),
-      prisma.order.aggregate({ _sum: { total: true }, where: { status: "DELIVERED" } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { status: "DELIVERED", deletedAt: null } }),
     ]);
 
     return {
@@ -79,6 +80,7 @@ export function getCachedOrders(status?: OrderStatus | "", q?: string) {
     async () => {
       const orders = await prisma.order.findMany({
         where: {
+          deletedAt: null,
           ...(status ? { status: status as OrderStatus } : {}),
           ...(q
             ? {
@@ -127,16 +129,19 @@ export function getCachedParties(q?: string) {
   return unstable_cache(
     async () => {
       const parties = await prisma.party.findMany({
-        where: q
-          ? {
-              OR: [
-                { shopName: { contains: q, mode: "insensitive" } },
-                { ownerName: { contains: q, mode: "insensitive" } },
-                { mobile: { contains: q } },
-                { city: { contains: q, mode: "insensitive" } },
-              ],
-            }
-          : {},
+        where: {
+          deletedAt: null,
+          ...(q
+            ? {
+                OR: [
+                  { shopName: { contains: q, mode: "insensitive" } },
+                  { ownerName: { contains: q, mode: "insensitive" } },
+                  { mobile: { contains: q } },
+                  { city: { contains: q, mode: "insensitive" } },
+                ],
+              }
+            : {}),
+        },
         include: { _count: { select: { orders: true } } },
         orderBy: { shopName: "asc" },
       });
@@ -155,6 +160,7 @@ export function getCachedProductsList(q?: string, cat?: string) {
     async () => {
       const products = await prisma.product.findMany({
         where: {
+          deletedAt: null,
           ...(q
             ? {
                 OR: [

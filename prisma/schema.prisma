@@ -58,6 +58,7 @@ model Party {
   creditLimit   Decimal?       @db.Decimal(12, 2)
   logoUrl       String?
   isActive      Boolean        @default(true)
+  deletedAt     DateTime?
   users         User[]
   orders        Order[]
   notifications Notification[]
@@ -86,6 +87,7 @@ model Product {
   images      ProductImage[]
   sizes       ProductSize[]
   isActive    Boolean        @default(true)
+  deletedAt   DateTime?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }
@@ -127,6 +129,7 @@ model Order {
   total           Decimal              @db.Decimal(12, 2)
   totalPieces   Int                  @default(0)
   customerNote  String?
+  deletedAt     DateTime?
   items         OrderItem[]
   statusHistory OrderStatusHistory[]
   placedById    String?

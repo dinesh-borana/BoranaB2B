@@ -185,7 +185,7 @@ export async function deleteBulkBatch(
   if (session?.user.role !== "ADMIN") return { deleted: 0, error: "Unauthorized" };
   if (!ids.length) return { deleted: 0 };
 
-  const { count } = await prisma.product.deleteMany({ where: { id: { in: ids } } });
+  const { count } = await prisma.product.updateMany({ where: { id: { in: ids } }, data: { deletedAt: new Date() } });
   revalidateTag("products", "max");
   revalidatePath("/admin/products");
   return { deleted: count };

@@ -8,12 +8,12 @@ export const metadata = { title: "Place New Order · Admin" };
 export default async function AdminNewOrderPage() {
   const [parties, products] = await Promise.all([
     prisma.party.findMany({
-      where: { isActive: true },
+      where: { isActive: true, deletedAt: null },
       select: { id: true, shopName: true, ownerName: true, mobile: true },
       orderBy: { shopName: "asc" },
     }),
     prisma.product.findMany({
-      where: { isActive: true },
+      where: { isActive: true, deletedAt: null },
       select: {
         id: true,
         name: true,

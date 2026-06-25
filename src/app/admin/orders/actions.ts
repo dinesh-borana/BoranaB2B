@@ -20,8 +20,9 @@ export async function deleteOrders(ids: string[]) {
     throw new Error("Invalid order IDs");
   }
 
-  await prisma.order.deleteMany({
+  await prisma.order.updateMany({
     where: { id: { in: parsed.data.ids } },
+    data: { deletedAt: new Date() },
   });
 
   revalidateTag("admin-stats", {});

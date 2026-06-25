@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { Logo } from "@/components/ui/Logo";
@@ -25,8 +26,9 @@ const NAV = [
   { href: "/admin/parties",   label: "Parties",   icon: Users },
   { href: "/admin/categories",label: "Categories",icon: Tags },
   { href: "/admin/reports",   label: "Reports",   icon: BarChart3 },
-  { href: "/admin/settings",  label: "Settings",  icon: Settings },
-  { href: "/admin/admins",    label: "Admins",    icon: ShieldCheck },
+  { href: "/admin/settings",      label: "Settings",     icon: Settings },
+  { href: "/admin/admins",        label: "Admins",       icon: ShieldCheck },
+  { href: "/admin/recycle-bin",   label: "Recycle bin",  icon: Trash2 },
 ];
 
 export function AdminSidebar() {

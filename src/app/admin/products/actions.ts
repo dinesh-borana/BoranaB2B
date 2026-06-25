@@ -181,7 +181,7 @@ export async function updateProduct(productId: string, formData: FormData): Prom
 
 export async function deleteProduct(productId: string) {
   await checkAdmin();
-  await prisma.product.delete({ where: { id: productId } });
+  await prisma.product.update({ where: { id: productId }, data: { deletedAt: new Date() } });
   revalidateTag("products", "max");
   revalidatePath("/admin/products");
   redirect("/admin/products");
@@ -192,7 +192,7 @@ export async function bulkDeleteProducts(
 ): Promise<{ error?: string }> {
   await checkAdmin();
   if (!productIds.length) return {};
-  await prisma.product.deleteMany({ where: { id: { in: productIds } } });
+  await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { deletedAt: new Date() } });
   revalidateTag("products", "max");
   revalidatePath("/admin/products");
   return {};

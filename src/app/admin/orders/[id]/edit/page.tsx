@@ -28,7 +28,7 @@ export default async function EditOrderPage({
       },
     }),
     prisma.product.findMany({
-      where: { isActive: true },
+      where: { isActive: true, deletedAt: null },
       select: {
         id: true,
         name: true,

@@ -85,7 +85,7 @@ export async function createParty(formData: FormData) {
 
 export async function deleteParty(partyId: string) {
   await checkAdmin();
-  await prisma.party.delete({ where: { id: partyId } });
+  await prisma.party.update({ where: { id: partyId }, data: { deletedAt: new Date() } });
   revalidateTag("admin-stats", {});
   revalidateTag("parties", {});
   revalidatePath("/admin/parties");
