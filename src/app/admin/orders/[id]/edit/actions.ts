@@ -54,7 +54,15 @@ export async function updateOrderItemsAction(
     return { error: "Please add at least one product with quantity." };
   }
 
-  const gstRate = Number((await getSetting("gst.rate")) || "3");
+  const [gstRate, existingOrder] = await Promise.all([
+    getSetting("gst.rate").then((v) => Number(v || "3")),
+    prisma.order.findUnique({
+      where: { id: parsed.orderId },
+      select: { shippingCharges: true },
+    }),
+  ]);
+
+  const shipping = Number(existingOrder?.shippingCharges ?? 0);
 
   const subtotal = validLines.reduce((sum, l) => {
     const pieces = Object.values(l.sizeQuantities).reduce((a, b) => a + b, 0);
@@ -65,7 +73,7 @@ export async function updateOrderItemsAction(
     0,
   );
   const gstAmount = +((subtotal * gstRate) / 100).toFixed(2);
-  const total = +(subtotal + gstAmount).toFixed(2);
+  const total = +(subtotal + gstAmount + shipping).toFixed(2);
 
   await prisma.$transaction([
     prisma.orderItem.deleteMany({ where: { orderId: parsed.orderId } }),

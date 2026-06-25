@@ -244,6 +244,7 @@ export function getCachedOrderDetail(id: string) {
           subtotal: order.subtotal.toString(),
           gstAmount: order.gstAmount.toString(),
           gstRate: order.gstRate.toString(),
+          shippingCharges: order.shippingCharges.toString(),
           total: order.total.toString(),
           createdAt: order.createdAt.toISOString(),
           updatedAt: order.updatedAt.toISOString(),

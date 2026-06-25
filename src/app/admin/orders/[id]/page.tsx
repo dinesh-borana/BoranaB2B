@@ -6,6 +6,7 @@ import { cdnImg } from "@/lib/cdn";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { StatusUpdater } from "./StatusUpdater";
+import { ShippingEditor } from "./ShippingEditor";
 import { getCachedOrderDetail } from "@/lib/data-cache";
 
 export default async function AdminOrderDetailPage({
@@ -106,10 +107,24 @@ export default async function AdminOrderDetailPage({
               label={`GST @${order.gstRate}%`}
               value={formatINR(order.gstAmount)}
             />
+            {Number(order.shippingCharges) > 0 && (
+              <Row label="Shipping charges" value={formatINR(order.shippingCharges)} />
+            )}
             <div className="mt-1 flex items-center justify-between border-t border-stone-100 pt-2 font-semibold text-stone-900">
               <span>Total</span>
               <span>{formatINR(order.total)}</span>
             </div>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Shipping charges</CardTitle>
+          </CardHeader>
+          <CardBody>
+            <ShippingEditor
+              orderId={order.id}
+              current={Number(order.shippingCharges)}
+            />
           </CardBody>
         </Card>
       </div>

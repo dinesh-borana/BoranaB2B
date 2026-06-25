@@ -111,6 +111,7 @@ export default async function PrintOrderPage({
 
   const total = Number(order.total);
   const subtotal = Number(order.subtotal);
+  const shipping = Number(order.shippingCharges ?? 0);
 
   const hasMto = itemRows.some(({ mtoSizes, sq }) =>
     allSizes.some((s) => mtoSizes.has(s) && (sq[s] ?? 0) > 0)
@@ -311,6 +312,12 @@ export default async function PrintOrderPage({
                     <td style={{ padding: "7px 14px", color: "#6b5a5d" }}>Sub Total</td>
                     <td style={{ padding: "7px 14px", textAlign: "right", color: "#1a0d10", fontWeight: 500 }}>₹{fmt(subtotal)}</td>
                   </tr>
+                  {shipping > 0 && (
+                    <tr style={{ borderBottom: "1px solid #f4c5cf" }}>
+                      <td style={{ padding: "7px 14px", color: "#6b5a5d" }}>Shipping</td>
+                      <td style={{ padding: "7px 14px", textAlign: "right", color: "#1a0d10", fontWeight: 500 }}>₹{fmt(shipping)}</td>
+                    </tr>
+                  )}
                   <tr style={{ borderBottom: "1px solid #f4c5cf", background: "#fdf2f4" }}>
                     <td style={{ padding: "9px 14px", color: "#8b1a2e", fontWeight: 700, fontSize: 13 }}>Grand Total</td>
                     <td style={{ padding: "9px 14px", textAlign: "right", color: "#8b1a2e", fontWeight: 700, fontSize: 14 }}>₹{fmt(total)}</td>

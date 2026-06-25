@@ -121,9 +121,10 @@ model Order {
   guestPincode  String?
   status        OrderStatus          @default(PENDING)
   subtotal      Decimal              @db.Decimal(12, 2)
-  gstRate       Decimal              @default(3.0) @db.Decimal(5, 2)
-  gstAmount     Decimal              @db.Decimal(12, 2)
-  total         Decimal              @db.Decimal(12, 2)
+  gstRate         Decimal              @default(3.0) @db.Decimal(5, 2)
+  gstAmount       Decimal              @db.Decimal(12, 2)
+  shippingCharges Decimal              @default(0) @db.Decimal(10, 2)
+  total           Decimal              @db.Decimal(12, 2)
   totalPieces   Int                  @default(0)
   customerNote  String?
   items         OrderItem[]

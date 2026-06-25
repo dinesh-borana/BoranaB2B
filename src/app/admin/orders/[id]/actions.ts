@@ -7,6 +7,30 @@ import { prisma } from "@/lib/prisma";
 import { notifyParty } from "@/lib/notifications";
 import type { OrderStatus } from "@prisma/client";
 
+export async function updateShippingAction(formData: FormData) {
+  const session = await auth();
+  if (session?.user.role !== "ADMIN") throw new Error("Unauthorized");
+
+  const orderId = z.string().min(1).parse(formData.get("orderId"));
+  const shipping = Math.max(0, Number(formData.get("shippingCharges")) || 0);
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { subtotal: true, gstAmount: true },
+  });
+  if (!order) throw new Error("Order not found");
+
+  const total = Number(order.subtotal) + Number(order.gstAmount) + shipping;
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { shippingCharges: shipping, total },
+  });
+
+  revalidateTag("orders", {});
+  revalidatePath(`/admin/orders/${orderId}`);
+}
+
 const schema = z.object({
   orderId: z.string(),
   status: z.enum([
