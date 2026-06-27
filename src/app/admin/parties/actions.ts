@@ -65,7 +65,6 @@ export async function createParty(formData: FormData) {
           mobile: data.mobile,
           email: data.email || null,
           passwordHash,
-          passwordText: data.loginPassword,
           role: "CUSTOMER",
           partyId: newParty.id,
         },
@@ -132,7 +131,7 @@ export async function changePartyPassword(partyId: string, newPassword: string) 
   if (party.users.length === 0) throw new Error("This party has no login account");
 
   const passwordHash = await bcrypt.hash(newPassword, 10);
-  await prisma.user.update({ where: { id: party.users[0].id }, data: { passwordHash, passwordText: newPassword } });
+  await prisma.user.update({ where: { id: party.users[0].id }, data: { passwordHash } });
 
   revalidateTag("parties", {});
   revalidatePath(`/admin/parties/${partyId}`);
@@ -159,7 +158,6 @@ export async function createPartyLogin(partyId: string, password: string) {
       mobile: party.mobile,
       email: party.email || null,
       passwordHash,
-      passwordText: password,
       role: "CUSTOMER",
       partyId: party.id,
     },

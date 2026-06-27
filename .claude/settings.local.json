@@ -14,7 +14,8 @@
       "Bash(Write-Host \"Cache cleared\")",
       "Bash(sudo chown -R dineshborana /Users/dineshborana/learn/BoranaB2B/.next)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git diff *)"
     ],
     "additionalDirectories": [
       "d:\\projects\\borana-b2b\\src\\app\\customer\\catalog\\[id]"
