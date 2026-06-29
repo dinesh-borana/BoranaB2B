@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { getCachedParties } from "@/lib/data-cache";
 import { formatINR } from "@/lib/format";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -47,9 +49,47 @@ function fmtPeriodLabel(period: string, type: "day" | "week" | "month"): string 
   }
 }
 
+// ─── cached data loaders ─────────────────────────────────────────────────────
+
+const cachedOverview = unstable_cache(
+  loadOverviewRaw,
+  ["reports-overview"],
+  { revalidate: 300, tags: ["orders"] },
+);
+
+function getCachedTopProducts(period: string) {
+  return unstable_cache(
+    () => loadTopProductsRaw(period),
+    ["reports-top-products", period],
+    { revalidate: 300, tags: ["orders"] },
+  )();
+}
+
+const cachedTopCustomers = unstable_cache(
+  loadTopCustomersRaw,
+  ["reports-top-customers"],
+  { revalidate: 300, tags: ["orders"] },
+);
+
+function getCachedRevenueSummary(rev: string) {
+  return unstable_cache(
+    () => loadRevenueSummaryRaw(rev),
+    ["reports-revenue", rev],
+    { revalidate: 300, tags: ["orders"] },
+  )();
+}
+
+function getCachedPartyReport(partyId: string) {
+  return unstable_cache(
+    () => loadPartyReportRaw(partyId),
+    ["reports-party", partyId],
+    { revalidate: 120, tags: ["orders", `party-${partyId}`] },
+  )();
+}
+
 // ─── data loaders ───────────────────────────────────────────────────────────
 
-async function loadOverview() {
+async function loadOverviewRaw() {
   try {
     const [
       totalRevenue,
@@ -135,7 +175,7 @@ type ProductRow = {
   order_count: bigint;
 };
 
-async function loadTopProducts(period: string): Promise<ProductRow[]> {
+async function loadTopProductsRaw(period: string): Promise<ProductRow[]> {
   const cutoff = periodCutoff(period);
   return prisma
     .$queryRaw<ProductRow[]>`
@@ -167,7 +207,7 @@ type CustomerRow = {
   total_pieces: bigint;
 };
 
-async function loadTopCustomers(): Promise<CustomerRow[]> {
+async function loadTopCustomersRaw(): Promise<CustomerRow[]> {
   return prisma
     .$queryRaw<CustomerRow[]>`
       SELECT
@@ -196,7 +236,7 @@ type RevRow = {
   orders: bigint;
 };
 
-async function loadRevenueSummary(
+async function loadRevenueSummaryRaw(
   rev: string
 ): Promise<{ rows: RevRow[]; type: "day" | "week" | "month" }> {
   const type: "day" | "week" | "month" =
@@ -259,7 +299,7 @@ async function loadRevenueSummary(
   }
 }
 
-async function loadPartyReport(partyId: string) {
+async function loadPartyReportRaw(partyId: string) {
   try {
     const [party, orders] = await Promise.all([
       prisma.party.findUnique({
@@ -327,21 +367,15 @@ export default async function AdminReportsPage({
 
   const [r, topProducts, topCustomers, revSummary, allParties] =
     await Promise.all([
-      loadOverview(),
-      loadTopProducts(period),
-      loadTopCustomers(),
-      loadRevenueSummary(rev),
-      prisma.party
-        .findMany({
-          where: { isActive: true },
-          select: { id: true, shopName: true, mobile: true },
-          orderBy: { shopName: "asc" },
-        })
-        .catch(() => []),
+      cachedOverview(),
+      getCachedTopProducts(period),
+      cachedTopCustomers(),
+      getCachedRevenueSummary(rev),
+      getCachedParties().catch(() => []),
     ]);
 
   const partyReport = params.party
-    ? await loadPartyReport(params.party)
+    ? await getCachedPartyReport(params.party)
     : null;
 
   const PERIOD_TABS = [

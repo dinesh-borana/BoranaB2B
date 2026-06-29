@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ShieldCheck, Plus } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { getCachedAdminsList } from "@/lib/data-cache";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { ALL_PERMISSIONS } from "./permissions";
@@ -8,10 +8,7 @@ import { ALL_PERMISSIONS } from "./permissions";
 export const metadata = { title: "Admins · Admin" };
 
 export default async function AdminsPage() {
-  const admins = await prisma.user.findMany({
-    where: { role: "ADMIN" },
-    orderBy: { createdAt: "asc" },
-  });
+  const admins = await getCachedAdminsList();
 
   return (
     <div className="flex flex-col gap-4">

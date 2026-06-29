@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
@@ -42,6 +42,7 @@ export async function createAdmin(formData: FormData) {
     },
   });
 
+  revalidateTag("admins", {});
   revalidatePath("/admin/admins");
   redirect(`/admin/admins/${user.id}`);
 }
@@ -68,6 +69,7 @@ export async function updateAdmin(userId: string, formData: FormData) {
 
   await prisma.user.update({ where: { id: userId }, data: updateData });
 
+  revalidateTag("admins", {});
   revalidatePath("/admin/admins");
   revalidatePath(`/admin/admins/${userId}`);
   redirect(`/admin/admins/${userId}`);
@@ -78,6 +80,7 @@ export async function deleteAdmin(userId: string) {
   const session = await auth();
   if (session?.user.id === userId) throw new Error("You cannot delete your own account.");
   await prisma.user.delete({ where: { id: userId } });
+  revalidateTag("admins", {});
   revalidatePath("/admin/admins");
   redirect("/admin/admins");
 }

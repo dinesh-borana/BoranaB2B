@@ -282,6 +282,49 @@ export function getCachedOrderDetail(id: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Product detail — per id, 30 s TTL
+// ---------------------------------------------------------------------------
+export function getCachedProductDetail(id: string) {
+  return unstable_cache(
+    async () => {
+      const product = await prisma.product.findUnique({
+        where: { id },
+        include: {
+          categories: true,
+          images: { orderBy: { sortOrder: "asc" } },
+          sizes: { orderBy: { size: "asc" } },
+        },
+      });
+      if (!product) return null;
+      return {
+        ...product,
+        price: product.price.toString(),
+        mrp: product.mrp?.toString() ?? null,
+        createdAt: product.createdAt.toISOString(),
+        updatedAt: product.updatedAt.toISOString(),
+      };
+    },
+    ["product-detail", id],
+    { revalidate: 30, tags: ["products", `product-${id}`] },
+  )();
+}
+
+// ---------------------------------------------------------------------------
+// Admins list — 60 s TTL
+// ---------------------------------------------------------------------------
+export const getCachedAdminsList = unstable_cache(
+  async () => {
+    return prisma.user.findMany({
+      where: { role: "ADMIN" },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, mobile: true, permissions: true, createdAt: true },
+    });
+  },
+  ["admins-list"],
+  { revalidate: 60, tags: ["admins"] },
+);
+
+// ---------------------------------------------------------------------------
 // Party detail — per id, 30 s TTL
 // ---------------------------------------------------------------------------
 export function getCachedPartyDetail(id: string) {

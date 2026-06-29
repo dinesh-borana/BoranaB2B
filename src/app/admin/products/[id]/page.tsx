@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Pencil } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { getCachedProductDetail } from "@/lib/data-cache";
 import { formatINR } from "@/lib/format";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -17,17 +17,7 @@ export default async function AdminProductDetailPage({
 }) {
   const { id } = await params;
 
-  const product = await prisma.product
-    .findUnique({
-      where: { id },
-      include: {
-        categories: true,
-        images: { orderBy: { sortOrder: "asc" } },
-        sizes: { orderBy: { size: "asc" } },
-      },
-    })
-    .catch(() => null);
-
+  const product = await getCachedProductDetail(id).catch(() => null);
   if (!product) notFound();
 
   const stockLabel: Record<string, string> = {

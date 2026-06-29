@@ -174,6 +174,7 @@ export async function updateProduct(productId: string, formData: FormData): Prom
   }
 
   revalidateTag("products", "max");
+  revalidateTag(`product-${productId}`, {});
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${productId}`);
   redirect(`/admin/products/${productId}`);
@@ -183,6 +184,7 @@ export async function deleteProduct(productId: string) {
   await checkAdmin();
   await prisma.product.update({ where: { id: productId }, data: { deletedAt: new Date() } });
   revalidateTag("products", "max");
+  revalidateTag(`product-${productId}`, {});
   revalidatePath("/admin/products");
   redirect("/admin/products");
 }
