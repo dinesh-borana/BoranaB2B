@@ -240,7 +240,7 @@ export default async function CatalogPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="chrome-glass sticky top-0 z-10 -mx-4 flex flex-col gap-3 px-4 pb-3 pt-1 md:static md:mx-0 md:bg-transparent md:px-0 md:pt-0 md:backdrop-blur-none">
+      <div className="flex flex-col gap-3">
         <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
           <CatalogSearch initialQ={q} />
         </Suspense>
