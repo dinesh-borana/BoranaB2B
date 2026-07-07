@@ -10,7 +10,7 @@ export function TopBar({ title }: { title?: string }) {
 
   return (
     <header
-      className="sticky top-0 z-20 border-b bg-white"
+      className="chrome-glass sticky top-0 z-20 border-b"
       style={{ borderColor: "var(--border)" }}
     >
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
@@ -23,12 +23,12 @@ export function TopBar({ title }: { title?: string }) {
           {/* Cart */}
           <Link
             href="/customer/cart"
-            className="relative grid h-10 w-10 place-items-center rounded-full text-stone-600 hover:bg-brand-50 transition-colors"
+            className="tap-scale relative grid h-10 w-10 place-items-center rounded-full text-stone-600 hover:bg-brand-50 transition-colors"
             aria-label="Cart"
           >
             <ShoppingBag className="h-5 w-5" />
             {totalPieces > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-700 px-1 text-[10px] font-bold text-white">
+              <span className="animate-pop-in absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-700 px-1 text-[10px] font-bold text-white">
                 {totalPieces}
               </span>
             )}

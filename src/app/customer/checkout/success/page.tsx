@@ -26,13 +26,14 @@ export default async function OrderSuccessPage({
     : null;
 
   return (
-    <div className="flex flex-col items-center gap-6 py-8">
+    <div className="stagger-sections flex flex-col items-center gap-6 py-8">
       {order && <SaveOrderId orderId={order.id} />}
-      <div className="grid h-20 w-20 place-items-center rounded-full bg-emerald-50">
-        <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+      <div className="animate-fade-up relative grid h-20 w-20 place-items-center rounded-full bg-emerald-50">
+        <span className="animate-check-ring pointer-events-none absolute inset-0 rounded-full border-2 border-emerald-400" />
+        <CheckCircle2 className="animate-check-pop h-10 w-10 text-emerald-600" />
       </div>
 
-      <div className="text-center">
+      <div className="animate-fade-up text-center">
         <h1 className="text-2xl font-semibold text-stone-900">
           Order placed!
         </h1>
@@ -42,7 +43,7 @@ export default async function OrderSuccessPage({
       </div>
 
       {order && (
-        <Card className="w-full">
+        <Card variant="elevated" className="animate-fade-up w-full">
           <CardBody className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <div>
@@ -82,7 +83,7 @@ export default async function OrderSuccessPage({
         </Card>
       )}
 
-      <div className="flex w-full flex-col gap-2">
+      <div className="animate-fade-up flex w-full flex-col gap-2">
         {order && (
           <Link href={`/customer/orders/${order.id}`}>
             <Button variant="secondary" block>
@@ -100,7 +101,7 @@ export default async function OrderSuccessPage({
         </Link>
       </div>
 
-      <p className="text-center text-xs text-stone-500">
+      <p className="animate-fade-up text-center text-xs text-stone-500">
         Questions? Contact the Borana team on WhatsApp or call us.
       </p>
     </div>

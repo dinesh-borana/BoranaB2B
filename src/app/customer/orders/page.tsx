@@ -62,11 +62,11 @@ export default function CustomerOrdersPage() {
           }
         />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="stagger flex flex-col gap-2">
           {orders.map((o) => (
-            <li key={o.id}>
-              <Link href={`/customer/orders/${o.id}`} prefetch={false}>
-                <Card className="transition-colors hover:border-brand-300">
+            <li key={o.id} className="animate-fade-up">
+              <Link href={`/customer/orders/${o.id}`} prefetch={false} className="tap-scale block">
+                <Card className="card-hover transition-colors hover:border-brand-300">
                   <CardBody className="flex items-center gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">

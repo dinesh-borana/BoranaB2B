@@ -8,11 +8,12 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
   size?: Size;
   block?: boolean;
+  loading?: boolean;
 };
 
 const VARIANT: Record<Variant, string> = {
   primary:
-    "bg-brand-700 text-white hover:bg-brand-800 active:scale-[0.97] disabled:bg-brand-700/40 shadow-sm shadow-brand-900/20",
+    "bg-gradient-to-b from-brand-600 to-brand-800 text-white hover:brightness-[1.08] active:scale-[0.97] disabled:opacity-50 shadow-[0_1px_0_rgba(255,255,255,0.16)_inset,0_6px_16px_-4px_rgba(139,26,46,0.45)]",
   secondary:
     "bg-brand-50 text-brand-800 border border-brand-200 hover:bg-brand-100 active:scale-[0.97] disabled:opacity-50",
   ghost:
@@ -30,12 +31,13 @@ const SIZES: Record<Size, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { variant = "primary", size = "md", block, className, ...props },
+  { variant = "primary", size = "md", block, loading, disabled, className, children, ...props },
   ref,
 ) {
   return (
     <button
       ref={ref}
+      disabled={disabled || loading}
       {...props}
       className={cn(
         "inline-flex items-center justify-center gap-2 font-semibold transition-all duration-150",
@@ -46,6 +48,9 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
         block && "w-full",
         className,
       )}
-    />
+    >
+      {loading && <span className="btn-spinner" aria-hidden="true" />}
+      {children}
+    </button>
   );
 });

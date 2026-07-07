@@ -72,8 +72,8 @@ async function DashboardStats({ partyId }: { partyId: string | null }) {
     : EMPTY_PARTY;
 
   return (
-    <section className="mt-4 grid grid-cols-2 gap-3">
-      <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-white px-4 py-3.5 shadow-sm">
+    <section className="animate-fade-up mt-4 grid grid-cols-2 gap-3">
+      <div className="card-hover flex items-center gap-3 rounded-2xl border border-brand-100 bg-white px-4 py-3.5 shadow-sm">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
           <ClipboardList className="h-5 w-5" />
         </span>
@@ -82,7 +82,7 @@ async function DashboardStats({ partyId }: { partyId: string | null }) {
           <div className="mt-0.5 text-[11px] font-medium text-stone-500">Total orders</div>
         </div>
       </div>
-      <div className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-white px-4 py-3.5 shadow-sm">
+      <div className="card-hover flex items-center gap-3 rounded-2xl border border-amber-100 bg-white px-4 py-3.5 shadow-sm">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
           <Package className="h-5 w-5" />
         </span>
@@ -97,7 +97,7 @@ async function DashboardStats({ partyId }: { partyId: string | null }) {
 
 function StatsSkeleton() {
   return (
-    <section className="mt-4 grid grid-cols-2 gap-3">
+    <section className="animate-fade-up mt-4 grid grid-cols-2 gap-3">
       <div className="h-[72px] rounded-2xl border border-stone-100 bg-stone-50 animate-pulse" />
       <div className="h-[72px] rounded-2xl border border-stone-100 bg-stone-50 animate-pulse" />
     </section>
@@ -110,7 +110,7 @@ async function DashboardRecentOrders({ partyId }: { partyId: string | null }) {
   if (recent.length === 0) return null;
 
   return (
-    <section className="mt-6">
+    <section className="animate-fade-up mt-6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[15px] font-bold text-stone-900">Recent orders</h2>
         <Link href="/customer/orders" className="text-xs font-semibold text-brand-700">
@@ -119,8 +119,8 @@ async function DashboardRecentOrders({ partyId }: { partyId: string | null }) {
       </div>
       <div className="flex flex-col gap-2">
         {recent.map((o) => (
-          <Link key={o.id} href={`/customer/orders/${o.id}`}>
-            <div className="flex items-center justify-between rounded-2xl border border-stone-100 bg-white px-4 py-3 shadow-sm">
+          <Link key={o.id} href={`/customer/orders/${o.id}`} className="tap-scale">
+            <div className="card-hover flex items-center justify-between rounded-2xl border border-stone-100 bg-white px-4 py-3 shadow-sm">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-stone-900">#{o.orderNumber}</span>
@@ -156,10 +156,10 @@ export default async function CustomerDashboardPage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-0">
+    <div className="stagger-sections flex flex-col gap-0">
 
       {/* ── Hero Banner ── */}
-      <section className="hero-banner-bg relative overflow-hidden rounded-2xl p-5 pb-7 shadow-2xl">
+      <section className="animate-fade-up hero-banner-bg relative overflow-hidden rounded-2xl p-5 pb-7 shadow-2xl">
         <div className="hero-gold-line absolute left-0 right-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold to-transparent" />
         <div className="hero-shimmer pointer-events-none absolute inset-0" />
         <div className="hero-orb-1 pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-gold/10" />
@@ -199,7 +199,7 @@ export default async function CustomerDashboardPage() {
 
       {/* ── Shop by Category — from cache, renders immediately ── */}
       {categories.length > 0 && (
-        <section className="mt-6">
+        <section className="animate-fade-up mt-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-1.5 text-[15px] font-bold text-stone-900">
               <Gem className="h-4 w-4 text-gold" />
@@ -209,7 +209,7 @@ export default async function CustomerDashboardPage() {
               View all
             </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none" style={{ scrollSnapType: "x mandatory" }}>
+          <div className="stagger flex gap-3 overflow-x-auto pb-1 scrollbar-none" style={{ scrollSnapType: "x mandatory" }}>
             {categories.map((cat, idx) => {
               const fallbackGradients = [
                 "from-[#6d1424] to-[#3d0f1e]",
@@ -224,7 +224,7 @@ export default async function CustomerDashboardPage() {
                 <Link
                   key={cat.id}
                   href={`/customer/catalog?cat=${cat.slug}`}
-                  className="group relative shrink-0 overflow-hidden rounded-2xl shadow-lg"
+                  className="animate-fade-up tap-scale group relative shrink-0 overflow-hidden rounded-2xl shadow-lg"
                   style={{ width: 120, height: 148, scrollSnapAlign: "start" }}
                 >
                   {cat.imageUrl ? (
@@ -254,14 +254,14 @@ export default async function CustomerDashboardPage() {
       )}
 
       {/* ── Shop by Budget — static, renders immediately ── */}
-      <section className="mt-6">
+      <section className="animate-fade-up mt-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center gap-1.5 text-[15px] font-bold text-stone-900">
             <IndianRupee className="h-4 w-4 text-gold" />
             Shop by budget
           </h2>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="stagger grid grid-cols-2 gap-3">
           {([
             { title: "Under ₹100",  sub: "Budget picks", href: "/customer/catalog?maxPrice=100",                    bg: "linear-gradient(-45deg,#061c0c,#0f4020,#1a5c2e,#0b3518,#16502a,#061c0c)", accent: "#4ade80", glow: "#16a34a", delay: "0s"   },
             { title: "₹101–₹300",   sub: "Great value",  href: "/customer/catalog?minPrice=101&maxPrice=300",       bg: "linear-gradient(-45deg,#030b1a,#0a1e4a,#112d6b,#060f2a,#0d2450,#030b1a)", accent: "#93c5fd", glow: "#2563eb", delay: "1.5s" },
@@ -271,7 +271,7 @@ export default async function CustomerDashboardPage() {
             <Link
               key={b.href}
               href={b.href}
-              className="budget-card-anim group relative overflow-hidden rounded-2xl shadow-lg"
+              className="budget-card-anim animate-fade-up tap-scale group relative overflow-hidden rounded-2xl shadow-lg"
               style={{ background: b.bg, minHeight: 90, animationDelay: b.delay }}
             >
               <div className="absolute left-0 right-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
@@ -296,14 +296,14 @@ export default async function CustomerDashboardPage() {
 
       {/* ── Featured Products — from cache, renders immediately ── */}
       {featured.length > 0 && (
-        <section className="mt-6">
+        <section className="animate-fade-up mt-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[15px] font-bold text-stone-900">Featured</h2>
             <Link href="/customer/catalog" className="text-xs font-semibold text-brand-700">
               View all
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="stagger grid grid-cols-2 gap-3">
             {featured.map((p, idx) => {
               const img = p.images[0]?.url;
               const mrp = p.mrp ? Number(p.mrp.toString()) : null;
@@ -314,7 +314,7 @@ export default async function CustomerDashboardPage() {
                 <Link
                   key={p.id}
                   href={`/customer/catalog/${p.id}`}
-                  className="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm"
+                  className="animate-fade-up card-hover tap-scale overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm"
                 >
                   <div className="relative aspect-square w-full bg-stone-50">
                     {img ? (
@@ -363,7 +363,7 @@ export default async function CustomerDashboardPage() {
       )}
 
       {/* ── Profile Card ── */}
-      <section className="mt-6 mb-2">
+      <section className="animate-fade-up mt-6 mb-2">
         <div className="rounded-2xl border border-stone-100 bg-white shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-base font-bold text-white shadow">

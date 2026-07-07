@@ -19,7 +19,7 @@ export function StatusPill({
         className,
       )}
     >
-      <span className={cn("h-1.5 w-1.5 rounded-full", s.dot)} />
+      <span className={cn("h-1.5 w-1.5 rounded-full", s.dot, status === "PENDING" && "animate-pulse")} />
       {ORDER_STATUS_LABEL[status]}
     </span>
   );

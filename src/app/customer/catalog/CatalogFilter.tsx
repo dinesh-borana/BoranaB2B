@@ -36,9 +36,9 @@ export function CatalogFilter({
           onClick={() => select("")}
           style={{ touchAction: "manipulation" }}
           className={cn(
-            "h-11 min-w-[52px] shrink-0 rounded-full px-4 text-sm font-medium transition-colors",
+            "h-11 min-w-[52px] shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-150 active:scale-95",
             !activeCat
-              ? "bg-brand-700 text-white"
+              ? "bg-brand-700 text-white shadow-md shadow-brand-900/20"
               : "border border-stone-200 bg-white text-stone-700 active:bg-stone-100",
           )}
         >
@@ -53,9 +53,9 @@ export function CatalogFilter({
               onClick={() => select(c.slug)}
               style={{ touchAction: "manipulation" }}
               className={cn(
-                "h-11 shrink-0 rounded-full px-4 text-sm font-medium transition-colors",
+                "h-11 shrink-0 rounded-full px-4 text-sm font-medium transition-all duration-150 active:scale-95",
                 active
-                  ? "bg-brand-700 text-white"
+                  ? "bg-brand-700 text-white shadow-md shadow-brand-900/20"
                   : "border border-stone-200 bg-white text-stone-700 active:bg-stone-100",
               )}
             >

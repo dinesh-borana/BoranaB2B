@@ -134,12 +134,12 @@ async function ProductsGrid({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="stagger grid grid-cols-2 gap-3">
         {products.map((p, idx) => {
           const img = p.images[0]?.url;
           return (
-            <Link key={p.id} href={`/customer/catalog/${p.id}`}>
-              <Card className="overflow-hidden">
+            <Link key={p.id} href={`/customer/catalog/${p.id}`} className="animate-fade-up tap-scale">
+              <Card className="card-hover overflow-hidden">
                 <div className="relative aspect-square w-full bg-stone-100 overflow-hidden">
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -240,24 +240,26 @@ export default async function CatalogPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
-        <CatalogSearch initialQ={q} />
-      </Suspense>
+      <div className="chrome-glass sticky top-0 z-10 -mx-4 flex flex-col gap-3 px-4 pb-3 pt-1 md:static md:mx-0 md:bg-transparent md:px-0 md:pt-0 md:backdrop-blur-none">
+        <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
+          <CatalogSearch initialQ={q} />
+        </Suspense>
 
-      <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
-        <CatalogFilter categories={categories} initialCat={cat} />
-      </Suspense>
+        <Suspense fallback={<div className="h-11 w-full rounded-xl border border-stone-200 bg-white animate-pulse" />}>
+          <CatalogFilter categories={categories} initialCat={cat} />
+        </Suspense>
 
-      {budgetKey && BUDGET_LABELS[budgetKey] && (
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 px-3 py-1 text-xs font-semibold text-brand-700">
-            Budget: {BUDGET_LABELS[budgetKey]}
-          </span>
-          <a href="/customer/catalog" className="text-xs text-stone-500 underline underline-offset-2">
-            Clear
-          </a>
-        </div>
-      )}
+        {budgetKey && BUDGET_LABELS[budgetKey] && (
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 px-3 py-1 text-xs font-semibold text-brand-700">
+              Budget: {BUDGET_LABELS[budgetKey]}
+            </span>
+            <a href="/customer/catalog" className="text-xs text-stone-500 underline underline-offset-2">
+              Clear
+            </a>
+          </div>
+        )}
+      </div>
 
       {/* key changes on every filter → instant skeleton, then fresh results */}
       <Suspense key={gridKey} fallback={<ProductsSkeleton />}>

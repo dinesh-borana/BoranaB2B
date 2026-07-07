@@ -7,6 +7,7 @@ import { compareSize } from "@/lib/size";
 import { Card, CardBody } from "@/components/ui/Card";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ORDER_STATUS_FLOW, ORDER_STATUS_LABEL } from "@/lib/order-status";
+import { cn } from "@/lib/cn";
 
 export default async function CustomerOrderDetailPage({
   params,
@@ -39,15 +40,15 @@ export default async function CustomerOrderDetailPage({
     order.status === "REJECTED" || order.status === "CANCELLED";
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="stagger-sections flex flex-col gap-4">
       <Link
         href="/customer/orders"
-        className="inline-flex w-fit items-center gap-1 text-sm text-stone-600"
+        className="tap-scale inline-flex w-fit items-center gap-1 text-sm font-medium text-stone-600"
       >
         <ChevronLeft className="h-4 w-4" /> My orders
       </Link>
 
-      <Card>
+      <Card variant="elevated" className="animate-fade-up">
         <CardBody className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div>
@@ -90,34 +91,48 @@ export default async function CustomerOrderDetailPage({
       </Card>
 
       {!isTerminal && (
-        <Card>
+        <Card className="animate-fade-up">
           <CardBody>
             <h2 className="mb-3 text-sm font-semibold text-stone-900">
               Order progress
             </h2>
-            <ol className="flex flex-col gap-2">
+            <ol className="relative flex flex-col">
               {ORDER_STATUS_FLOW.map((s, i) => {
                 const done = i <= flowIdx;
                 const current = i === flowIdx;
+                const isLast = i === ORDER_STATUS_FLOW.length - 1;
                 return (
-                  <li key={s} className="flex items-center gap-3">
+                  <li key={s} className="relative flex items-start gap-3 pb-6 last:pb-0">
+                    {!isLast && (
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "absolute left-3.5 top-7 w-0.5 bg-stone-200",
+                          i < flowIdx && "stepper-line-fill bg-emerald-500",
+                        )}
+                        style={{ height: "calc(100% - 24px)" }}
+                      />
+                    )}
                     <span
-                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-semibold ${
+                      className={cn(
+                        "relative grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-semibold transition-colors duration-300",
                         done
-                          ? "bg-emerald-600 text-white"
-                          : "border-2 border-stone-200 text-stone-400"
-                      }`}
+                          ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
+                          : "border-2 border-stone-200 text-stone-400",
+                        current && "animate-pop-in ring-4 ring-emerald-100",
+                      )}
                     >
                       {done ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                     </span>
                     <span
-                      className={
+                      className={cn(
+                        "pt-1",
                         current
                           ? "text-sm font-semibold text-stone-900"
                           : done
                           ? "text-sm text-stone-700"
-                          : "text-sm text-stone-400"
-                      }
+                          : "text-sm text-stone-400",
+                      )}
                     >
                       {ORDER_STATUS_LABEL[s]}
                     </span>
@@ -129,7 +144,7 @@ export default async function CustomerOrderDetailPage({
         </Card>
       )}
 
-      <Card>
+      <Card className="animate-fade-up">
         <CardBody>
           <h2 className="mb-2 text-sm font-semibold text-stone-900">
             Items

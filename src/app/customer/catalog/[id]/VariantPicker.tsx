@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { CheckCircle2, Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { useCart, type CartLine } from "@/lib/cart-store";
 import { formatINR } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 export type PickerSize = { id: string; size: string; stockStatus: string };
 
@@ -35,7 +36,22 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
   const router = useRouter();
   const { addLine } = useCart();
   const [qty, setQty] = useState<Record<string, number>>({});
-  const [added, setAdded] = useState(false);
+  const [toast, setToast] = useState<"hidden" | "in" | "out">("hidden");
+  const toastTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    return () => toastTimers.current.forEach(clearTimeout);
+  }, []);
+
+  function showAddedToast() {
+    toastTimers.current.forEach(clearTimeout);
+    toastTimers.current = [];
+    setToast("in");
+    toastTimers.current.push(
+      setTimeout(() => setToast("out"), 1600),
+      setTimeout(() => setToast("hidden"), 1800),
+    );
+  }
 
   const sortedSizes = useMemo(
     () => [...product.sizes].sort((a, b) => cmpSize(a.size, b.size)),
@@ -80,8 +96,8 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
     };
     addLine(line);
     setQty({});
-    setAdded(true);
     if (goToCart) router.push("/customer/cart");
+    else showAddedToast();
   }
 
   const stockLabel: Record<string, string> = {
@@ -92,7 +108,7 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card variant="elevated">
         <CardBody className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-stone-900">
@@ -113,17 +129,23 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
           {sortedSizes.length === 0 ? (
             <p className="text-sm text-stone-400">No sizes available.</p>
           ) : (
-            <ul className="flex flex-col divide-y divide-stone-100">
+            <ul className="flex flex-col gap-1.5">
               {sortedSizes.map((s) => {
                 const value = qty[s.size] ?? 0;
                 const unavailable = s.stockStatus === "OUT_OF_STOCK";
+                const filled = value > 0;
                 return (
                   <li
                     key={s.id}
-                    className="flex items-center justify-between gap-3 py-2"
+                    className={cn(
+                      "flex items-center justify-between gap-3 rounded-xl border px-3 py-2 transition-colors duration-150",
+                      filled
+                        ? "border-brand-200 bg-brand-50/60"
+                        : "border-stone-100 bg-stone-50/40",
+                    )}
                   >
                     <div>
-                      <span className="text-sm font-medium text-stone-800">
+                      <span className="text-sm font-semibold text-stone-800">
                         {s.size}
                       </span>
                       {s.stockStatus !== "IN_STOCK" && (
@@ -138,7 +160,7 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
                         aria-label="Decrease"
                         onClick={() => bump(s.size, -1)}
                         disabled={value === 0 || unavailable}
-                        className="grid h-9 w-9 place-items-center rounded-lg border border-stone-200 bg-white text-stone-600 disabled:opacity-40"
+                        className="tap-scale grid h-9 w-9 place-items-center rounded-lg border border-stone-200 bg-white text-stone-600 disabled:opacity-40"
                       >
                         <Minus className="h-4 w-4" />
                       </button>
@@ -151,14 +173,14 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
                           setExact(s.size, Number(e.target.value))
                         }
                         placeholder="0"
-                        className="h-9 w-14 rounded-lg border border-stone-200 bg-white text-center text-[16px] sm:text-sm text-stone-900 outline-none focus:border-brand-600 disabled:opacity-40"
+                        className="h-9 w-14 rounded-lg border border-stone-200 bg-white text-center text-[16px] sm:text-sm font-semibold text-stone-900 outline-none transition-shadow focus:border-brand-600 focus:ring-2 focus:ring-brand-500/15 disabled:opacity-40"
                       />
                       <button
                         type="button"
                         aria-label="Increase"
                         onClick={() => bump(s.size, 1)}
                         disabled={unavailable}
-                        className="grid h-9 w-9 place-items-center rounded-lg border border-stone-200 bg-white text-stone-600 disabled:opacity-40"
+                        className="tap-scale grid h-9 w-9 place-items-center rounded-lg border border-stone-200 bg-white text-stone-600 disabled:opacity-40"
                       >
                         <Plus className="h-4 w-4" />
                       </button>
@@ -171,6 +193,19 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
         </CardBody>
       </Card>
 
+      {toast !== "hidden" && (
+        <div
+          className={cn(
+            "fixed left-1/2 z-30 flex items-center gap-2 rounded-full bg-stone-900 px-4 py-2.5 text-sm font-medium text-white shadow-xl",
+            toast === "in" ? "toast-anim-in" : "toast-anim-out",
+          )}
+          style={{ bottom: "calc(150px + env(safe-area-inset-bottom))" }}
+        >
+          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+          Added to cart
+        </div>
+      )}
+
       <div className="fixed inset-x-0 z-20" style={{ bottom: "calc(70px + env(safe-area-inset-bottom))" }}>
         {/* gradient fade — always creates visual gap between size card and bar */}
         <div
@@ -178,12 +213,12 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
           style={{ background: "linear-gradient(to bottom, transparent, var(--background))" }}
         />
         <div className="px-4" style={{ background: "var(--background)" }}>
-        <div className="mx-auto max-w-3xl flex flex-col gap-2 rounded-xl border border-stone-200 bg-white p-3 shadow-lg">
+        <div className="chrome-glass mx-auto max-w-3xl flex flex-col gap-2 rounded-xl border border-stone-200 p-3 shadow-lg">
           <div className="flex items-center justify-between text-sm">
             <span className="text-stone-500">
               {totalPieces} pc{totalPieces === 1 ? "" : "s"}
             </span>
-            <span className="font-semibold text-stone-900">
+            <span className="font-bold text-stone-900">
               {formatINR(lineTotal)}
             </span>
           </div>
@@ -206,9 +241,6 @@ export function VariantPicker({ product }: { product: PickerProduct }) {
               Buy now
             </Button>
           </div>
-          {added && totalPieces === 0 && (
-            <p className="text-center text-xs text-emerald-700">Added to cart.</p>
-          )}
         </div>
         </div>
       </div>

@@ -51,10 +51,10 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
         clear();
         action(fd);
       }}
-      className="flex flex-col gap-4"
+      className="stagger-sections flex flex-col gap-4"
     >
       {/* Delivery details */}
-      <Card>
+      <Card className="animate-fade-up">
         <CardBody className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-stone-900">
             Delivery details
@@ -102,7 +102,7 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
       </Card>
 
       {/* Order items */}
-      <Card>
+      <Card className="animate-fade-up">
         <CardBody>
           <h2 className="text-sm font-semibold text-stone-900">Order items</h2>
           <ul className="mt-2 divide-y divide-stone-100">
@@ -135,7 +135,7 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
       </Card>
 
       {/* Summary + note */}
-      <Card>
+      <Card variant="elevated" className="animate-fade-up">
         <CardBody className="flex flex-col gap-3">
           <Textarea
             name="note"
@@ -166,7 +166,7 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
         </CardBody>
       </Card>
 
-      <Card>
+      <Card className="animate-fade-up">
         <CardBody className="flex items-start gap-2 text-xs text-stone-500">
           <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
           <span>
@@ -177,12 +177,15 @@ export function CheckoutClient({ gstRate }: { gstRate: number }) {
       </Card>
 
       {state.error && (
-        <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <div
+          key={state.error}
+          className="shake-once rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
+        >
           {state.error}
         </div>
       )}
 
-      <Button type="submit" size="lg" block disabled={pending}>
+      <Button type="submit" size="lg" block loading={pending} className="animate-fade-up">
         {pending ? "Placing order…" : "Place order"}
       </Button>
     </form>
