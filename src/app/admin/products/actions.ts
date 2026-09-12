@@ -208,14 +208,15 @@ export async function bulkAssignCategories(
   if (!productIds.length || !categoryIds.length) return {};
 
   try {
-    await prisma.$transaction(async (tx) => {
-      for (const id of productIds) {
-        await tx.product.update({
-          where: { id },
-          data: { categories: { connect: categoryIds.map((catId) => ({ id: catId })) } },
-        });
-      }
-    });
+    // Single round trip: a per-product update loop inside an interactive
+    // transaction blows past Prisma's 5s timeout at ~25+ products (P2028).
+    await prisma.$executeRaw`
+      INSERT INTO "_CategoryToProduct" ("A", "B")
+      SELECT c, p
+      FROM unnest(${categoryIds}::text[]) AS c
+      CROSS JOIN unnest(${productIds}::text[]) AS p
+      ON CONFLICT DO NOTHING
+    `;
   } catch (err) {
     console.error("bulkAssignCategories error:", err);
     return { error: "Failed to assign categories. Please try again." };
