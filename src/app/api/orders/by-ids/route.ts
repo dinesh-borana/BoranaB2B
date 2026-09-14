@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
         status: true,
         totalPieces: true,
         total: true,
+        shippingCharges: true,
         guestName: true,
         createdAt: true,
       },

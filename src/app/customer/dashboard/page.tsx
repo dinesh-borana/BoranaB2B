@@ -132,7 +132,9 @@ async function DashboardRecentOrders({ partyId }: { partyId: string | null }) {
               </div>
               <div className="text-right">
                 <div className="text-sm font-bold text-stone-900">{formatINR(o.total)}</div>
-                <div className="text-[10px] text-stone-400">incl. GST</div>
+                <div className="text-[10px] text-stone-400">
+                  {Number(o.shippingCharges) > 0 ? "incl. GST & shipping" : "incl. GST"}
+                </div>
               </div>
             </div>
           </Link>

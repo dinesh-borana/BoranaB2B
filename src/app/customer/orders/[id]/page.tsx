@@ -182,6 +182,12 @@ export default async function CustomerOrderDetailPage({
               <span>GST @{order.gstRate.toString()}%</span>
               <span>{formatINR(order.gstAmount)}</span>
             </div>
+            {Number(order.shippingCharges) > 0 && (
+              <div className="flex justify-between text-stone-500">
+                <span>Shipping charges</span>
+                <span>{formatINR(order.shippingCharges)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-base font-semibold text-stone-900">
               <span>Total</span>
               <span>{formatINR(order.total)}</span>

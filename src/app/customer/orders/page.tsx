@@ -15,6 +15,7 @@ type OrderSummary = {
   status: string;
   totalPieces: number;
   total: string;
+  shippingCharges: string;
   guestName: string | null;
   createdAt: string;
 };
@@ -83,7 +84,9 @@ export default function CustomerOrdersPage() {
                       <p className="font-semibold text-stone-900">
                         {formatINR(o.total)}
                       </p>
-                      <p className="text-xs text-stone-500">incl. GST</p>
+                      <p className="text-xs text-stone-500">
+                        {Number(o.shippingCharges) > 0 ? "incl. GST & shipping" : "incl. GST"}
+                      </p>
                     </div>
                   </CardBody>
                 </Card>
