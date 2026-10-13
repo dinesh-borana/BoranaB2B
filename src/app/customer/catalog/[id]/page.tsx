@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 const getCachedProduct = unstable_cache(
   (id: string) =>
     prisma.product.findUnique({
-      where: { id, isActive: true },
+      where: { id, isActive: true, deletedAt: null },
       include: {
         images: { orderBy: { sortOrder: "asc" } },
         sizes: { orderBy: { size: "asc" } },

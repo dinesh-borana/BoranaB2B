@@ -9,6 +9,7 @@ export const metadata = { title: "Bulk Assign Category · Products · Admin" };
 export default async function BulkAssignPage() {
   const [products, categories] = await Promise.all([
     prisma.product.findMany({
+      where: { deletedAt: null },
       select: {
         id: true,
         sku: true,

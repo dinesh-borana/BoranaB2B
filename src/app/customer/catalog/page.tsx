@@ -43,6 +43,7 @@ const getCachedProducts = unstable_cache(
   ) => {
     const where = {
       isActive: true,
+      deletedAt: null,
       ...(q ? {
         OR: [
           { name:        { contains: q, mode: "insensitive" as const } },

@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Package, Check, Tag, X, CheckSquare, Square } from "lucide-react";
+import { Package, Check, Tag, X, CheckSquare, Square, Trash2, AlertTriangle } from "lucide-react";
 import { formatINR } from "@/lib/format";
 import { cdnImg } from "@/lib/cdn";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { bulkAssignCategories } from "./actions";
+import { bulkAssignCategories, bulkDeleteProducts } from "./actions";
 
 type Product = {
   id: string;
@@ -32,8 +32,10 @@ export function ProductsGrid({
   const [showPicker, setShowPicker] = useState(false);
   const [pickedCatIds, setPickedCatIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
-  const [successCount, setSuccessCount] = useState(0);
+  const [toast, setToast] = useState<{ kind: "assign" | "delete"; count: number } | null>(null);
   const [assignError, setAssignError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -50,7 +52,7 @@ export function ProductsGrid({
 
   function clearAll() {
     setSelected(new Set());
-    setSuccessCount(0);
+    setToast(null);
   }
 
   function toggleCat(id: string) {
@@ -72,10 +74,24 @@ export function ProductsGrid({
       if (res.error) {
         setAssignError(res.error);
       } else {
-        setSuccessCount(selected.size);
+        setToast({ kind: "assign", count: selected.size });
         setSelected(new Set());
         setPickedCatIds(new Set());
         setShowPicker(false);
+      }
+    });
+  }
+
+  function handleDelete() {
+    setDeleteError(null);
+    startTransition(async () => {
+      const res = await bulkDeleteProducts(Array.from(selected));
+      if (res.error) {
+        setDeleteError(res.error);
+      } else {
+        setToast({ kind: "delete", count: selected.size });
+        setSelected(new Set());
+        setShowDeleteConfirm(false);
       }
     });
   }
@@ -105,13 +121,22 @@ export function ProductsGrid({
       )}
 
       {/* ── Success toast ── */}
-      {successCount > 0 && (
+      {toast && (
         <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5">
           <span className="text-sm font-medium text-emerald-800">
             <Check className="inline h-3.5 w-3.5 mr-1" />
-            Categories assigned to {successCount} product{successCount !== 1 ? "s" : ""}
+            {toast.kind === "assign" ? (
+              <>Categories assigned to {toast.count} product{toast.count !== 1 ? "s" : ""}</>
+            ) : (
+              <>
+                {toast.count} product{toast.count !== 1 ? "s" : ""} moved to{" "}
+                <Link href="/admin/recycle-bin" className="underline underline-offset-2">
+                  Recycle bin
+                </Link>
+              </>
+            )}
           </span>
-          <button type="button" onClick={() => setSuccessCount(0)} className="text-emerald-600 hover:text-emerald-800">
+          <button type="button" onClick={() => setToast(null)} className="text-emerald-600 hover:text-emerald-800">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -203,6 +228,14 @@ export function ProductsGrid({
                   className="rounded-lg px-3 py-1.5 text-xs font-medium text-admin-200 hover:bg-admin-700"
                 >
                   Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setDeleteError(null); setShowDeleteConfirm(true); }}
+                  className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-500"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
                 </button>
                 <button
                   type="button"
@@ -306,6 +339,75 @@ export function ProductsGrid({
                 type="button"
                 onClick={() => setShowPicker(false)}
                 className="rounded-xl border border-stone-200 px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete confirmation bottom sheet ── */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          onClick={() => !isPending && setShowDeleteConfirm(false)}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="relative w-full rounded-t-2xl bg-white px-5 pb-8 pt-5 shadow-2xl"
+            style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-stone-200" />
+            <div className="mb-4 flex items-start gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-rose-50 text-rose-600">
+                <AlertTriangle className="h-4 w-4" />
+              </span>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-stone-900">
+                  Delete {selected.size} product{selected.size !== 1 ? "s" : ""}?
+                </h3>
+                <p className="mt-0.5 text-xs text-stone-500">
+                  They move to the Recycle bin and are hidden from customers. You can restore them later.
+                </p>
+              </div>
+            </div>
+
+            <div className="max-h-48 overflow-y-auto rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <ul className="flex flex-col gap-1.5">
+                {products
+                  .filter((p) => selected.has(p.id))
+                  .map((p) => (
+                    <li key={p.id} className="text-sm tracking-wide text-stone-700">
+                      {p.sku}
+                    </li>
+                  ))}
+              </ul>
+            </div>
+
+            {deleteError && (
+              <div className="mt-4 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isPending}
+                className="flex-1 rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-500 disabled:opacity-50"
+              >
+                {isPending
+                  ? "Deleting…"
+                  : `Delete ${selected.size} product${selected.size !== 1 ? "s" : ""}`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isPending}
+                className="rounded-xl border border-stone-200 px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
               >
                 Cancel
               </button>

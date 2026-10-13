@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 const getFeaturedProducts = unstable_cache(
   () =>
     prisma.product.findMany({
-      where: { isActive: true },
+      where: { isActive: true, deletedAt: null },
       include: { images: { where: { isMain: true }, take: 1 } },
       take: 6,
       orderBy: { createdAt: "desc" },

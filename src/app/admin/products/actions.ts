@@ -194,7 +194,17 @@ export async function bulkDeleteProducts(
 ): Promise<{ error?: string }> {
   await checkAdmin();
   if (!productIds.length) return {};
-  await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { deletedAt: new Date() } });
+
+  try {
+    await prisma.product.updateMany({
+      where: { id: { in: productIds } },
+      data: { deletedAt: new Date() },
+    });
+  } catch (err) {
+    console.error("bulkDeleteProducts error:", err);
+    return { error: "Failed to delete products. Please try again." };
+  }
+
   revalidateTag("products", "max");
   revalidatePath("/admin/products");
   return {};
